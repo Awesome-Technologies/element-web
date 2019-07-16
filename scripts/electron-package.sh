@@ -110,6 +110,8 @@ git checkout "$version"
 # Figure out what version we're building
 vername=`jq -r .version package.json`
 
+echo "Building version $vername"
+
 if [ -n "$conffile" ]; then
     popd
     cp "$conffile" "$builddir/"

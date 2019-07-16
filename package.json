@@ -1,13 +1,13 @@
 {
-  "name": "riot-web",
-  "productName": "Riot",
+  "name": "amp-chat-web",
+  "productName": "AMP.chat",
   "main": "electron_app/src/electron-main.js",
-  "version": "1.5.9",
-  "description": "A feature-rich client for Matrix.org",
-  "author": "New Vector Ltd.",
+  "version": "2020.02.0",
+  "description": "The secure messenger for the healthcare industry",
+  "author": "Awesome Technologies Innovationslabor GmbH",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vector-im/riot-web"
+    "url": "https://github.com/Awesome-Technologies/riot-web"
   },
   "license": "Apache-2.0",
   "files": [
@@ -67,7 +67,7 @@
     "gfm.css": "^1.1.2",
     "highlight.js": "^9.13.1",
     "matrix-js-sdk": "5.0.0",
-    "matrix-react-sdk": "2.1.0",
+    "matrix-react-sdk": "github:awesome-technologies/matrix-react-sdk#ampchat-2020.02.0",
     "olm": "https://packages.matrix.org/npm/olm/olm-3.1.4.tgz",
     "postcss-easings": "^2.0.0",
     "prop-types": "^15.7.2",
@@ -152,7 +152,7 @@
     "webpack-dev-server": "^3.9.0"
   },
   "build": {
-    "appId": "im.riot.app",
+    "appId": "chat.amp.app",
     "electronVersion": "7.1.12",
     "files": [
       "node_modules/**",
@@ -168,7 +168,7 @@
     "linux": {
       "target": "deb",
       "category": "Network;InstantMessaging;Chat",
-      "maintainer": "support@riot.im",
+      "maintainer": "support@awesome-technologies.de",
       "desktop": {
         "StartupWMClass": "riot"
       }

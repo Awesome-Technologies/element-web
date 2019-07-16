@@ -1,0 +1,41 @@
+{
+    "update_base_url": "https://update.amp.chat/desktop/",
+    "default_hs_url": "https://test.amp.chat",
+    "default_is_url": "",
+    "brand": "AMP.chat",
+    "integrations_ui_url": "https://dimension.test.amp.chat/riot",
+    "integrations_rest_url": "https://dimension.test.amp.chat/api/v1/scalar",
+    "integrations_widgets_urls": ["https://dimension.test.amp.chat/widgets"],
+    "integrations_jitsi_widget_url": "https://dimension.test.amp.chat/widgets/jitsi",
+    "hosting_signup_link": "https://modular.im/?utm_source=riot-web&utm_medium=web",
+    "bug_report_endpoint_url": "https://amp.chat/bugreports/submit",
+    "welcomeUserId": "@amp-bot:test.amp.chat",
+    "showLabsSettings": false,
+    "branding": {
+      "authHeaderLogoUrl": "themes/amp/img/logos/amp-chat-logo-black-text.svg",
+      "welcomeBackgroundUrl": "themes/amp/img/backgrounds/valley.jpg",
+      "authFooterLinks": []
+    },
+    "roomDirectory": {
+        "servers": [
+            "test.amp.chat"
+        ]
+    },
+    "piwik": {
+        "url": "https://matomo.awesome-technologies.de/",
+        "siteId": 3,
+        "policyUrl": "https://amp.chat/cookie_policy"
+    },
+    "phasedRollOut": {
+        "feature_lazyloading": {
+            "offset": 1539684000000,
+            "period": 604800000
+        }
+    },
+    "features": {
+        "feature_lazyloading": "enable"
+    },
+    "enable_presence_by_hs_url": {
+        "https://test.amp.chat": false
+    }
+}

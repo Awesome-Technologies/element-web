@@ -21,5 +21,12 @@
     "Need help?": "Need help?",
     "Chat with Riot Bot": "Chat with Riot Bot",
     "Explore rooms": "Explore rooms",
-    "Room Directory": "Room Directory"
+    "Room Directory": "Room Directory",
+    "Search the room directory": "Search the room directory",
+    "Get started with some tips from Riot Bot!": "Get started with some tips from Riot Bot!",
+    "Welcome to AMP.chat": "Welcome to AMP.chat",
+    "The secure messenger for healthcare industry": "The secure messenger for healthcare industry",
+    "Chat with AMP Bot": "Chat with AMP Bot",
+    "AMP.chat on %(platformName)s": "AMP.chat on %(platformName)s"
+
 }
