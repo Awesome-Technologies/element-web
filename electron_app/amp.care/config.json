@@ -1,0 +1,36 @@
+{
+    "update_base_url": "https://update.amp.care/desktop/update/",
+    "default_hs_url": "https://test.amp.care",
+    "default_is_url": "",
+    "brand": "AMP.care",
+    "integrations_ui_url": "https://dimension.amp.care/riot",
+    "integrations_rest_url": "https://dimension.amp.care/api/v1/scalar",
+    "integrations_widgets_urls": ["https://dimension.amp.care/widgets"],
+    "integrations_jitsi_widget_url": "https://dimension.amp.care/widgets/jitsi",
+    "hosting_signup_link": "https://modular.im/?utm_source=riot-web&utm_medium=web",
+    "bug_report_endpoint_url": "https://amp.care/bugreports/submit",
+    "welcomeUserId": "@amp-bot:test.amp.chat",
+    "showLabsSettings": true,
+    "roomDirectory": {
+        "servers": [
+            "test.amp.chat"
+        ]
+    },
+    "piwik": {
+        "url": "https://matomo.awesome-technologies.de/",
+        "siteId": 6,
+        "policyUrl": "https://awesome-technologies.de/docs/guides/amp_care_cookie_policy"
+    },
+    "phasedRollOut": {
+        "feature_lazyloading": {
+            "offset": 1539684000000,
+            "period": 604800000
+        }
+    },
+    "features": {
+        "feature_lazyloading": "enable"
+    },
+    "enable_presence_by_hs_url": {
+        "https://test.amp.care": false
+    }
+}

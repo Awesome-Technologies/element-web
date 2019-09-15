@@ -1,13 +1,13 @@
 {
-  "name": "riot-web",
-  "productName": "Riot",
+  "name": "ampcare-desktop",
+  "productName": "AMP.care",
   "main": "electron_app/src/electron-main.js",
   "version": "1.4.1",
-  "description": "A feature-rich client for Matrix.org",
-  "author": "New Vector Ltd.",
+  "description": "Connecting care and physicians",
+  "author": "Awesome Technologies Innovationslabor GmbH",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vector-im/riot-web"
+    "url": "https://github.com/Awesome-Technologies/riot-web"
   },
   "license": "Apache-2.0",
   "files": [

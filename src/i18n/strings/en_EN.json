@@ -7,6 +7,7 @@
     "Invalid configuration: can only specify one of default_server_config, default_server_name, or default_hs_url.": "Invalid configuration: can only specify one of default_server_config, default_server_name, or default_hs_url.",
     "Invalid configuration: no default server specified.": "Invalid configuration: no default server specified.",
     "Riot Desktop on %(platformName)s": "Riot Desktop on %(platformName)s",
+    "AMP.care Desktop on %(platformName)s": "AMP.care Desktop on %(platformName)s",
     "Unknown device": "Unknown device",
     "%(appName)s via %(browserName)s on %(osName)s": "%(appName)s via %(browserName)s on %(osName)s",
     "You need to be using HTTPS to place a screen-sharing call.": "You need to be using HTTPS to place a screen-sharing call.",
@@ -15,12 +16,14 @@
     "You can use the custom server options to sign into other Matrix servers by specifying a different homeserver URL. This allows you to use Riot with an existing Matrix account on a different homeserver.": "You can use the custom server options to sign into other Matrix servers by specifying a different homeserver URL. This allows you to use Riot with an existing Matrix account on a different homeserver.",
     "You can also set a custom identity server, but you won't be able to invite users by email address, or be invited by email address yourself.": "You can also set a custom identity server, but you won't be able to invite users by email address, or be invited by email address yourself.",
     "Dismiss": "Dismiss",
-    "Welcome to Riot.im": "Welcome to Riot.im",
+    "Welcome to AMP.care": "Welcome to AMP.care",
     "Decentralised, encrypted chat &amp; collaboration powered by [matrix]": "Decentralised, encrypted chat &amp; collaboration powered by [matrix]",
     "Sign In": "Sign In",
     "Create Account": "Create Account",
     "Need help?": "Need help?",
-    "Chat with Riot Bot": "Chat with Riot Bot",
+    "Chat with AMP Bot": "Chat with AMP Bot",
     "Explore rooms": "Explore rooms",
-    "Room Directory": "Room Directory"
+    "Room Directory": "Room Directory",
+    "Search the room directory": "Search the room directory",
+    "Get started with some tips from AMP Bot!": "Get started with some tips from AMP Bot!"
 }

@@ -331,7 +331,7 @@ app.on('ready', () => {
 
     // It's important to call `path.join` so we don't end up with the packaged
     // asar in the final path.
-    const iconFile = `riot.${process.platform === 'win32' ? 'ico' : 'png'}`;
+    const iconFile = `amp.${process.platform === 'win32' ? 'ico' : 'png'}`;
     const iconPath = path.join(__dirname, "..", "..", "img", iconFile);
 
     // Load the previous window state with fallback to defaults
@@ -446,4 +446,4 @@ app.on('second-instance', (ev, commandLine, workingDirectory) => {
 // installer uses for the shortcut icon.
 // This makes notifications work on windows 8.1 (and is
 // a noop on other platforms).
-app.setAppUserModelId('com.squirrel.riot-web.Riot');
+app.setAppUserModelId('com.squirrel.ampcare-desktop.AMPcare');

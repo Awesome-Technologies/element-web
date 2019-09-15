@@ -57,8 +57,8 @@ const template = [
         role: 'help',
         submenu: [
             {
-                label: 'Riot Help',
-                click() { shell.openExternal('https://about.riot.im/help'); },
+                label: 'AMP.care Help',
+                click() { shell.openExternal('https://about.amp.care/help'); },
             },
         ],
     },

@@ -142,7 +142,7 @@ function onNewScreen(screen) {
 function makeRegistrationUrl(params) {
     let url;
     if (window.location.protocol === "vector:") {
-        url = 'https://riot.im/app/#/register';
+        url = 'https://amp.care/app/#/register';
     } else {
         url = (
             window.location.protocol + '//' +
