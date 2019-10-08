@@ -2,7 +2,7 @@
   "name": "ampcare-desktop",
   "productName": "AMP.care",
   "main": "src/electron-main.js",
-  "version": "1.4.1",
+  "version": "2019.09.3",
   "description": "Connecting care and physicians",
   "author": "Awesome Technologies Innovationslabor GmbH",
   "dependencies": {
