@@ -2,6 +2,7 @@
     "update_base_url": "https://update.amp.care/desktop/",
     "default_hs_url": "https://test.amp.care",
     "default_is_url": "",
+    "disable_3pid_login": true,
     "brand": "AMP.care",
     "integrations_ui_url": "https://dimension.amp.care/riot",
     "integrations_rest_url": "https://dimension.amp.care/api/v1/scalar",
