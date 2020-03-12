@@ -1,6 +1,6 @@
 /*
 Copyright 2015, 2016 OpenMarket Ltd
-Copyright 2017 New Vector Ltd
+Copyright 2017, 2019 New Vector Ltd
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@ limitations under the License.
 */
 
 import React from "react";
-import { _t } from 'matrix-react-sdk/lib/languageHandler';
+import { _t } from 'matrix-react-sdk/src/languageHandler';
 
 /**
  * This is identical to `CustomServerDialog` except for replacing "this app"
  * with "Riot".
  */
-module.exports = ({onFinished}) => {
+const VectorCustomServerDialog = ({onFinished}) => {
     return (
         <div className="mx_ErrorDialog">
             <div className="mx_Dialog_title">
@@ -35,11 +35,6 @@ module.exports = ({onFinished}) => {
                     "allows you to use Riot with an existing Matrix account on a " +
                     "different homeserver.",
                 )}</p>
-                <p>{_t(
-                    "You can also set a custom identity server, but you won't be " +
-                    "able to invite users by email address, or be invited by email " +
-                    "address yourself.",
-                )}</p>
             </div>
             <div className="mx_Dialog_buttons">
                 <button onClick={onFinished} autoFocus={true}>
@@ -49,6 +44,7 @@ module.exports = ({onFinished}) => {
         </div>
     );
 };
-module.exports.statics = {
-    replaces: 'CustomServerDialog',
-};
+
+VectorCustomServerDialog.replaces = 'CustomServerDialog';
+
+export default VectorCustomServerDialog;
