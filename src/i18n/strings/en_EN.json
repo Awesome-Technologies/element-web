@@ -27,6 +27,7 @@
     "Welcome to AMP.chat": "Welcome to AMP.chat",
     "The secure messenger for healthcare industry": "The secure messenger for healthcare industry",
     "Chat with AMP Bot": "Chat with AMP Bot",
-    "AMP.chat on %(platformName)s": "AMP.chat on %(platformName)s"
+    "AMP.chat on %(platformName)s": "AMP.chat on %(platformName)s",
+    "Privacy": "Privacy"
 
 }

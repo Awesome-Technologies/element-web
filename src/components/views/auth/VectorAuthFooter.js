@@ -43,6 +43,7 @@ const VectorAuthFooter = () => {
     return (
         <div className="mx_AuthFooter">
             {authFooterLinks}
+            <a href="https://amp.chat/privacy" target="_blank" rel="noopener">{ _t('Privacy') }</a>
             <a href="https://matrix.org" target="_blank" rel="noopener">{ _t('powered by Matrix') }</a>
         </div>
     );
