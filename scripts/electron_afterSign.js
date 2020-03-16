@@ -15,10 +15,11 @@ exports.default = async function(context) {
 
         console.log("Notarising macOS app. This may be some time.");
         return await notarize({
-            appBundleId: 'im.riot.app',
+            appBundleId: 'chat.amp.app',
             appPath: `${appOutDir}/${appName}.app`,
             appleId: userId,
             appleIdPassword: '@keychain:NOTARIZE_CREDS',
+            ascProvider: '98C45TS5UN',
         });
     }
 };
