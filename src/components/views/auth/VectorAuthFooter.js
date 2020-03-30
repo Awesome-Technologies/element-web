@@ -34,7 +34,7 @@ const VectorAuthFooter = () => {
     const authFooterLinks = [];
     for (const linkEntry of links) {
         authFooterLinks.push(
-            <a href={linkEntry.url} key={linkEntry.text} target="_blank" rel="noopener">
+            <a href={linkEntry.url} key={linkEntry.text} target="_blank" rel="noreferrer noopener">
                 {linkEntry.text}
             </a>,
         );
@@ -43,8 +43,8 @@ const VectorAuthFooter = () => {
     return (
         <div className="mx_AuthFooter">
             {authFooterLinks}
-            <a href="https://amp.chat/privacy" target="_blank" rel="noopener">{ _t('Privacy') }</a>
-            <a href="https://matrix.org" target="_blank" rel="noopener">{ _t('powered by Matrix') }</a>
+            <a href="https://amp.chat/privacy" target="_blank" rel="noreferrer noopener">{ _t('Privacy') }</a>
+            <a href="https://matrix.org" target="_blank" rel="noreferrer noopener">{ _t('powered by Matrix') }</a>
         </div>
     );
 };
