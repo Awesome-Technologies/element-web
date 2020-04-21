@@ -1,6 +1,6 @@
 {
   "name": "amp-chat-web",
-  "productName": "AMP.chat",
+  "productName": "Caritas Messenger",
   "main": "electron_app/src/electron-main.js",
   "version": "2020.02.0",
   "description": "The secure messenger for the healthcare industry",
