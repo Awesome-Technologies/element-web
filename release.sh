@@ -20,6 +20,7 @@ cd `dirname $0`
 
 for i in matrix-js-sdk matrix-react-sdk
 do
+    echo "Checking version of $i..."
     depver=`cat package.json | jq -r .dependencies[\"$i\"]`
     latestver=`yarn info -s $i dist-tags.next`
     if [ "$depver" != "$latestver" ]
@@ -61,7 +62,7 @@ git commit package.json -m "$tag"
 
 cd ..
 
-exec ./node_modules/matrix-js-sdk/release.sh -u vector-im -z "$orig_args"
+./node_modules/matrix-js-sdk/release.sh -u vector-im -z "$orig_args"
 
 if [ $prerelease -eq 0 ]
 then
