@@ -559,6 +559,9 @@ app.on('ready', () => {
             // main page from the background script.
             contextIsolation: false,
             webgl: false,
+            // disable CORS checks
+            webSecurity: false,
+            allowRunningInsecureContent: false,
         },
     });
     mainWindow.loadURL('vector://vector/webapp/');
