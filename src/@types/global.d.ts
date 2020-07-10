@@ -14,9 +14,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-interface Window {
-    Olm: {
-        init: () => Promise<void>;
-    };
-    mxSendRageshake: (text: string, withLogs?: boolean) => void;
+import "matrix-react-sdk/src/@types/global"; // load matrix-react-sdk's type extensions first
+import type {Renderer} from "react-dom";
+
+declare global {
+    interface Window {
+        mxSendRageshake: (text: string, withLogs?: boolean) => void;
+        matrixChat: ReturnType<Renderer>;
+
+        // electron-only
+        ipcRenderer: any;
+
+        // opera-only
+        opera: any;
+
+        // https://developer.mozilla.org/en-US/docs/Web/API/InstallTrigger
+        InstallTrigger: any;
+    }
+
+    interface Navigator {
+        // PWA badging extensions https://w3c.github.io/badging/
+        setAppBadge?(count: number): Promise<void>;
+        clearAppBadge?(): Promise<void>;
+    }
+}
+
+// add method which is missing from the node typing
+declare module "url" {
+    interface Url {
+        format(): string;
+    }
 }

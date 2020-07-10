@@ -6,7 +6,7 @@ const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const webpack = require("webpack");
 
 let og_image_url = process.env.RIOT_OG_IMAGE_URL;
-if (!og_image_url) og_image_url = 'https://riot.im/app/themes/riot/img/logos/riot-im-logo-black-text.png';
+if (!og_image_url) og_image_url = 'https://riot.im/app/themes/riot/img/logos/opengraph.png';
 
 module.exports = (env, argv) => {
     if (process.env.CI_PACKAGE) {
@@ -19,6 +19,8 @@ module.exports = (env, argv) => {
         // This makes the sourcemaps human readable for developers. We use eval-source-map
         // because the plain source-map devtool ruins the alignment.
         development['devtool'] = 'eval-source-map';
+    } else {
+        development['devtool'] = 'nosources-source-map';
     }
 
     // Resolve the directories for the react-sdk and js-sdk for later use. We resolve these early so we
@@ -31,7 +33,7 @@ module.exports = (env, argv) => {
         ...development,
 
         entry: {
-            "bundle": "./src/vector/index.js",
+            "bundle": "./src/vector/index.ts",
             "indexeddb-worker": "./src/vector/indexeddb-worker.js",
             "mobileguide": "./src/vector/mobile_guide/index.js",
             "jitsi": "./src/vector/jitsi/index.ts",
@@ -182,6 +184,7 @@ module.exports = (env, argv) => {
 
                                     require("postcss-simple-vars")(),
                                     require("postcss-strip-inline-comments")(),
+                                    require("postcss-hexrgba")(),
 
                                     // It's important that this plugin is last otherwise we end
                                     // up with broken CSS.
@@ -213,12 +216,13 @@ module.exports = (env, argv) => {
                                     // Note that we use slightly different plugins for SCSS.
 
                                     require('postcss-import')(),
+                                    require("postcss-mixins")(),
                                     require("postcss-simple-vars")(),
                                     require("postcss-extend")(),
                                     require("postcss-nested")(),
-                                    require("postcss-mixins")(),
                                     require("postcss-easings")(),
                                     require("postcss-strip-inline-comments")(),
+                                    require("postcss-hexrgba")(),
 
                                     // It's important that this plugin is last otherwise we end
                                     // up with broken CSS.
@@ -331,6 +335,20 @@ module.exports = (env, argv) => {
                 filename: 'mobile_guide/index.html',
                 minify: argv.mode === 'production',
                 chunks: ['mobileguide'],
+            }),
+
+            // These are the static error pages for when the javascript env is *really unsupported*
+            new HtmlWebpackPlugin({
+                template: './src/vector/static/unable-to-load.html',
+                filename: 'static/unable-to-load.html',
+                minify: argv.mode === 'production',
+                chunks: [],
+            }),
+            new HtmlWebpackPlugin({
+                template: './src/vector/static/incompatible-browser.html',
+                filename: 'static/incompatible-browser.html',
+                minify: argv.mode === 'production',
+                chunks: [],
             }),
 
             // This is the usercontent sandbox's entry point (separate for iframing)

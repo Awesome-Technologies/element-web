@@ -11,10 +11,6 @@
     },
     "disable_3pid_login": true,
     "brand": "Caritas Messenger",
-    "integrations_ui_url": "https://dimension.test.amp.chat/riot",
-    "integrations_rest_url": "https://dimension.test.amp.chat/api/v1/scalar",
-    "integrations_widgets_urls": ["https://dimension.test.amp.chat/widgets"],
-    "integrations_jitsi_widget_url": "https://dimension.test.amp.chat/widgets/jitsi",
     "hosting_signup_link": "",
     "bug_report_endpoint_url": "https://amp.chat/bugreports/submit",
     "showLabsSettings": false,
@@ -35,6 +31,6 @@
         "https://test.amp.chat": false
     },
     "jitsi": {
-        "preferredDomain": "jitsi.amp.chat"
+        "preferredDomain": "jitsi.caritas.amp.chat"
     }
 }
