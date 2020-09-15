@@ -21,5 +21,7 @@
     "Your Riot is misconfigured": "Your AMP.care is misconfigured",
     "Unexpected error preparing the app. See console for details.": "Unexpected error preparing the app. See console for details.",
     "Invalid configuration: can only specify one of default_server_config, default_server_name, or default_hs_url.": "Invalid configuration: can only specify one of default_server_config, default_server_name, or default_hs_url.",
-    "Invalid configuration: no default server specified.": "Invalid configuration: no default server specified."
+    "Invalid configuration: no default server specified.": "Invalid configuration: no default server specified.",
+    "Riot on %(platformName)s": "AMP.care on %(platformName)s"
+
 }

@@ -1,5 +1,6 @@
 {
     "Privacy": "Datenschutz",
+
     "powered by Matrix": "betrieben mit Matrix",
     "Custom Server Options": "Benutzerdefinierte Server-Optionen",
     "Dismiss": "Ablehnen",
@@ -10,7 +11,7 @@
     "Welcome to Riot.im": "Willkommen bei AMP.care",
     "Decentralised, encrypted chat &amp; collaboration powered by [matrix]": "Kommunikation für Spezialisten",
     "Chat with Riot Bot": "Chatte mit dem AMP Bot",
-    "You can use the custom server options to sign into other Matrix servers by specifying a different homeserver URL. This allows you to use Riot with an existing Matrix account on a different homeserver.": "Du kannst benutzerdefinierte Server-Optionen nutzen, um dich an anderen Matrix Servern anzumelden, indem du eine andere Heimserver-URL angibst. Dies erlaubt dir, AMP.care mit einem existierenden Matrix-Konto auf einem anderen Heimserver zu nutzen.",
+    "You can use the custom server options to sign into other Matrix servers by specifying a different Home server URL.<br/>This allows you to use Riot with an existing Matrix account on a different home server.<br/><br/>You can also set a custom identity server but you won't be able to invite users by email address, or be invited by email address yourself.": "Die benutzerdefinierten Server-Einstellungen kannst du verwenden, um dich auf anderen Matrix-Servern anzumelden, indem du eine abweichende Heimserver-URL eingibst.<br/>Somit ist es möglich, AMP.care mit einem bereits bestehendem Matrix-Benutzerkonto auf einem anderen Heimserver zu verwenden.<br/><br/>Außerdem kannst du einen benutzerdefinierten Identitätsserver eingeben. Allerdings kannst du in diesem Fall Benutzer nicht mehr per E-Mail-Adresse einladen und auch selbst nicht mehr per E-Mail-Adresse eingeladen werden.",
     "Sign In": "Anmelden",
     "Create Account": "Account erstellen",
     "Need help?": "Brauchst du Hilfe?",
