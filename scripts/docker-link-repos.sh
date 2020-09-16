@@ -23,7 +23,6 @@ echo "Linking react-sdk"
 git clone --depth 1 --branch $REACT_SDK_BRANCH $REACT_SDK_REPO react-sdk
 cd react-sdk
 yarn link
-yarn link matrix-js-sdk
 yarn --network-timeout=100000 install
 cd ../
 
