@@ -27,10 +27,11 @@ import BaseEventIndexManager, {
     MatrixEvent,
     MatrixProfile,
     SearchArgs,
-    SearchResult
+    SearchResult,
 } from 'matrix-react-sdk/src/indexing/BaseEventIndexManager';
 import dis from 'matrix-react-sdk/src/dispatcher/dispatcher';
 import {_t, _td} from 'matrix-react-sdk/src/languageHandler';
+import SdkConfig from 'matrix-react-sdk/src/SdkConfig';
 import * as rageshake from 'matrix-react-sdk/src/rageshake/rageshake';
 import {MatrixClient} from "matrix-js-sdk/src/client";
 import {Room} from "matrix-js-sdk/src/models/room";
@@ -98,7 +99,7 @@ interface IPCPayload {
 
 class SeshatIndexManager extends BaseEventIndexManager {
     private pendingIpcCalls: Record<number, { resolve, reject }> = {};
-    private nextIpcCallId: number = 0;
+    private nextIpcCallId = 0;
 
     constructor() {
         super();
@@ -215,7 +216,7 @@ class SeshatIndexManager extends BaseEventIndexManager {
 export default class ElectronPlatform extends VectorBasePlatform {
     private eventIndexManager: BaseEventIndexManager = new SeshatIndexManager();
     private pendingIpcCalls: Record<number, { resolve, reject }> = {};
-    private nextIpcCallId: number = 0;
+    private nextIpcCallId = 0;
     // this is the opaque token we pass to the HS which when we get it in our callback we can resolve to a profile
     private ssoID: string = randomString(32);
 
@@ -373,10 +374,6 @@ export default class ElectronPlatform extends VectorBasePlatform {
         ipcRenderer.send('loudNotification');
     }
 
-    clearNotification(notif: Notification) {
-        notif.close();
-    }
-
     async getAppVersion(): Promise<string> {
         return this._ipcCall('getAppVersion');
     }
@@ -437,7 +434,11 @@ export default class ElectronPlatform extends VectorBasePlatform {
     }
 
     getDefaultDeviceDisplayName(): string {
-        return _t('Riot Desktop (%(platformName)s)', { platformName: platformFriendlyName() });
+        const brand = SdkConfig.get().brand;
+        return _t('%(brand)s Desktop (%(platformName)s)', {
+            brand,
+            platformName: platformFriendlyName(),
+        });
     }
 
     screenCaptureErrorString(): string | null {
@@ -497,8 +498,8 @@ export default class ElectronPlatform extends VectorBasePlatform {
 
     getSSOCallbackUrl(fragmentAfterLogin: string): URL {
         const url = super.getSSOCallbackUrl(fragmentAfterLogin);
-        url.protocol = "riot";
-        url.searchParams.set("riot-desktop-ssoid", this.ssoID);
+        url.protocol = "element";
+        url.searchParams.set("element-desktop-ssoid", this.ssoID);
         return url;
     }
 

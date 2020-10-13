@@ -1,8 +1,8 @@
 # Labs features
 
-If Labs is enabled in the [Riot config](config.md), you can enable some of these features by going
+If Labs is enabled in the [Element config](config.md), you can enable some of these features by going
 to `Settings->Labs`. This list is non-exhaustive and subject to change, chat in
-[#riot-web:matrix.org](https://matrix.to/#/#riot-web:matrix.org) for more information.
+[#element-web:matrix.org](https://matrix.to/#/#element-web:matrix.org) for more information.
 
 **Be warned! Labs features are not finalised, they may be fragile, they may change, they may be
 dropped. Ask in the room if you are unclear about any details here.**
@@ -10,11 +10,6 @@ dropped. Ask in the room if you are unclear about any details here.**
 ## New spinner design (`feature_new_spinner`)
 
 Replaces the old spinner image with a new, svg-based one featuring a sleeker design.
-
-## Font scaling (`feature_font_scaling`)
-
-Enables font scaling options for accessibility. To alter the scale check the
-appearance tab in settings.
 
 ## Message pinning (`feature_pinning`)
 
@@ -31,7 +26,7 @@ your avatar next to the message composer.
 An experimental approach for dealing with custom tags. Custom tags will appear in the bottom portion
 of the community filter panel.
 
-Setting custom tags is not supported by Riot.
+Setting custom tags is not supported by Element.
 
 ## Render simple counters in room header (`feature_state_counters`)
 
@@ -58,7 +53,7 @@ That's it. Now should see your new counter under the header.
 
 ## Multiple integration managers (`feature_many_integration_managers`)
 
-Exposes a way to access all the integration managers known to Riot. This is an implementation of [MSC1957](https://github.com/matrix-org/matrix-doc/pull/1957).
+Exposes a way to access all the integration managers known to Element. This is an implementation of [MSC1957](https://github.com/matrix-org/matrix-doc/pull/1957).
 
 ## New ways to ignore people (`feature_mjolnir`)
 
@@ -93,20 +88,26 @@ person is online.
 
 ## Custom themes (`feature_custom_themes`)
 
-Custom themes are possible through Riot's [theme support](./theming.md), though
-normally these themes need to be defined in the config for Riot. This labs flag
+Custom themes are possible through Element's [theme support](./theming.md), though
+normally these themes need to be defined in the config for Element. This labs flag
 adds an ability for end users to add themes themselves by using a URL to the JSON
 theme definition.
 
-For some sample themes, check out [aaronraimist/riot-web-themes](https://github.com/aaronraimist/riot-web-themes).
+For some sample themes, check out [aaronraimist/element-themes](https://github.com/aaronraimist/element-themes).
 
-## New room list (`feature_new_room_list`)
+## Message preview tweaks
 
-A complete rewrite of the room list is underway to increase performance, stability,
-and general usability. This is still rapidly changing, but feel free to give it a test.
+To enable message previews for reactions in all rooms, enable `feature_roomlist_preview_reactions_all`.
+To enable message previews for reactions in DMs, enable `feature_roomlist_preview_reactions_dms`, ignored when it is enabled for all rooms.
 
-## IRC message layout (`feature_irc_ui`)
+## Communities v2 prototyping (`feature_communities_v2_prototypes`) [In Development]
 
-Adds an option to change the message layout to an IRC style ` timestamp | avatar
-| name | message `
+**This is a highly experimental implementation for parts of the communities v2 experience.** It does not
+represent what communities v2 will look/feel like and can/will change without notice. Due to the early
+stages this feature is in and the requirement for a compatible homeserver, we will not be accepting issues
+or feedback for this functionality at this time.
 
+## Dehydrated devices (`feature_dehydration`)
+
+Allows users to receive encrypted messages by creating a device that is stored
+encrypted on the server, as described in [MSC2697](https://github.com/matrix-org/matrix-doc/pull/2697).

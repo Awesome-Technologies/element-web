@@ -26,5 +26,5 @@ yarn link
 yarn --network-timeout=100000 install
 cd ../
 
-echo "Setting up riot-web with react-sdk and js-sdk packages"
+echo "Setting up AMP.chat-web with react-sdk package"
 yarn link matrix-react-sdk
