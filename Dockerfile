@@ -1,15 +1,18 @@
 # Builder
-FROM node:10 as builder
+FROM node:12 as builder
 
 # Support custom branches of the react-sdk and js-sdk. This also helps us build
 # images of riot-web develop.
 ARG USE_CUSTOM_SDKS=true
 ARG JS_SDK_REPO="https://github.com/awesome-technologies/matrix-js-sdk.git"
-ARG JS_SDK_BRANCH="2020.09.0-amp.care"
+ARG JS_SDK_BRANCH="2020.10.0-amp.care"
 ARG REACT_SDK_REPO="https://github.com/awesome-technologies/matrix-react-sdk.git"
-ARG REACT_SDK_BRANCH="2020.09.0-amp.care"
+ARG REACT_SDK_BRANCH="2020.10.0-amp.care"
 
-RUN apt-get update && apt-get install -y git dos2unix
+RUN apt-get update && apt-get install -y git dos2unix \
+# These packages are required for building Canvas on architectures like Arm
+# See https://www.npmjs.com/package/canvas#compiling
+  build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 
 WORKDIR /src
 
