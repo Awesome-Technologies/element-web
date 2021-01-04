@@ -39,14 +39,14 @@ released version of Element:
 
 1. Download the latest version from https://github.com/vector-im/element-web/releases
 1. Untar the tarball on your web server
-1. Move (or symlink) the `riot-x.x.x` directory to an appropriate name
+1. Move (or symlink) the `element-x.x.x` directory to an appropriate name
 1. Configure the correct caching headers in your webserver (see below)
 1. If desired, copy `config.sample.json` to `config.json` and edit it
    as desired. See the [configuration docs](docs/config.md) for details.
 1. Enter the URL into your browser and log into Element!
 
 Releases are signed using gpg and the OpenPGP standard, and can be checked against the public key located
-at https://packages.riot.im/riot-release-key.asc.
+at https://packages.riot.im/element-release-key.asc.
 
 Note that for the security of your chats will need to serve Element
 over HTTPS. Major browsers also do not allow you to use VoIP/video
@@ -129,14 +129,14 @@ Running from Docker
 The Docker image can be used to serve element-web as a web server. The easiest way to use
 it is to use the prebuilt image:
 ```bash
-docker run -p 80:80 vectorim/riot-web
+docker run -p 80:80 vectorim/element-web
 ```
 
 To supply your own custom `config.json`, map a volume to `/app/config.json`. For example,
 if your custom config was located at `/etc/element-web/config.json` then your Docker command
 would be:
 ```bash
-docker run -p 80:80 -v /etc/element-web/config.json:/app/config.json vectorim/riot-web
+docker run -p 80:80 -v /etc/element-web/config.json:/app/config.json vectorim/element-web
 ```
 
 To build the image yourself:
@@ -275,22 +275,29 @@ modifying it. See the [configuration docs](docs/config.md) for details.
 Open http://127.0.0.1:8080/ in your browser to see your newly built Element.
 
 **Note**: The build script uses inotify by default on Linux to monitor directories
-for changes. If the inotify watch limit is too low your build will silently fail.
-To avoid this issue, we recommend a limit of at least 128M.
+for changes. If the inotify limits are too low your build will fail silently or with
+`Error: EMFILE: too many open files`. To avoid these issues, we recommend a watch limit
+of at least `128M` and instance limit around `512`.
 
-To set a new inotify watch limit, execute:
+You may be interested in issues [#15750](https://github.com/vector-im/element-web/issues/15750) and
+[#15774](https://github.com/vector-im/element-web/issues/15774) for further details.
 
-```
-$ sudo sysctl fs.inotify.max_user_watches=131072
-$ sudo sysctl -p
-```
-
-If you wish, you can make this new limit permanent, by executing:
+To set a new inotify watch and instance limit, execute:
 
 ```
-$ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
-$ sudo sysctl -p
+sudo sysctl fs.inotify.max_user_watches=131072
+sudo sysctl fs.inotify.max_user_instances=512
+sudo sysctl -p
 ```
+
+If you wish, you can make the new limits permanent, by executing:
+
+```
+echo fs.inotify.max_user_watches=131072 | sudo tee -a /etc/sysctl.conf
+echo fs.inotify.max_user_instances=512 | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+
 ___
 
 When you make changes to `matrix-react-sdk` or `matrix-js-sdk` they should be
@@ -333,7 +340,7 @@ To add a new translation, head to the [translating doc](docs/translating.md).
 
 For a developer guide, see the [translating dev doc](docs/translating-dev.md).
 
-[<img src="https://translate.riot.im/widgets/element-web/-/multi-auto.svg" alt="translationsstatus" width="340">](https://translate.riot.im/engage/element-web/?utm_source=widget)
+[<img src="https://translate.element.io/widgets/element-web/-/multi-auto.svg" alt="translationsstatus" width="340">](https://translate.element.io/engage/element-web/?utm_source=widget)
 
 Triaging issues
 ===============
