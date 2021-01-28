@@ -140,8 +140,8 @@ class SeshatIndexManager extends BaseEventIndexManager {
         return this._ipcCall('supportsEventIndexing');
     }
 
-    async initEventIndex(): Promise<void> {
-        return this._ipcCall('initEventIndex');
+    async initEventIndex(userId: string, deviceId: string): Promise<void> {
+        return this._ipcCall('initEventIndex', userId, deviceId);
     }
 
     async addEventToIndex(ev: MatrixEvent, profile: MatrixProfile): Promise<void> {
@@ -239,7 +239,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
 
         // try to flush the rageshake logs to indexeddb before quit.
         ipcRenderer.on('before-quit', function() {
-            console.log('riot-desktop closing');
+            console.log('element-desktop closing');
             rageshake.flush();
         });
 
