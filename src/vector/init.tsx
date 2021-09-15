@@ -1,8 +1,8 @@
 /*
 Copyright 2015, 2016 OpenMarket Ltd
 Copyright 2017 Vector Creations Ltd
-Copyright 2018, 2019, 2020 New Vector Ltd
 Copyright 2019 Michael Telatynski <7t3chguy@gmail.com>
+Copyright 2018 - 2021 New Vector Ltd
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ limitations under the License.
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import olmWasmPath from "olm/olm.wasm";
-import Olm from 'olm';
+import olmWasmPath from "@matrix-org/olm/olm.wasm";
+import Olm from '@matrix-org/olm';
 import * as ReactDOM from "react-dom";
 import * as React from "react";
 
@@ -31,15 +31,14 @@ import PWAPlatform from "./platform/PWAPlatform";
 import WebPlatform from "./platform/WebPlatform";
 import PlatformPeg from "matrix-react-sdk/src/PlatformPeg";
 import SdkConfig from "matrix-react-sdk/src/SdkConfig";
-import {setTheme} from "matrix-react-sdk/src/theme";
+import { setTheme } from "matrix-react-sdk/src/theme";
 
-import { initRageshake } from "./rageshakesetup";
-
+import { initRageshake, initRageshakeStore } from "./rageshakesetup";
 
 export const rageshakePromise = initRageshake();
 
 export function preparePlatform() {
-    if (window.ipcRenderer) {
+    if (window.electron) {
         console.log("Using Electron platform");
         PlatformPeg.set(new ElectronPlatform());
     } else if (window.matchMedia('(display-mode: standalone)').matches) {
@@ -49,6 +48,14 @@ export function preparePlatform() {
         console.log("Using Web platform");
         PlatformPeg.set(new WebPlatform());
     }
+}
+
+export function setupLogStorage() {
+    if (SdkConfig.get().bug_report_endpoint_url) {
+        return initRageshakeStore();
+    }
+    console.warn("No bug report endpoint set - logs will not be persisted");
+    return Promise.resolve();
 }
 
 export async function loadConfig() {

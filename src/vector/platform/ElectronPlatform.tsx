@@ -1,9 +1,8 @@
 /*
 Copyright 2016 Aviral Dasgupta
 Copyright 2016 OpenMarket Ltd
-Copyright 2018 New Vector Ltd
 Copyright 2019 Michael Telatynski <7t3chguy@gmail.com>
-Copyright 2020 The Matrix.org Foundation C.I.C.
+Copyright 2018 - 2021 New Vector Ltd
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,38 +17,45 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import VectorBasePlatform from './VectorBasePlatform';
-import {UpdateCheckStatus} from "matrix-react-sdk/src/BasePlatform";
+import { UpdateCheckStatus } from "matrix-react-sdk/src/BasePlatform";
 import BaseEventIndexManager, {
-    CrawlerCheckpoint,
-    EventAndProfile,
-    IndexStats,
-    MatrixEvent,
-    MatrixProfile,
-    SearchArgs,
-    SearchResult,
+    ICrawlerCheckpoint,
+    IEventAndProfile,
+    IIndexStats,
+    ISearchArgs,
 } from 'matrix-react-sdk/src/indexing/BaseEventIndexManager';
 import dis from 'matrix-react-sdk/src/dispatcher/dispatcher';
-import {_t, _td} from 'matrix-react-sdk/src/languageHandler';
+import { _t, _td } from 'matrix-react-sdk/src/languageHandler';
 import SdkConfig from 'matrix-react-sdk/src/SdkConfig';
 import * as rageshake from 'matrix-react-sdk/src/rageshake/rageshake';
-import {MatrixClient} from "matrix-js-sdk/src/client";
-import {Room} from "matrix-js-sdk/src/models/room";
+import { MatrixClient } from "matrix-js-sdk/src/client";
+import { Room } from "matrix-js-sdk/src/models/room";
 import Modal from "matrix-react-sdk/src/Modal";
 import InfoDialog from "matrix-react-sdk/src/components/views/dialogs/InfoDialog";
 import Spinner from "matrix-react-sdk/src/components/views/elements/Spinner";
-import {Categories, Modifiers, registerShortcut} from "matrix-react-sdk/src/accessibility/KeyboardShortcuts";
-import {Key} from "matrix-react-sdk/src/Keyboard";
+import {
+    Categories,
+    CMD_OR_CTRL,
+    DIGITS,
+    Modifiers,
+    registerShortcut,
+} from "matrix-react-sdk/src/accessibility/KeyboardShortcuts";
+import { isOnlyCtrlOrCmdKeyEvent, Key } from "matrix-react-sdk/src/Keyboard";
 import React from "react";
-import {randomString} from "matrix-js-sdk/src/randomstring";
-import {Action} from "matrix-react-sdk/src/dispatcher/actions";
-import {ActionPayload} from "matrix-react-sdk/src/dispatcher/payloads";
-import {showToast as showUpdateToast} from "matrix-react-sdk/src/toasts/UpdateToast";
-import {CheckUpdatesPayload} from "matrix-react-sdk/src/dispatcher/payloads/CheckUpdatesPayload";
+import { randomString } from "matrix-js-sdk/src/randomstring";
+import { Action } from "matrix-react-sdk/src/dispatcher/actions";
+import { ActionPayload } from "matrix-react-sdk/src/dispatcher/payloads";
+import { SwitchSpacePayload } from "matrix-react-sdk/src/dispatcher/payloads/SwitchSpacePayload";
+import { showToast as showUpdateToast } from "matrix-react-sdk/src/toasts/UpdateToast";
+import { CheckUpdatesPayload } from "matrix-react-sdk/src/dispatcher/payloads/CheckUpdatesPayload";
 import ToastStore from "matrix-react-sdk/src/stores/ToastStore";
 import GenericExpiringToast from "matrix-react-sdk/src/components/views/toasts/GenericExpiringToast";
+import SettingsStore from 'matrix-react-sdk/src/settings/SettingsStore';
+import { IMatrixProfile, IEventWithRoomId as IMatrixEvent, IResultRoomEvents } from "matrix-js-sdk/src/@types/search";
 
-const ipcRenderer = window.ipcRenderer;
+import VectorBasePlatform from './VectorBasePlatform';
+
+const electron = window.electron;
 const isMac = navigator.platform.toUpperCase().includes('MAC');
 
 function platformFriendlyName(): string {
@@ -74,7 +80,7 @@ function platformFriendlyName(): string {
 function _onAction(payload: ActionPayload) {
     // Whitelist payload actions, no point sending most across
     if (['call_state'].includes(payload.action)) {
-        ipcRenderer.send('app_onAction', payload);
+        electron.send('app_onAction', payload);
     }
 }
 
@@ -104,19 +110,19 @@ class SeshatIndexManager extends BaseEventIndexManager {
     constructor() {
         super();
 
-        ipcRenderer.on('seshatReply', this._onIpcReply);
+        electron.on('seshatReply', this.onIpcReply);
     }
 
-    async _ipcCall(name: string, ...args: any[]): Promise<any> {
+    private async ipcCall(name: string, ...args: any[]): Promise<any> {
         // TODO this should be moved into the preload.js file.
         const ipcCallId = ++this.nextIpcCallId;
         return new Promise((resolve, reject) => {
-            this.pendingIpcCalls[ipcCallId] = {resolve, reject};
-            window.ipcRenderer.send('seshat', {id: ipcCallId, name, args});
+            this.pendingIpcCalls[ipcCallId] = { resolve, reject };
+            window.electron.send('seshat', { id: ipcCallId, name, args });
         });
     }
 
-    _onIpcReply = (ev: {}, payload: IPCPayload) => {
+    private onIpcReply = (ev: {}, payload: IPCPayload) => {
         if (payload.id === undefined) {
             console.warn("Ignoring IPC reply with no ID");
             return;
@@ -137,79 +143,79 @@ class SeshatIndexManager extends BaseEventIndexManager {
     };
 
     async supportsEventIndexing(): Promise<boolean> {
-        return this._ipcCall('supportsEventIndexing');
+        return this.ipcCall('supportsEventIndexing');
     }
 
     async initEventIndex(userId: string, deviceId: string): Promise<void> {
-        return this._ipcCall('initEventIndex', userId, deviceId);
+        return this.ipcCall('initEventIndex', userId, deviceId);
     }
 
-    async addEventToIndex(ev: MatrixEvent, profile: MatrixProfile): Promise<void> {
-        return this._ipcCall('addEventToIndex', ev, profile);
+    async addEventToIndex(ev: IMatrixEvent, profile: IMatrixProfile): Promise<void> {
+        return this.ipcCall('addEventToIndex', ev, profile);
     }
 
     async deleteEvent(eventId: string): Promise<boolean> {
-        return this._ipcCall('deleteEvent', eventId);
+        return this.ipcCall('deleteEvent', eventId);
     }
 
     async isEventIndexEmpty(): Promise<boolean> {
-        return this._ipcCall('isEventIndexEmpty');
+        return this.ipcCall('isEventIndexEmpty');
     }
 
     async isRoomIndexed(roomId: string): Promise<boolean> {
-        return this._ipcCall('isRoomIndexed', roomId);
+        return this.ipcCall('isRoomIndexed', roomId);
     }
 
     async commitLiveEvents(): Promise<void> {
-        return this._ipcCall('commitLiveEvents');
+        return this.ipcCall('commitLiveEvents');
     }
 
-    async searchEventIndex(searchConfig: SearchArgs): Promise<SearchResult> {
-        return this._ipcCall('searchEventIndex', searchConfig);
+    async searchEventIndex(searchConfig: ISearchArgs): Promise<IResultRoomEvents> {
+        return this.ipcCall('searchEventIndex', searchConfig);
     }
 
     async addHistoricEvents(
-        events: [EventAndProfile],
-        checkpoint: CrawlerCheckpoint | null,
-        oldCheckpoint: CrawlerCheckpoint | null,
+        events: IEventAndProfile[],
+        checkpoint: ICrawlerCheckpoint | null,
+        oldCheckpoint: ICrawlerCheckpoint | null,
     ): Promise<boolean> {
-        return this._ipcCall('addHistoricEvents', events, checkpoint, oldCheckpoint);
+        return this.ipcCall('addHistoricEvents', events, checkpoint, oldCheckpoint);
     }
 
-    async addCrawlerCheckpoint(checkpoint: CrawlerCheckpoint): Promise<void> {
-        return this._ipcCall('addCrawlerCheckpoint', checkpoint);
+    async addCrawlerCheckpoint(checkpoint: ICrawlerCheckpoint): Promise<void> {
+        return this.ipcCall('addCrawlerCheckpoint', checkpoint);
     }
 
-    async removeCrawlerCheckpoint(checkpoint: CrawlerCheckpoint): Promise<void> {
-        return this._ipcCall('removeCrawlerCheckpoint', checkpoint);
+    async removeCrawlerCheckpoint(checkpoint: ICrawlerCheckpoint): Promise<void> {
+        return this.ipcCall('removeCrawlerCheckpoint', checkpoint);
     }
 
-    async loadFileEvents(args): Promise<[EventAndProfile]> {
-        return this._ipcCall('loadFileEvents', args);
+    async loadFileEvents(args): Promise<IEventAndProfile[]> {
+        return this.ipcCall('loadFileEvents', args);
     }
 
-    async loadCheckpoints(): Promise<[CrawlerCheckpoint]> {
-        return this._ipcCall('loadCheckpoints');
+    async loadCheckpoints(): Promise<ICrawlerCheckpoint[]> {
+        return this.ipcCall('loadCheckpoints');
     }
 
     async closeEventIndex(): Promise<void> {
-        return this._ipcCall('closeEventIndex');
+        return this.ipcCall('closeEventIndex');
     }
 
-    async getStats(): Promise<IndexStats> {
-        return this._ipcCall('getStats');
+    async getStats(): Promise<IIndexStats> {
+        return this.ipcCall('getStats');
     }
 
     async getUserVersion(): Promise<number> {
-        return this._ipcCall('getUserVersion');
+        return this.ipcCall('getUserVersion');
     }
 
     async setUserVersion(version: number): Promise<void> {
-        return this._ipcCall('setUserVersion', version);
+        return this.ipcCall('setUserVersion', version);
     }
 
     async deleteEventIndex(): Promise<void> {
-        return this._ipcCall('deleteEventIndex');
+        return this.ipcCall('deleteEventIndex');
     }
 }
 
@@ -230,7 +236,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
             false if there is not
             or the error if one is encountered
          */
-        ipcRenderer.on('check_updates', (event, status) => {
+        electron.on('check_updates', (event, status) => {
             dis.dispatch<CheckUpdatesPayload>({
                 action: Action.CheckUpdates,
                 ...getUpdateCheckStatus(status),
@@ -238,25 +244,28 @@ export default class ElectronPlatform extends VectorBasePlatform {
         });
 
         // try to flush the rageshake logs to indexeddb before quit.
-        ipcRenderer.on('before-quit', function() {
+        electron.on('before-quit', function() {
             console.log('element-desktop closing');
             rageshake.flush();
         });
 
-        ipcRenderer.on('ipcReply', this._onIpcReply);
-        ipcRenderer.on('update-downloaded', this.onUpdateDownloaded);
+        electron.on('ipcReply', this.onIpcReply);
+        electron.on('update-downloaded', this.onUpdateDownloaded);
 
-        ipcRenderer.on('preferences', () => {
+        electron.on('preferences', () => {
             dis.fire(Action.ViewUserSettings);
         });
 
-        ipcRenderer.on('userDownloadCompleted', (ev, {path, name}) => {
+        electron.on('userDownloadCompleted', (ev, { path, name }) => {
+            const key = `DOWNLOAD_TOAST_${path}`;
+
             const onAccept = () => {
-                ipcRenderer.send('userDownloadOpen', {path});
+                electron.send('userDownloadOpen', { path });
+                ToastStore.sharedInstance().dismissToast(key);
             };
 
             ToastStore.sharedInstance().addOrReplaceToast({
-                key: `DOWNLOAD_TOAST_${path}`,
+                key,
                 title: _t("Download Completed"),
                 props: {
                     description: name,
@@ -271,6 +280,14 @@ export default class ElectronPlatform extends VectorBasePlatform {
         });
 
         // register OS-specific shortcuts
+        registerShortcut(Categories.NAVIGATION, {
+            keybinds: [{
+                modifiers: [CMD_OR_CTRL],
+                key: DIGITS,
+            }],
+            description: _td("Switch to space by number"),
+        });
+
         if (isMac) {
             registerShortcut(Categories.NAVIGATION, {
                 keybinds: [{
@@ -303,14 +320,14 @@ export default class ElectronPlatform extends VectorBasePlatform {
             });
         }
 
-        this._ipcCall("startSSOFlow", this.ssoID);
+        this.ipcCall("startSSOFlow", this.ssoID);
     }
 
     async getConfig(): Promise<{}> {
-        return this._ipcCall('getConfig');
+        return this.ipcCall('getConfig');
     }
 
-    onUpdateDownloaded = async (ev, {releaseNotes, releaseName}) => {
+    onUpdateDownloaded = async (ev, { releaseNotes, releaseName }) => {
         dis.dispatch<CheckUpdatesPayload>({
             action: Action.CheckUpdates,
             status: UpdateCheckStatus.Ready,
@@ -324,11 +341,21 @@ export default class ElectronPlatform extends VectorBasePlatform {
         return 'Electron Platform'; // no translation required: only used for analytics
     }
 
+    /**
+     * Return true if platform supports multi-language
+     * spell-checking, otherwise false.
+     */
+    supportsMultiLanguageSpellCheck(): boolean {
+        // Electron uses OS spell checking on macOS, so no need for in-app options
+        if (isMac) return false;
+        return true;
+    }
+
     setNotificationCount(count: number) {
         if (this.notificationCount === count) return;
         super.setNotificationCount(count);
 
-        ipcRenderer.send('setBadgeCount', count);
+        electron.send('setBadgeCount', count);
     }
 
     supportsNotifications(): boolean {
@@ -364,18 +391,18 @@ export default class ElectronPlatform extends VectorBasePlatform {
                 room_id: room.roomId,
             });
             window.focus();
-            this._ipcCall('focusWindow');
+            this.ipcCall('focusWindow');
         };
 
         return notification;
     }
 
     loudNotification(ev: Event, room: Object) {
-        ipcRenderer.send('loudNotification');
+        electron.send('loudNotification');
     }
 
     async getAppVersion(): Promise<string> {
-        return this._ipcCall('getAppVersion');
+        return this.ipcCall('getAppVersion');
     }
 
     supportsAutoLaunch(): boolean {
@@ -383,11 +410,23 @@ export default class ElectronPlatform extends VectorBasePlatform {
     }
 
     async getAutoLaunchEnabled(): Promise<boolean> {
-        return this._ipcCall('getAutoLaunchEnabled');
+        return this.ipcCall('getAutoLaunchEnabled');
     }
 
     async setAutoLaunchEnabled(enabled: boolean): Promise<void> {
-        return this._ipcCall('setAutoLaunchEnabled', enabled);
+        return this.ipcCall('setAutoLaunchEnabled', enabled);
+    }
+
+    supportsWarnBeforeExit(): boolean {
+        return true;
+    }
+
+    async shouldWarnBeforeExit(): Promise<boolean> {
+        return this.ipcCall('shouldWarnBeforeExit');
+    }
+
+    async setWarnBeforeExit(enabled: boolean): Promise<void> {
+        return this.ipcCall('setWarnBeforeExit', enabled);
     }
 
     supportsAutoHideMenuBar(): boolean {
@@ -396,11 +435,11 @@ export default class ElectronPlatform extends VectorBasePlatform {
     }
 
     async getAutoHideMenuBarEnabled(): Promise<boolean> {
-        return this._ipcCall('getAutoHideMenuBarEnabled');
+        return this.ipcCall('getAutoHideMenuBarEnabled');
     }
 
     async setAutoHideMenuBarEnabled(enabled: boolean): Promise<void> {
-        return this._ipcCall('setAutoHideMenuBarEnabled', enabled);
+        return this.ipcCall('setAutoHideMenuBarEnabled', enabled);
     }
 
     supportsMinimizeToTray(): boolean {
@@ -409,28 +448,28 @@ export default class ElectronPlatform extends VectorBasePlatform {
     }
 
     async getMinimizeToTrayEnabled(): Promise<boolean> {
-        return this._ipcCall('getMinimizeToTrayEnabled');
+        return this.ipcCall('getMinimizeToTrayEnabled');
     }
 
     async setMinimizeToTrayEnabled(enabled: boolean): Promise<void> {
-        return this._ipcCall('setMinimizeToTrayEnabled', enabled);
+        return this.ipcCall('setMinimizeToTrayEnabled', enabled);
     }
 
     async canSelfUpdate(): Promise<boolean> {
-        const feedUrl = await this._ipcCall('getUpdateFeedUrl');
+        const feedUrl = await this.ipcCall('getUpdateFeedUrl');
         return Boolean(feedUrl);
     }
 
     startUpdateCheck() {
         super.startUpdateCheck();
-        ipcRenderer.send('check_updates');
+        electron.send('check_updates');
     }
 
     installUpdate() {
         // IPC to the main process to install the update, since quitAndInstall
         // doesn't fire the before-quit event so the main process needs to know
         // it should exit.
-        ipcRenderer.send('install_update');
+        electron.send('install_update');
     }
 
     getDefaultDeviceDisplayName(): string {
@@ -456,16 +495,16 @@ export default class ElectronPlatform extends VectorBasePlatform {
         window.location.reload(false);
     }
 
-    async _ipcCall(name: string, ...args: any[]): Promise<any> {
+    private async ipcCall(name: string, ...args: any[]): Promise<any> {
         const ipcCallId = ++this.nextIpcCallId;
         return new Promise((resolve, reject) => {
-            this.pendingIpcCalls[ipcCallId] = {resolve, reject};
-            window.ipcRenderer.send('ipcCall', {id: ipcCallId, name, args});
+            this.pendingIpcCalls[ipcCallId] = { resolve, reject };
+            window.electron.send('ipcCall', { id: ipcCallId, name, args });
             // Maybe add a timeout to these? Probably not necessary.
         });
     }
 
-    _onIpcReply = (ev, payload) => {
+    private onIpcReply = (ev, payload) => {
         if (payload.id === undefined) {
             console.warn("Ignoring IPC reply with no ID");
             return;
@@ -489,11 +528,23 @@ export default class ElectronPlatform extends VectorBasePlatform {
         return this.eventIndexManager;
     }
 
-    setLanguage(preferredLangs: string[]) {
-        this._ipcCall('setLanguage', preferredLangs).catch(error => {
-            console.log("Failed to send setLanguage IPC to Electron");
+    async setLanguage(preferredLangs: string[]) {
+        return this.ipcCall('setLanguage', preferredLangs);
+    }
+
+    setSpellCheckLanguages(preferredLangs: string[]) {
+        this.ipcCall('setSpellCheckLanguages', preferredLangs).catch(error => {
+            console.log("Failed to send setSpellCheckLanguages IPC to Electron");
             console.error(error);
         });
+    }
+
+    async getSpellCheckLanguages(): Promise<string[]> {
+        return this.ipcCall('getSpellCheckLanguages');
+    }
+
+    async getAvailableSpellCheckLanguages(): Promise<string[]> {
+        return this.ipcCall('getAvailableSpellCheckLanguages');
     }
 
     getSSOCallbackUrl(fragmentAfterLogin: string): URL {
@@ -503,17 +554,23 @@ export default class ElectronPlatform extends VectorBasePlatform {
         return url;
     }
 
-    startSingleSignOn(mxClient: MatrixClient, loginType: "sso" | "cas", fragmentAfterLogin: string) {
+    startSingleSignOn(mxClient: MatrixClient, loginType: "sso" | "cas", fragmentAfterLogin: string, idpId?: string) {
         // this will get intercepted by electron-main will-navigate
-        super.startSingleSignOn(mxClient, loginType, fragmentAfterLogin);
+        super.startSingleSignOn(mxClient, loginType, fragmentAfterLogin, idpId);
         Modal.createTrackedDialog('Electron', 'SSO', InfoDialog, {
             title: _t("Go to your browser to complete Sign In"),
             description: <Spinner />,
         });
     }
 
-    _navigateForwardBack(back: boolean) {
-        this._ipcCall(back ? "navigateBack" : "navigateForward");
+    private navigateForwardBack(back: boolean) {
+        this.ipcCall(back ? "navigateBack" : "navigateForward");
+    }
+    private navigateToSpace(num: number) {
+        dis.dispatch<SwitchSpacePayload>({
+            action: Action.SwitchSpace,
+            num,
+        });
     }
 
     onKeyDown(ev: KeyboardEvent): boolean {
@@ -523,7 +580,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
             case Key.SQUARE_BRACKET_LEFT:
             case Key.SQUARE_BRACKET_RIGHT:
                 if (isMac && ev.metaKey && !ev.altKey && !ev.ctrlKey && !ev.shiftKey) {
-                    this._navigateForwardBack(ev.key === Key.SQUARE_BRACKET_LEFT);
+                    this.navigateForwardBack(ev.key === Key.SQUARE_BRACKET_LEFT);
                     handled = true;
                 }
                 break;
@@ -531,10 +588,22 @@ export default class ElectronPlatform extends VectorBasePlatform {
             case Key.ARROW_LEFT:
             case Key.ARROW_RIGHT:
                 if (!isMac && ev.altKey && !ev.metaKey && !ev.ctrlKey && !ev.shiftKey) {
-                    this._navigateForwardBack(ev.key === Key.ARROW_LEFT);
+                    this.navigateForwardBack(ev.key === Key.ARROW_LEFT);
                     handled = true;
                 }
                 break;
+        }
+
+        if (!handled &&
+            // ideally we would use SpaceStore.spacesEnabled here but importing SpaceStore in this platform
+            // breaks skinning as the platform is instantiated prior to the skin being loaded
+            SettingsStore.getValue("feature_spaces") &&
+            ev.code.startsWith("Digit") &&
+            isOnlyCtrlOrCmdKeyEvent(ev)
+        ) {
+            const spaceNumber = ev.code.slice(5); // Cut off the first 5 characters - "Digit"
+            this.navigateToSpace(parseInt(spaceNumber, 10));
+            handled = true;
         }
 
         return handled;
@@ -542,7 +611,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
 
     async getPickleKey(userId: string, deviceId: string): Promise<string | null> {
         try {
-            return await this._ipcCall('getPickleKey', userId, deviceId);
+            return await this.ipcCall('getPickleKey', userId, deviceId);
         } catch (e) {
             // if we can't connect to the password storage, assume there's no
             // pickle key
@@ -552,7 +621,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
 
     async createPickleKey(userId: string, deviceId: string): Promise<string | null> {
         try {
-            return await this._ipcCall('createPickleKey', userId, deviceId);
+            return await this.ipcCall('createPickleKey', userId, deviceId);
         } catch (e) {
             // if we can't connect to the password storage, assume there's no
             // pickle key
@@ -562,7 +631,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
 
     async destroyPickleKey(userId: string, deviceId: string): Promise<void> {
         try {
-            await this._ipcCall('destroyPickleKey', userId, deviceId);
+            await this.ipcCall('destroyPickleKey', userId, deviceId);
         } catch (e) {}
     }
 }

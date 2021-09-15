@@ -11,7 +11,7 @@ Element has several tiers of support for different environments:
 
 * Supported
   * Definition: Issues **actively triaged**, regressions **block** the release
-  * Last 2 major versions of Chrome, Firefox, and Safari on desktop OSes
+  * Last 2 major versions of Chrome, Firefox, Safari, and Edge on desktop OSes
   * Latest release of official Element Desktop app on desktop OSes
   * Desktop OSes means macOS, Windows, and Linux versions for desktop devices
     that are actively supported by the OS vendor and receive security updates
@@ -30,14 +30,14 @@ and [element-ios](https://github.com/vector-im/element-ios).
 Getting Started
 ===============
 
-The easiest way to test Element is to just use the hosted copy at https://app.element.io.
-The `develop` branch is continuously deployed by Jenkins at https://develop.element.io
+The easiest way to test Element is to just use the hosted copy at <https://app.element.io>.
+The `develop` branch is continuously deployed to <https://develop.element.io>
 for those who like living dangerously.
 
 To host your own copy of Element, the quickest bet is to use a pre-built
 released version of Element:
 
-1. Download the latest version from https://github.com/vector-im/element-web/releases
+1. Download the latest version from <https://github.com/vector-im/element-web/releases>
 1. Untar the tarball on your web server
 1. Move (or symlink) the `element-x.x.x` directory to an appropriate name
 1. Configure the correct caching headers in your webserver (see below)
@@ -46,7 +46,7 @@ released version of Element:
 1. Enter the URL into your browser and log into Element!
 
 Releases are signed using gpg and the OpenPGP standard, and can be checked against the public key located
-at https://packages.riot.im/element-release-key.asc.
+at <https://packages.riot.im/element-release-key.asc>.
 
 Note that for the security of your chats will need to serve Element
 over HTTPS. Major browsers also do not allow you to use VoIP/video
@@ -58,8 +58,11 @@ and thus allowed.
 To install Element as a desktop application, see [Running as a desktop
 app](#running-as-a-desktop-app) below.
 
-Important Security Note
-=======================
+Important Security Notes
+========================
+
+Separate domains
+----------------
 
 We do not recommend running Element from the same domain name as your Matrix
 homeserver.  The reason is the risk of XSS (cross-site-scripting)
@@ -69,7 +72,46 @@ access to Element (or other apps) due to sharing the same domain.
 
 We have put some coarse mitigations into place to try to protect against this
 situation, but it's still not good practice to do it in the first place.  See
-https://github.com/vector-im/element-web/issues/1977 for more details.
+<https://github.com/vector-im/element-web/issues/1977> for more details.
+
+Configuration best practices
+----------------------------
+
+Unless you have special requirements, you will want to add the following to
+your web server configuration when hosting Element Web:
+
+* The `X-Frame-Options: SAMEORIGIN` header, to prevent Element Web from being
+  framed and protect from [clickjacking][owasp-clickjacking].
+* The `frame-ancestors 'none'` directive to your `Content-Security-Policy`
+  header, as the modern replacement for `X-Frame-Options` (though both should be
+  included since not all browsers support it yet, see
+  [this][owasp-clickjacking-csp]).
+* The `X-Content-Type-Options: nosniff` header, to [disable MIME
+  sniffing][mime-sniffing].
+* The `X-XSS-Protection: 1; mode=block;` header, for basic XSS protection in
+  legacy browsers.
+
+[mime-sniffing]:
+<https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#mime_sniffing>
+
+[owasp-clickjacking-csp]:
+<https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html#content-security-policy-frame-ancestors-examples>
+
+[owasp-clickjacking]:
+<https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html>
+
+If you are using nginx, this would look something like the following:
+
+```
+add_header X-Frame-Options SAMEORIGIN;
+add_header X-Content-Type-Options nosniff;
+add_header X-XSS-Protection "1; mode=block";
+add_header Content-Security-Policy "frame-ancestors 'none'";
+```
+
+Note: In case you are already setting a `Content-Security-Policy` header
+elsewhere, you should modify it to include the `frame-ancestors` directive
+instead of adding that last line.
 
 Building From Source
 ====================
@@ -80,15 +122,15 @@ Ensure you have the latest LTS version of Node.js installed.
 Using `yarn` instead of `npm` is recommended. Please see the Yarn [install
 guide](https://classic.yarnpkg.com/en/docs/install) if you do not have it already.
 
-1. Install or update `node.js` so that your `node` is at least v10.x.
+1. Install or update `node.js` so that your `node` is at least v14.x.
 1. Install `yarn` if not present already.
 1. Clone the repo: `git clone https://github.com/vector-im/element-web.git`.
 1. Switch to the element-web directory: `cd element-web`.
 1. Install the prerequisites: `yarn install`.
-   *  If you're using the `develop` branch, then it is recommended to set up a
+   * If you're using the `develop` branch, then it is recommended to set up a
       proper development environment (see [Setting up a dev
       environment](#setting-up-a-dev-environment) below). Alternatively, you
-      can use https://develop.element.io - the continuous integration release of
+      can use <https://develop.element.io> - the continuous integration release of
       the develop branch.
 1. Configure the app by copying `config.sample.json` to `config.json` and
    modifying it. See the [configuration docs](docs/config.md) for details.
@@ -99,21 +141,23 @@ guide](https://classic.yarnpkg.com/en/docs/install) if you do not have it alread
 Note that `yarn dist` is not supported on Windows, so Windows users can run `yarn build`,
 which will build all the necessary files into the `webapp` directory. The version of Element
 will not appear in Settings without using the dist script. You can then mount the
-`webapp` directory on your webserver to actually serve up the app, which is entirely static content.
+`webapp` directory on your web server to actually serve up the app, which is
+entirely static content.
 
 Running as a Desktop app
 ========================
 
 Element can also be run as a desktop app, wrapped in Electron. You can download a
-pre-built version from https://element.io/get-started or, if you prefer,
+pre-built version from <https://element.io/get-started> or, if you prefer,
 build it yourself.
 
-To build it yourself, follow the instructions at https://github.com/vector-im/element-desktop.
+To build it yourself, follow the instructions at <https://github.com/vector-im/element-desktop>.
 
 Many thanks to @aviraldg for the initial work on the Electron integration.
 
 Other options for running as a desktop app:
- * @asdf:matrix.org points out that you can use nativefier and it just works(tm)
+
+* @asdf:matrix.org points out that you can use nativefier and it just works(tm)
 
 ```bash
 yarn global add nativefier
@@ -128,6 +172,7 @@ Running from Docker
 
 The Docker image can be used to serve element-web as a web server. The easiest way to use
 it is to use the prebuilt image:
+
 ```bash
 docker run -p 80:80 vectorim/element-web
 ```
@@ -135,11 +180,13 @@ docker run -p 80:80 vectorim/element-web
 To supply your own custom `config.json`, map a volume to `/app/config.json`. For example,
 if your custom config was located at `/etc/element-web/config.json` then your Docker command
 would be:
+
 ```bash
 docker run -p 80:80 -v /etc/element-web/config.json:/app/config.json vectorim/element-web
 ```
 
 To build the image yourself:
+
 ```bash
 git clone https://github.com/vector-im/element-web.git element-web
 cd element-web
@@ -149,6 +196,7 @@ docker build .
 
 If you're building a custom branch, or want to use the develop branch, check out the appropriate
 element-web branch and then run:
+
 ```bash
 docker build -t \
     --build-arg USE_CUSTOM_SDKS=true \
@@ -158,6 +206,12 @@ docker build -t \
     --build-arg JS_SDK_BRANCH="develop" \
     .
 ```
+
+Running in Kubernetes
+=====================
+
+The provided element-web docker image can also be run from within a Kubernetes cluster.
+See the [Kubernetes example](docs/kubernetes.md) for more details.
 
 config.json
 ===========
@@ -175,6 +229,7 @@ Caching requirements
 ====================
 
 Element requires the following URLs not to be cached, when/if you are serving Element from your own webserver:
+
 ```
 /config.*.json
 /i18n
@@ -211,6 +266,10 @@ Please note that Element is intended to run correctly without access to the publ
 internet.  So please don't depend on resources (JS libs, CSS, images, fonts)
 hosted by external CDNs or servers but instead please package all dependencies
 into Element itself.
+
+CSS hot-reload is available as an opt-in development feature. You can enable it
+by defining a `CSS_HOT_RELOAD` environment variable, in a `.env` file in the root
+of the repository. See `.env.example` for documentation and an example.
 
 Setting up a dev environment
 ============================
@@ -249,22 +308,19 @@ cd element-web
 yarn link matrix-js-sdk
 yarn link matrix-react-sdk
 yarn install
+yarn reskindex
 yarn start
 ```
 
-
 Wait a few seconds for the initial build to finish; you should see something like:
+
 ```
-Hash: b0af76309dd56d7275c8
-Version: webpack 1.12.14
-Time: 14533ms
-         Asset     Size  Chunks             Chunk Names
-     bundle.js   4.2 MB       0  [emitted]  main
-    bundle.css  91.5 kB       0  [emitted]  main
- bundle.js.map  5.29 MB       0  [emitted]  main
-bundle.css.map   116 kB       0  [emitted]  main
-    + 1013 hidden modules
+[element-js] <s> [webpack.Progress] 100%
+[element-js]
+[element-js] ℹ ｢wdm｣:    1840 modules
+[element-js] ℹ ｢wdm｣: Compiled successfully.
 ```
+
    Remember, the command will not terminate since it runs the web server
    and rebuilds source files when they change. This development server also
    disables caching, so do NOT use it in production.
@@ -272,7 +328,7 @@ bundle.css.map   116 kB       0  [emitted]  main
 Configure the app by copying `config.sample.json` to `config.json` and
 modifying it. See the [configuration docs](docs/config.md) for details.
 
-Open http://127.0.0.1:8080/ in your browser to see your newly built Element.
+Open <http://127.0.0.1:8080/> in your browser to see your newly built Element.
 
 **Note**: The build script uses inotify by default on Linux to monitor directories
 for changes. If the inotify limits are too low your build will fail silently or with
@@ -345,51 +401,6 @@ For a developer guide, see the [translating dev doc](docs/translating-dev.md).
 Triaging issues
 ===============
 
-Issues will be triaged by the core team using the below set of tags.
+Issues are triaged by community members and the Web App Team, following the [triage process](https://github.com/vector-im/element-web/wiki/Triage-process).
 
-Tags are meant to be used in combination - e.g.:
- * P1 critical bug == really urgent stuff that should be next in the bugfixing todo list
- * "release blocker" == stuff which is blocking us from cutting the next release.
- * P1 feature type:voip == what VoIP features should we be working on next?
-
-priority: **compulsory**
-
-* P1: top priority - i.e. pool of stuff which we should be working on next
-* P2: still need to fix, but lower than P1
-* P3: non-urgent
-* P4: interesting idea - bluesky some day
-* P5: recorded for posterity/to avoid duplicates. No intention to resolves right now.
-
-bug or feature: **compulsory**
-
-* bug
-* feature
-
-bug severity: **compulsory, if bug**
-
-* critical - whole app doesn't work
-* major - entire feature doesn't work
-* minor - partially broken feature (but still usable)
-* cosmetic - feature works functionally but UI/UX is broken
-
-types
-* type:* - refers to a particular part of the app; used to filter bugs
-  on a given topic - e.g. VOIP, signup, timeline, etc.
-
-additional categories (self-explanatory):
-
-* release blocker
-* ui/ux (think of this as cosmetic)
-* network (specific to network conditions)
-* platform specific
-* accessibility
-* maintenance
-* performance
-* i18n
-* blocked - whether this issue currently can't be progressed due to outside factors
-
-community engagement
-* easy
-* hacktoberfest
-* bounty? - proposal to be included in a bounty programme
-* bounty - included in Status Open Bounty
+We use [issue labels](https://github.com/vector-im/element-web/wiki/Issue-labelling) to sort all incoming issues.

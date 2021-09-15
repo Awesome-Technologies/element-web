@@ -76,8 +76,7 @@ dodep matrix-org matrix-js-sdk
 
 pushd matrix-js-sdk
 yarn link
-yarn install
-yarn build
+yarn install --pure-lockfile
 popd
 
 yarn link matrix-js-sdk
@@ -91,8 +90,8 @@ dodep matrix-org matrix-react-sdk
 pushd matrix-react-sdk
 yarn link
 yarn link matrix-js-sdk
-yarn install
-yarn build
+yarn install --pure-lockfile
+yarn reskindex
 popd
 
 yarn link matrix-react-sdk

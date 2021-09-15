@@ -1,1 +1,4 @@
 signing_id: releases@awesome-technologies.de
+subprojects:
+    matrix-react-sdk:
+        includeByDefault: true

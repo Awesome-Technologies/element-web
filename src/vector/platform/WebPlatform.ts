@@ -17,22 +17,29 @@ limitations under the License.
 */
 
 import VectorBasePlatform from './VectorBasePlatform';
-import {UpdateCheckStatus} from "matrix-react-sdk/src/BasePlatform";
+import { UpdateCheckStatus } from "matrix-react-sdk/src/BasePlatform";
 import request from 'browser-request';
 import dis from 'matrix-react-sdk/src/dispatcher/dispatcher';
-import {_t} from 'matrix-react-sdk/src/languageHandler';
-import {Room} from "matrix-js-sdk/src/models/room";
-import {hideToast as hideUpdateToast, showToast as showUpdateToast} from "matrix-react-sdk/src/toasts/UpdateToast";
-import {Action} from "matrix-react-sdk/src/dispatcher/actions";
+import { _t } from 'matrix-react-sdk/src/languageHandler';
+import { Room } from "matrix-js-sdk/src/models/room";
+import { hideToast as hideUpdateToast, showToast as showUpdateToast } from "matrix-react-sdk/src/toasts/UpdateToast";
+import { Action } from "matrix-react-sdk/src/dispatcher/actions";
 import { CheckUpdatesPayload } from 'matrix-react-sdk/src/dispatcher/payloads/CheckUpdatesPayload';
 
-import url from 'url';
 import UAParser from 'ua-parser-js';
 
 const POKE_RATE_MS = 10 * 60 * 1000; // 10 min
 
 export default class WebPlatform extends VectorBasePlatform {
     private runningVersion: string = null;
+
+    constructor() {
+        super();
+        // Register service worker if available on this platform
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    }
 
     getHumanReadableName(): string {
         return 'Web Platform'; // no translation required: only used for analytics
@@ -89,9 +96,11 @@ export default class WebPlatform extends VectorBasePlatform {
             window.focus();
             notification.close();
         };
+
+        return notification;
     }
 
-    _getVersion(): Promise<string> {
+    private getVersion(): Promise<string> {
         // We add a cachebuster to the request to make sure that we know about
         // the most recent version on the origin server. That might not
         // actually be the version we'd get on a reload (particularly in the
@@ -123,7 +132,7 @@ export default class WebPlatform extends VectorBasePlatform {
         if (this.runningVersion !== null) {
             return Promise.resolve(this.runningVersion);
         }
-        return this._getVersion();
+        return this.getVersion();
     }
 
     startUpdater() {
@@ -136,7 +145,7 @@ export default class WebPlatform extends VectorBasePlatform {
     }
 
     pollForUpdate = () => {
-        return this._getVersion().then((ver) => {
+        return this.getVersion().then((ver) => {
             if (this.runningVersion === null) {
                 this.runningVersion = ver;
             } else if (this.runningVersion !== ver) {
@@ -174,17 +183,13 @@ export default class WebPlatform extends VectorBasePlatform {
 
     getDefaultDeviceDisplayName(): string {
         // strip query-string and fragment from uri
-        const u = url.parse(window.location.href);
-        u.protocol = "";
-        u.search = "";
-        u.hash = "";
-        // Remove trailing slash if present
-        u.pathname = u.pathname.replace(/\/$/, "");
+        const url = new URL(window.location.href);
 
-        let appName = u.format();
-        // Remove leading slashes if present
-        appName = appName.replace(/^\/\//, "");
-        // `appName` is now in the format `develop.element.io`.
+        // `appName` in the format `develop.element.io/abc/xyz`
+        const appName = [
+            url.host,
+            url.pathname.replace(/\/$/, ""), // Remove trailing slash if present
+        ].join("");
 
         const ua = new UAParser();
         const browserName = ua.getBrowser().name || "unknown browser";

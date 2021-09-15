@@ -24,6 +24,7 @@ git clone --depth 1 --branch $REACT_SDK_BRANCH $REACT_SDK_REPO react-sdk
 cd react-sdk
 yarn link
 yarn --network-timeout=100000 install
+yarn reskindex
 cd ../
 
 echo "Setting up AMP.chat-web with react-sdk package"

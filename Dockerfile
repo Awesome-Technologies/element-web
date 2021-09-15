@@ -1,5 +1,5 @@
 # Builder
-FROM node:12 as builder
+FROM node:14-buster as builder
 
 # Support custom branches of the react-sdk and js-sdk. This also helps us build
 # images of riot-web develop.
@@ -7,10 +7,7 @@ ARG USE_CUSTOM_SDKS=true
 ARG REACT_SDK_REPO="https://github.com/awesome-technologies/matrix-react-sdk.git"
 ARG REACT_SDK_BRANCH="2020.12.0-amp.chat"
 
-RUN apt-get update && apt-get install -y git dos2unix \
-# These packages are required for building Canvas on architectures like Arm
-# See https://www.npmjs.com/package/canvas#compiling
-  build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+RUN apt-get update && apt-get install -y git dos2unix
 
 WORKDIR /src
 
@@ -35,4 +32,4 @@ COPY --from=builder /src/webapp /app
 RUN sed -i '3i\ \ \ \ application/wasm wasm\;' /etc/nginx/mime.types
 
 RUN rm -rf /usr/share/nginx/html \
- && ln -s /app /usr/share/nginx/html
+  && ln -s /app /usr/share/nginx/html

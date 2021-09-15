@@ -15,18 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-'use strict';
-
 import React from 'react';
-import PropTypes from 'prop-types';
 import SdkConfig from 'matrix-react-sdk/src/SdkConfig';
 
 export default class VectorAuthHeaderLogo extends React.PureComponent {
-    static replaces = 'AuthHeaderLogo'
-
-    static propTypes = {
-        icon: PropTypes.string,
-    }
+    static replaces = 'AuthHeaderLogo';
 
     render() {
         const brandingConfig = SdkConfig.get().branding;

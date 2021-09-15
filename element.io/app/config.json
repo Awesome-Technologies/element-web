@@ -20,7 +20,9 @@
     },
     "roomDirectory": {
         "servers": [
-            "matrix.org"
+            "matrix.org",
+            "gitter.im",
+            "libera.chat"
         ]
     },
     "enable_presence_by_hs_url": {
@@ -36,5 +38,15 @@
             "url": "https://element.io/cookie-policy",
             "text": "Cookie Policy"
         }
-    ]
+    ],
+    "hostSignup": {
+      "brand": "Element Home",
+      "cookiePolicyUrl": "https://element.io/cookie-policy",
+      "domains": [
+          "matrix.org"
+      ],
+      "privacyPolicyUrl": "https://element.io/privacy",
+      "termsOfServiceUrl": "https://element.io/terms-of-service",
+      "url": "https://ems.element.io/element-home/in-app-loader"
+    }
 }
