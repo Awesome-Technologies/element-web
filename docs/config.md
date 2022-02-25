@@ -22,9 +22,19 @@ For a good example, see https://develop.element.io/config.json.
      `default_hs_url` is specified. When multiple sources are specified, it is unclear
      which should take priority and therefore the application cannot continue.
    * As of Element 1.4.0, identity servers are optional. See [Identity servers](#identity-servers) below.
-1. `sso_immediate_redirect`: When `true`, Element will assume the default server supports SSO
-   and attempt to send the user there to continue (if they aren't already logged in). Default
-   `false`. Note that this disables all usage of the welcome page.
+1. `sso_redirect_options`: Optionally defines how Element will behave with a server which supports
+   Single Sign On (SSO). By default, Element will do nothing special and simply show a button where
+   needed for the user to click to navigate to the SSO system. This behaviour can be tuned with the
+   config options below (as properties of the `sso_redirect_options` object). None of the options apply
+   if Element thinks the user is already logged in, and similarly Element will assume the default server
+   supports SSO if these redirect options are used.
+   * `immediate`: When `true` (default `false`), Element will automatically redirect all unauthenticated
+     users to the SSO system to log in regardless of how they reached the app. This overrides the use of
+     other redirect options.
+   * `on_welcome_page`: When `true` (default `false`), Element will automatically redirect all unauthenticated
+     users to the SSO to log in if the user lands on the welcome page or no specific page. For example,
+     https://app.element.io/#/welcome and https://app.element.io would redirect if set up to use this option.
+     This can be useful to maintain guest experience until an account is needed.
 1. `features`: Lookup of optional features that may be force-enabled (`true`) or force-disabled (`false`).
    When features are not listed here, their defaults will be used, and users can turn them on/off if `showLabsSettings`
    allows them to. The available optional experimental features vary from release to release and are
@@ -53,6 +63,20 @@ For a good example, see https://develop.element.io/config.json.
    https://github.com/matrix-org/rageshake server). Bug reports are sent when a user clicks
    "Send Logs" within the application. Bug reports can be disabled/hidden by leaving the
    `bug_report_endpoint_url` out of your config file.
+1. `uisi_autorageshake_app`: If users enable the Labs flag
+   "Automatically send debug logs on decryption errors", rageshakes
+   submitted by that feature can be given a custom app name so that
+   the rageshake server can file them in a separate issue tracker.  If
+   this field is absent from the config, the app name for decryption
+   error rageshakes will be `"element-web"` just like for
+   manually-submitted rageshakes.
+
+   If `bug_report_endpoint_url` is set to Element's rageshake server,
+   then this field should be set to `"element-auto-uisi"` as in
+   `config.sample.json`. If `bug_report_endpoint_url` is left out,
+   this field has no effect and can be left out as well.  If you are
+   using your own rageshake server, set this field in accordance with
+   your rageshake server configuration.
 1. `roomDirectory`: config for the public room directory. This section is optional.
 1. `roomDirectory.servers`: List of other homeservers' directories to include in the drop
    down list. Optional.
@@ -93,8 +117,13 @@ For a good example, see https://develop.element.io/config.json.
 1. `jitsi`: Used to change the default conference options. Learn more about the
    Jitsi options at [jitsi.md](./jitsi.md).
     1. `preferredDomain`: The domain name of the preferred Jitsi instance. Defaults
-       to `jitsi.riot.im`. This is used whenever a user clicks on the voice/video
+       to `meet.element.io`. This is used whenever a user clicks on the voice/video
        call buttons - integration managers may use a different domain.
+  This setting is ignored if your homeserver provides
+  `/.well-known/matrix/client` in its well-known location, and the JSON file
+  at that location has a key `m.vector.riot.jitsi`. In this case, the
+  configuration found in the well-known location is used instead.
+
 1. `enable_presence_by_hs_url`: The property key should be the URL of the homeserver
     and its value defines whether to enable/disable the presence status display
     from that homeserver. If no options are configured, presence is shown for all
@@ -142,6 +171,17 @@ For a good example, see https://develop.element.io/config.json.
 1. `sentry`: [Sentry](https://sentry.io/) configuration for rageshake data being sent to sentry.
    1. `dsn`: the Sentry [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/)
    2. `environment`: (optional) The [Environment](https://docs.sentry.io/product/sentry-basics/environments/) to pass to sentry
+1. `map_style_url`: Map tile server style URL for location sharing. e.g.
+   'https://api.maptiler.com/maps/streets/style.json?key=YOUR_KEY_GOES_HERE'
+  This setting is ignored if your homeserver provides
+  `/.well-known/matrix/client` in its well-known location, and the JSON file
+  at that location has a key `m.tile_server` (or the unstable version
+  `org.matrix.msc3488.tile_server`). In this case, the configuration found in
+  the well-known location is used instead.
+1. `analyticsOwner`: The entity that analytics data is being sent to. Used in copy
+   when explaining to the user where data is being sent. If not set, defaults to `brand`.
+1. `defaultDeviceDisplayName`: The default device display name to use for new logins
+   and registrations. If not set then a calculated version will be used.
 
 Note that `index.html` also has an og:image meta tag that is set to an image
 hosted on riot.im. This is the image used if links to your copy of Element
@@ -226,3 +266,4 @@ Currently, the following UI feature flags are supported:
   user.
 * `UIFeature.roomHistorySettings` - Whether or not the room history settings are shown to the user.
   This should only be used if the room history visibility options are managed by the server.
+* `UIFeature.TimelineEnableRelativeDates` - Display relative date separators (eg: 'Today', 'Yesterday') in the timeline for recent messages. When false day dates will be used.

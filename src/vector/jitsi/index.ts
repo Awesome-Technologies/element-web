@@ -14,9 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// We have to trick webpack into loading our CSS for us.
-require("./index.scss");
-
 import { KJUR } from 'jsrsasign';
 import {
     IOpenIDCredentials,
@@ -25,6 +22,10 @@ import {
     WidgetApi,
 } from "matrix-widget-api";
 import { ElementWidgetActions } from "matrix-react-sdk/src/stores/widgets/ElementWidgetActions";
+import { logger } from "matrix-js-sdk/src/logger";
+
+// We have to trick webpack into loading our CSS for us.
+require("./index.scss");
 
 const JITSI_OPENIDTOKEN_JWT_AUTH = 'openidtoken-jwt';
 
@@ -45,6 +46,7 @@ let jitsiAuth: string;
 let roomId: string;
 let openIdToken: IOpenIDCredentials;
 let roomName: string;
+let startAudioOnly: boolean;
 
 let widgetApi: WidgetApi;
 let meetApi: any; // JitsiMeetExternalAPI
@@ -94,7 +96,7 @@ let meetApi: any; // JitsiMeetExternalAPI
             ]);
             widgetApi.start();
         } else {
-            console.warn("No parent URL or no widget ID - assuming no widget API is available");
+            logger.warn("No parent URL or no widget ID - assuming no widget API is available");
         }
 
         // Populate the Jitsi params now
@@ -106,6 +108,7 @@ let meetApi: any; // JitsiMeetExternalAPI
         jitsiAuth = qsParam('auth', true);
         roomId = qsParam('roomId', true);
         roomName = qsParam('roomName', true);
+        startAudioOnly = qsParam('isAudioOnly', true) === "true";
 
         if (widgetApi) {
             await readyPromise;
@@ -115,7 +118,7 @@ let meetApi: any; // JitsiMeetExternalAPI
             if (jitsiAuth === JITSI_OPENIDTOKEN_JWT_AUTH) {
                 // Request credentials, give callback to continue when received
                 openIdToken = await widgetApi.requestOpenIDConnectToken();
-                console.log("Got OpenID Connect token");
+                logger.log("Got OpenID Connect token");
             }
 
             // TODO: register widgetApi listeners for PTT controls (https://github.com/vector-im/element-web/issues/12795)
@@ -146,7 +149,7 @@ let meetApi: any; // JitsiMeetExternalAPI
 
         enableJoinButton(); // always enable the button
     } catch (e) {
-        console.error("Error setting up Jitsi widget", e);
+        logger.error("Error setting up Jitsi widget", e);
         document.getElementById("widgetActionContainer").innerText = "Failed to load Jitsi widget";
     }
 })();
@@ -206,7 +209,7 @@ function joinConference() { // event handler bound in HTML
     if (jitsiAuth === JITSI_OPENIDTOKEN_JWT_AUTH) {
         if (!openIdToken?.access_token) { // eslint-disable-line camelcase
             // We've failing to get a token, don't try to init conference
-            console.warn('Expected to have an OpenID credential, cannot initialize widget.');
+            logger.warn('Expected to have an OpenID credential, cannot initialize widget.');
             document.getElementById("widgetActionContainer").innerText = "Failed to load Jitsi widget";
             return;
         }
@@ -215,13 +218,7 @@ function joinConference() { // event handler bound in HTML
 
     switchVisibleContainers();
 
-    if (widgetApi) {
-        // ignored promise because we don't care if it works
-        // noinspection JSIgnoredPromiseFromCall
-        widgetApi.setAlwaysOnScreen(true);
-    }
-
-    console.warn(
+    logger.warn(
         "[Jitsi Widget] The next few errors about failing to parse URL parameters are fine if " +
         "they mention 'external_api' or 'jitsi' in the stack. They're just Jitsi Meet trying to parse " +
         "our fragment values and not recognizing the options.",
@@ -237,6 +234,9 @@ function joinConference() { // event handler bound in HTML
             MAIN_TOOLBAR_BUTTONS: [],
             VIDEO_LAYOUT_FIT: "height",
         },
+        configOverwrite: {
+            startAudioOnly,
+        },
         jwt: jwt,
     };
 
@@ -245,6 +245,16 @@ function joinConference() { // event handler bound in HTML
     if (avatarUrl) meetApi.executeCommand("avatarUrl", avatarUrl);
     if (userId) meetApi.executeCommand("email", userId);
     if (roomName) meetApi.executeCommand("subject", roomName);
+
+    // fires once when user joins the conference
+    // (regardless of video on or off)
+    meetApi.on("videoConferenceJoined", () => {
+        if (widgetApi) {
+            // ignored promise because we don't care if it works
+            // noinspection JSIgnoredPromiseFromCall
+            widgetApi.setAlwaysOnScreen(true);
+        }
+    });
 
     meetApi.on("readyToClose", () => {
         switchVisibleContainers();

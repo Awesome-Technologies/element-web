@@ -12,14 +12,6 @@ dropped. Ask in the room if you are unclear about any details here.**
 A new version of the "Report" dialog that lets users send abuse reports directly to room moderators,
 if the room supports it.
 
-## Matrix Spaces [MSC1772](https://github.com/matrix-org/matrix-doc/pull/1772) support (`feature_spaces`)
-
-Enables showing, using, creating, and managing spaces. Create Spaces from the all new Space Panel (to left of Room List).
-
-Incompatible with (will disable) `feature_custom_tags`, `feature_communities_v2_prototypes` and stable Communities/Groups support.
-
-Still in heavy development.
-
 ## Render LaTeX maths in messages (`feature_latex_maths`)
 
 Enables rendering of LaTeX maths in messages using [KaTeX](https://katex.org/). LaTeX between single dollar-signs is interpreted as inline maths and double dollar-signs as display maths (i.e. centred on its own line).
@@ -28,6 +20,19 @@ Enables rendering of LaTeX maths in messages using [KaTeX](https://katex.org/). 
 
 Allows you to pin messages in the room. To pin a message, use the 3 dots to the right of the message
 and select "Pin".
+
+## Jump to date (`feature_jump_to_date`)
+
+Note: This labs feature is only visible when your homeserver has MSC3030 enabled
+(in Synapse, add `experimental_features` -> `msc3030_enabled` to your
+`homeserver.yaml`) which means `GET /_matrix/client/versions` responds with
+`org.matrix.msc3030` under the `unstable_features` key.
+
+Adds a dropdown menu to the date separator headers in the timeline which allows
+you to jump to last week, last month, the beginning of the room, or choose a
+date from the calendar.
+
+Also adds the `/jumptodate 2022-01-31` slash command.
 
 ## Custom status (`feature_custom_status`)
 
@@ -134,10 +139,36 @@ and notification noises are suppressed. Not perfect, but can help reduce noise.
 
 Enables sending hidden read receipts as per [MSC2285](https://github.com/matrix-org/matrix-doc/pull/2285)
 
-## New layout switcher (with message bubbles) (`feature_new_layout_switcher`)
+## Breadcrumbs v2 (`feature_breadcrumbs_v2`)
 
-Adds a "Message layout" section under `Settings -> Appearance`, where the user can select their preferred message layout (e.g. IRC or Modern). Additionally, adds a new "Message bubbles" layout.
+Instead of showing the horizontal list of breadcrumbs under the filter field, the new UX is an interactive context menu
+triggered by the button to the right of the filter field.
 
-## Pseudonymous Analytics opt-in
+## Spotlight search (`feature_spotlight`) [In Development]
 
-Opts in to collection of pseudonymous analytics data via Posthog. See https://github.com/matrix-org/matrix-react-sdk/pull/6495
+Switches to a new room search experience.
+
+## Extensible events rendering (`feature_extensible_events`) [In Development]
+
+*Intended for developer use only at the moment.*
+
+Extensible Events are a [new event format](https://github.com/matrix-org/matrix-doc/pull/1767) which
+supports graceful fallback in unknown event types. Instead of rendering nothing or a blank space, events
+can define a series of other events which represent the event's information but in different ways. The
+base of these fallbacks being text.
+
+Turning this flag on indicates that, when possible, the extensible events structure should be parsed on
+supported event types. This should lead to zero perceptual change in the timeline except in cases where
+the sender is using unknown/unrecognised event types.
+
+Sending events with extensible events structure is always enabled - this should not affect any downstream
+client.
+
+## Right panel stays open (`feature_right_panel_default_open`)
+
+This is an experimental default open right panel mode as a quick fix for those
+who prefer to have the right panel open consistently across rooms.
+
+If no right panel state is known for the room or it was closed on the last room
+visit, it will default to the room member list. Otherwise, the saved card last
+used in that room is shown.

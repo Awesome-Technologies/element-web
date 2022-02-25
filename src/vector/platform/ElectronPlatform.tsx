@@ -3,6 +3,7 @@ Copyright 2016 Aviral Dasgupta
 Copyright 2016 OpenMarket Ltd
 Copyright 2019 Michael Telatynski <7t3chguy@gmail.com>
 Copyright 2018 - 2021 New Vector Ltd
+Copyright 2022 Šimon Brandner <simon.bra.ag@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -34,10 +35,8 @@ import Modal from "matrix-react-sdk/src/Modal";
 import InfoDialog from "matrix-react-sdk/src/components/views/dialogs/InfoDialog";
 import Spinner from "matrix-react-sdk/src/components/views/elements/Spinner";
 import {
-    Categories,
-    CMD_OR_CTRL,
+    CategoryName,
     DIGITS,
-    Modifiers,
     registerShortcut,
 } from "matrix-react-sdk/src/accessibility/KeyboardShortcuts";
 import { isOnlyCtrlOrCmdKeyEvent, Key } from "matrix-react-sdk/src/Keyboard";
@@ -52,6 +51,8 @@ import ToastStore from "matrix-react-sdk/src/stores/ToastStore";
 import GenericExpiringToast from "matrix-react-sdk/src/components/views/toasts/GenericExpiringToast";
 import SettingsStore from 'matrix-react-sdk/src/settings/SettingsStore';
 import { IMatrixProfile, IEventWithRoomId as IMatrixEvent, IResultRoomEvents } from "matrix-js-sdk/src/@types/search";
+import { logger } from "matrix-js-sdk/src/logger";
+import { MatrixEvent } from "matrix-js-sdk/src/models/event";
 
 import VectorBasePlatform from './VectorBasePlatform';
 
@@ -124,12 +125,12 @@ class SeshatIndexManager extends BaseEventIndexManager {
 
     private onIpcReply = (ev: {}, payload: IPCPayload) => {
         if (payload.id === undefined) {
-            console.warn("Ignoring IPC reply with no ID");
+            logger.warn("Ignoring IPC reply with no ID");
             return;
         }
 
         if (this.pendingIpcCalls[payload.id] === undefined) {
-            console.warn("Unknown IPC payload ID: " + payload.id);
+            logger.warn("Unknown IPC payload ID: " + payload.id);
             return;
         }
 
@@ -245,7 +246,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
 
         // try to flush the rageshake logs to indexeddb before quit.
         electron.on('before-quit', function() {
-            console.log('element-desktop closing');
+            logger.log('element-desktop closing');
             rageshake.flush();
         });
 
@@ -256,12 +257,16 @@ export default class ElectronPlatform extends VectorBasePlatform {
             dis.fire(Action.ViewUserSettings);
         });
 
-        electron.on('userDownloadCompleted', (ev, { path, name }) => {
-            const key = `DOWNLOAD_TOAST_${path}`;
+        electron.on('userDownloadCompleted', (ev, { id, name }) => {
+            const key = `DOWNLOAD_TOAST_${id}`;
 
             const onAccept = () => {
-                electron.send('userDownloadOpen', { path });
+                electron.send('userDownloadAction', { id, open: true });
                 ToastStore.sharedInstance().dismissToast(key);
+            };
+
+            const onDismiss = () => {
+                electron.send('userDownloadAction', { id });
             };
 
             ToastStore.sharedInstance().addOrReplaceToast({
@@ -272,6 +277,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
                     acceptLabel: _t("Open"),
                     onAccept,
                     dismissLabel: _t("Dismiss"),
+                    onDismiss,
                     numSeconds: 10,
                 },
                 component: GenericExpiringToast,
@@ -280,43 +286,50 @@ export default class ElectronPlatform extends VectorBasePlatform {
         });
 
         // register OS-specific shortcuts
-        registerShortcut(Categories.NAVIGATION, {
-            keybinds: [{
-                modifiers: [CMD_OR_CTRL],
+        registerShortcut("KeyBinding.switchToSpaceByNumber", CategoryName.NAVIGATION, {
+            default: {
+                ctrlOrCmdKey: true,
                 key: DIGITS,
-            }],
-            description: _td("Switch to space by number"),
+            },
+            displayName: _td("Switch to space by number"),
         });
 
         if (isMac) {
-            registerShortcut(Categories.NAVIGATION, {
-                keybinds: [{
-                    modifiers: [Modifiers.COMMAND],
+            registerShortcut("KeyBinding.openUserSettings", CategoryName.NAVIGATION, {
+                default: {
+                    commandKey: true,
                     key: Key.COMMA,
-                }],
-                description: _td("Open user settings"),
+                },
+                displayName: _td("Open user settings"),
             });
-
-            registerShortcut(Categories.NAVIGATION, {
-                keybinds: [{
-                    modifiers: [Modifiers.COMMAND],
+            registerShortcut("KeyBinding.previousVisitedRoomOrCommunity", CategoryName.NAVIGATION, {
+                default: {
+                    commandKey: true,
                     key: Key.SQUARE_BRACKET_LEFT,
-                }, {
-                    modifiers: [Modifiers.COMMAND],
+                },
+                displayName: _td("Previous recently visited room or community"),
+            });
+            registerShortcut("KeyBinding.nextVisitedRoomOrCommunity", CategoryName.NAVIGATION, {
+                default: {
+                    commandKey: true,
                     key: Key.SQUARE_BRACKET_RIGHT,
-                }],
-                description: _td("Previous/next recently visited room or community"),
+                },
+                displayName: _td("Next recently visited room or community"),
             });
         } else {
-            registerShortcut(Categories.NAVIGATION, {
-                keybinds: [{
-                    modifiers: [Modifiers.ALT],
+            registerShortcut("KeyBinding.previousVisitedRoomOrCommunity", CategoryName.NAVIGATION, {
+                default: {
+                    altKey: true,
                     key: Key.ARROW_LEFT,
-                }, {
-                    modifiers: [Modifiers.ALT],
+                },
+                displayName: _td("Previous recently visited room or community"),
+            });
+            registerShortcut("KeyBinding.nextVisitedRoomOrCommunity", CategoryName.NAVIGATION, {
+                default: {
+                    altKey: true,
                     key: Key.ARROW_RIGHT,
-                }],
-                description: _td("Previous/next recently visited room or community"),
+                },
+                displayName: _td("Next recently visited room or community"),
             });
         }
 
@@ -366,7 +379,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
         return true;
     }
 
-    displayNotification(title: string, msg: string, avatarUrl: string, room: Room): Notification {
+    displayNotification(title: string, msg: string, avatarUrl: string, room: Room, ev?: MatrixEvent): Notification {
         // GNOME notification spec parses HTML tags for styling...
         // Electron Docs state all supported linux notification systems follow this markup spec
         // https://github.com/electron/electron/blob/master/docs/tutorial/desktop-environment-integration.md#linux
@@ -377,27 +390,24 @@ export default class ElectronPlatform extends VectorBasePlatform {
             msg = msg.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
-        // Notifications in Electron use the HTML5 notification API
-        const notifBody = {
-            body: msg,
-            silent: true, // we play our own sounds
-        };
-        if (avatarUrl) notifBody['icon'] = avatarUrl;
-        const notification = new window.Notification(title, notifBody);
+        const notification = super.displayNotification(
+            title,
+            msg,
+            avatarUrl,
+            room,
+            ev,
+        );
 
+        const handler = notification.onclick as Function;
         notification.onclick = () => {
-            dis.dispatch({
-                action: 'view_room',
-                room_id: room.roomId,
-            });
-            window.focus();
+            handler?.();
             this.ipcCall('focusWindow');
         };
 
         return notification;
     }
 
-    loudNotification(ev: Event, room: Object) {
+    loudNotification(ev: MatrixEvent, room: Room) {
         electron.send('loudNotification');
     }
 
@@ -489,10 +499,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
     }
 
     reload() {
-        // we used to remote to the main process to get it to
-        // reload the webcontents, but in practice this is unnecessary:
-        // the normal way works fine.
-        window.location.reload(false);
+        window.location.reload();
     }
 
     private async ipcCall(name: string, ...args: any[]): Promise<any> {
@@ -506,12 +513,12 @@ export default class ElectronPlatform extends VectorBasePlatform {
 
     private onIpcReply = (ev, payload) => {
         if (payload.id === undefined) {
-            console.warn("Ignoring IPC reply with no ID");
+            logger.warn("Ignoring IPC reply with no ID");
             return;
         }
 
         if (this.pendingIpcCalls[payload.id] === undefined) {
-            console.warn("Unknown IPC payload ID: " + payload.id);
+            logger.warn("Unknown IPC payload ID: " + payload.id);
             return;
         }
 
@@ -534,8 +541,8 @@ export default class ElectronPlatform extends VectorBasePlatform {
 
     setSpellCheckLanguages(preferredLangs: string[]) {
         this.ipcCall('setSpellCheckLanguages', preferredLangs).catch(error => {
-            console.log("Failed to send setSpellCheckLanguages IPC to Electron");
-            console.error(error);
+            logger.log("Failed to send setSpellCheckLanguages IPC to Electron");
+            logger.error(error);
         });
     }
 
@@ -566,6 +573,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
     private navigateForwardBack(back: boolean) {
         this.ipcCall(back ? "navigateBack" : "navigateForward");
     }
+
     private navigateToSpace(num: number) {
         dis.dispatch<SwitchSpacePayload>({
             action: Action.SwitchSpace,
@@ -597,8 +605,9 @@ export default class ElectronPlatform extends VectorBasePlatform {
         if (!handled &&
             // ideally we would use SpaceStore.spacesEnabled here but importing SpaceStore in this platform
             // breaks skinning as the platform is instantiated prior to the skin being loaded
-            SettingsStore.getValue("feature_spaces") &&
+            !SettingsStore.getValue("showCommunitiesInsteadOfSpaces") &&
             ev.code.startsWith("Digit") &&
+            ev.code !== "Digit0" && // this is the shortcut for reset zoom, don't override it
             isOnlyCtrlOrCmdKeyEvent(ev)
         ) {
             const spaceNumber = ev.code.slice(5); // Cut off the first 5 characters - "Digit"

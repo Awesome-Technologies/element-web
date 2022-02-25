@@ -238,6 +238,11 @@ Element requires the following URLs not to be cached, when/if you are serving El
 /index.html
 ```
 
+We also recommend that you force browsers to re-validate any cached copy of Element on page load by configuring your
+webserver to return `Cache-Control: no-cache` for `/`. This ensures the browser will fetch a new version of Element on
+the next page load after it's been deployed. Note that this is already configured for you in the nginx config of our
+Dockerfile.
+
 Development
 ===========
 
@@ -370,20 +375,11 @@ Running the tests
 -----------------
 
 There are a number of application-level tests in the `tests` directory; these
-are designed to run in a browser instance under the control of
-[karma](https://karma-runner.github.io). To run them:
+are designed to run with Jest and JSDOM. To run them
 
-* Make sure you have Chrome installed (a recent version, like 59)
-* Make sure you have `matrix-js-sdk` and `matrix-react-sdk` installed and
-  built, as above
-* `yarn test`
-
-The above will run the tests under Chrome in a `headless` mode.
-
-You can also tell karma to run the tests in a loop (every time the source
-changes), in an instance of Chrome on your desktop, with `yarn
-test-multi`. This also gives you the option of running the tests in 'debug'
-mode, which is useful for stepping through the tests in the developer tools.
+```
+yarn test
+```
 
 ### End-to-End tests
 
@@ -401,6 +397,6 @@ For a developer guide, see the [translating dev doc](docs/translating-dev.md).
 Triaging issues
 ===============
 
-Issues are triaged by community members and the Web App Team, following the [triage process](https://github.com/vector-im/element-web/wiki/Triage-process).
+Issues are triaged by community members and the Web App Team, following the [triage process](https://github.com/vector-im/element-meta/wiki/Triage-process).
 
-We use [issue labels](https://github.com/vector-im/element-web/wiki/Issue-labelling) to sort all incoming issues.
+We use [issue labels](https://github.com/vector-im/element-meta/wiki/Issue-labelling) to sort all incoming issues.
