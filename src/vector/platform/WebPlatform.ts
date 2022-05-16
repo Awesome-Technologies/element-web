@@ -16,23 +16,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import VectorBasePlatform from './VectorBasePlatform';
 import { UpdateCheckStatus } from "matrix-react-sdk/src/BasePlatform";
 import request from 'browser-request';
 import dis from 'matrix-react-sdk/src/dispatcher/dispatcher';
 import { _t } from 'matrix-react-sdk/src/languageHandler';
-import { Room } from "matrix-js-sdk/src/models/room";
 import { hideToast as hideUpdateToast, showToast as showUpdateToast } from "matrix-react-sdk/src/toasts/UpdateToast";
 import { Action } from "matrix-react-sdk/src/dispatcher/actions";
 import { CheckUpdatesPayload } from 'matrix-react-sdk/src/dispatcher/payloads/CheckUpdatesPayload';
-
 import UAParser from 'ua-parser-js';
+import { logger } from "matrix-js-sdk/src/logger";
+
+import VectorBasePlatform from './VectorBasePlatform';
 
 const POKE_RATE_MS = 10 * 60 * 1000; // 10 min
 
 export default class WebPlatform extends VectorBasePlatform {
-    private runningVersion: string = null;
-
     constructor() {
         super();
         // Register service worker if available on this platform
@@ -79,35 +77,14 @@ export default class WebPlatform extends VectorBasePlatform {
         });
     }
 
-    displayNotification(title: string, msg: string, avatarUrl: string, room: Room) {
-        const notifBody = {
-            body: msg,
-            tag: "vector",
-            silent: true, // we play our own sounds
-        };
-        if (avatarUrl) notifBody['icon'] = avatarUrl;
-        const notification = new window.Notification(title, notifBody);
-
-        notification.onclick = function() {
-            dis.dispatch({
-                action: 'view_room',
-                room_id: room.roomId,
-            });
-            window.focus();
-            notification.close();
-        };
-
-        return notification;
-    }
-
-    private getVersion(): Promise<string> {
+    private getMostRecentVersion(): Promise<string> {
         // We add a cachebuster to the request to make sure that we know about
         // the most recent version on the origin server. That might not
         // actually be the version we'd get on a reload (particularly in the
         // presence of intermediate caching proxies), but still: we're trying
         // to tell the user that there is a new version.
 
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             request(
                 {
                     method: "GET",
@@ -121,18 +98,24 @@ export default class WebPlatform extends VectorBasePlatform {
                         return;
                     }
 
-                    const ver = body.trim();
-                    resolve(ver);
+                    resolve(this.getNormalizedAppVersion(body.trim()));
                 },
             );
         });
     }
 
-    getAppVersion(): Promise<string> {
-        if (this.runningVersion !== null) {
-            return Promise.resolve(this.runningVersion);
+    getNormalizedAppVersion(version: string): string {
+        // if version looks like semver with leading v, strip it
+        // (matches scripts/normalize-version.sh)
+        const semVerRegex = new RegExp("^v[0-9]+.[0-9]+.[0-9]+(-.+)?$");
+        if (semVerRegex.test(version)) {
+            return version.substr(1);
         }
-        return this.getVersion();
+        return version;
+    }
+
+    getAppVersion(): Promise<string> {
+        return Promise.resolve(this.getNormalizedAppVersion(process.env.VERSION));
     }
 
     startUpdater() {
@@ -145,12 +128,12 @@ export default class WebPlatform extends VectorBasePlatform {
     }
 
     pollForUpdate = () => {
-        return this.getVersion().then((ver) => {
-            if (this.runningVersion === null) {
-                this.runningVersion = ver;
-            } else if (this.runningVersion !== ver) {
-                if (this.shouldShowUpdate(ver)) {
-                    showUpdateToast(this.runningVersion, ver);
+        return this.getMostRecentVersion().then((mostRecentVersion) => {
+            const currentVersion = this.getNormalizedAppVersion(process.env.VERSION);
+
+            if (currentVersion !== mostRecentVersion) {
+                if (this.shouldShowUpdate(mostRecentVersion)) {
+                    showUpdateToast(currentVersion, mostRecentVersion);
                 }
                 return { status: UpdateCheckStatus.Ready };
             } else {
@@ -159,7 +142,7 @@ export default class WebPlatform extends VectorBasePlatform {
 
             return { status: UpdateCheckStatus.NotAvailable };
         }, (err) => {
-            console.error("Failed to poll for update", err);
+            logger.error("Failed to poll for update", err);
             return {
                 status: UpdateCheckStatus.Error,
                 detail: err.message || err.status ? err.status.toString() : 'Unknown Error',
@@ -178,7 +161,7 @@ export default class WebPlatform extends VectorBasePlatform {
     }
 
     installUpdate() {
-        window.location.reload(true);
+        window.location.reload();
     }
 
     getDefaultDeviceDisplayName(): string {
@@ -212,8 +195,6 @@ export default class WebPlatform extends VectorBasePlatform {
     }
 
     reload() {
-        // forceReload=false since we don't really need new HTML/JS files
-        // we just need to restart the JS runtime.
-        window.location.reload(false);
+        window.location.reload();
     }
 }

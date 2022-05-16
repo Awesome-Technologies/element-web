@@ -1,3 +1,5 @@
+import { logger } from "matrix-js-sdk/src/logger";
+
 import { getVectorConfig } from '../getconfig';
 
 function onBackToElementClick(): void {
@@ -76,7 +78,7 @@ async function initPage(): Promise<void> {
                 }
             }
         } catch (e) {
-            console.error(e);
+            logger.error(e);
             return renderConfigError("Unable to fetch homeserver configuration");
         }
     }
