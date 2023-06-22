@@ -1,51 +1,110 @@
 {
     "default_server_config": {
         "m.homeserver": {
-            "base_url": "https://matrix-client.matrix.org",
-            "server_name": "matrix.org"
-        },
-        "m.identity_server": {
-            "base_url": "https://vector.im"
+            "base_url": "https://tim.amp.chat",
+            "server_name": "tim.amp.chat"
         }
     },
     "disable_custom_urls": false,
-    "disable_guests": false,
+    "disable_guests": true,
     "disable_login_language_selector": false,
-    "disable_3pid_login": false,
-    "brand": "Element",
-    "integrations_ui_url": "https://scalar.vector.im/",
-    "integrations_rest_url": "https://scalar.vector.im/api",
-    "integrations_widgets_urls": [
-        "https://scalar.vector.im/_matrix/integrations/v1",
-        "https://scalar.vector.im/api",
-        "https://scalar-staging.vector.im/_matrix/integrations/v1",
-        "https://scalar-staging.vector.im/api",
-        "https://scalar-staging.riot.im/scalar/api"
-    ],
+    "disable_3pid_login": true,
+    "brand": "TI-Messenger",
+    "branding": {
+        "welcome_background_url": "https://example.org/assets/background.jpg",
+        "auth_header_logo_url": "https://example.org/assets/logo.svg",
+        "auth_footer_links": [
+            { "text": "FAQ", "url": "https://example.org/faq" }
+        ]
+    },
+    "_comment": {
+    "embedded_pages": {
+        "welcome_url": "https://example.org/assets/welcome.html",
+        "home_url": "https://example.org/assets/home.html"
+    }
+    },
+    "desktop_builds": {
+        "available": false
+    },
+    "mobile_builds": {
+        "ios": null,
+        "android": null,
+        "fdroid": null
+    },
     "bug_report_endpoint_url": "https://element.io/bugreports/submit",
     "uisi_autorageshake_app": "element-auto-uisi",
-    "default_country_code": "GB",
+    "default_country_code": "DE",
     "show_labs_settings": false,
-    "features": {},
     "default_federate": true,
-    "default_theme": "light",
+    "default_theme": "custom-awesome",
+    "permalink_prefix": "https://tim.amp.chat",
     "room_directory": {
-        "servers": ["matrix.org"]
-    },
-    "enable_presence_by_hs_url": {
-        "https://matrix.org": false,
-        "https://matrix-client.matrix.org": false
+        "servers": ["tim.amp.chat"]
     },
     "setting_defaults": {
-        "breadcrumbs": true
-    },
-    "jitsi": {
-        "preferred_domain": "meet.element.io"
-    },
-    "element_call": {
-        "url": "https://call.element.io",
-        "participant_limit": 8,
-        "brand": "Element Call"
+        "breadcrumbs": true,
+        "UIFeature.urlPreviews": false,
+        "UIFeature.feedback": false,
+        "UIFeature.voip": false,
+        "UIFeature.widgets": false,
+        "UIFeature.advancedSettings": false,
+        "UIFeature.shareQrCode": true,
+        "UIFeature.shareSocial": false,
+        "UIFeature.identityServer": false,
+        "UIFeature.thirdPartyId": false,
+        "UIFeature.registration": false,
+        "UIFeature.passwordReset": true,
+        "UIFeature.deactivate": true,
+        "UIFeature.advancedEncryption": true,
+        "UIFeature.roomHistorySettings": true,
+        "UIFeature.TimelineEnableRelativeDates": true,
+        "UIFeature.BulkUnverifiedSessionsReminder": true,
+        "MessageComposerInput.showStickersButton": false,
+        "MessageComposerInput.showPollsButton": true,
+        "custom_themes": [
+            {
+                "name": "awesome",
+                "is_dark": false,
+                "colors": {
+                    "accent-color": "#FF0000",
+                    "primary-color": "#00C5D5",
+
+                    "warning-color": "#FF4344",
+                    "sidebar-color": "#FFFFFF",
+                    "roomlist-background-color": "#F5F7FA",
+                    "roomlist-text-color": "#000000",
+                    "roomlist-text-secondary-color": "#000000",
+                    "roomlist-highlights-color": "#C9E6E9",
+                    "roomlist-separator-color": "#EEEEEE",
+                    "timeline-background-color": "#FFFFFF",
+                    "timeline-text-color": "#000000",
+
+                    "secondary-content": "#4D4D4D",
+                    "tertiary-content": "#008B9D",
+                    "quinary-content": "#B0EAF0",
+
+                    "timeline-text-secondary-color": "#000000",
+                    "timeline-highlights-color": "#00000030",
+                    "reaction-row-button-selected-bg-color": "#adda78",
+                    "menu-selected-color": "#C9E6E9",
+                    "icon-button-color": "#000000",
+
+                    "accent": "#00C5D5",
+                    "alert": "#fd6883",
+                    "username-colors": [
+                        "#008B9D",
+                        "#9D0490",
+                        "#237A59",
+                        "#E89F1A",
+                        "#D13F41",
+                        "#008B9D",
+                        "#9D0490",
+                        "#237A59"
+                    ],
+                    "avatar-background-colors": ["#00C5D5", "#00C5D5", "#00C5D5"]
+                }
+            }
+        ]
     },
     "map_style_url": "https://api.maptiler.com/maps/streets/style.json?key=fU3vlMsMn4Jb6dnEIFsx"
 }
