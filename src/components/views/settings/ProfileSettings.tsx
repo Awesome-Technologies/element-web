@@ -19,21 +19,21 @@ limitations under the License.
 
 import React, { createRef } from "react";
 import { logger } from "matrix-js-sdk/src/logger";
-
-import { _t } from "matrix-react-sdk/src/components/views/settings/../../../languageHandler";
-import { MatrixClientPeg } from "matrix-react-sdk/src/components/views/settings/../../../MatrixClientPeg";
-import { OwnProfileStore } from "matrix-react-sdk/src/components/views/settings/../../../stores/OwnProfileStore";
-import Modal from "matrix-react-sdk/src/components/views/settings/../../../Modal";
-import ErrorDialog from "matrix-react-sdk/src/components/views/settings/../dialogs/ErrorDialog";
-import { mediaFromMxc } from "matrix-react-sdk/src/components/views/settings/../../../customisations/Media";
-import AccessibleButton from "matrix-react-sdk/src/components/views/settings/../elements/AccessibleButton";
+import { _t } from "matrix-react-sdk/src/languageHandler";
+import { MatrixClientPeg } from "matrix-react-sdk/src/MatrixClientPeg";
+import Field from "matrix-react-sdk/src/components/views/elements/Field";
+import { OwnProfileStore } from "matrix-react-sdk/src/stores/OwnProfileStore";
+import Modal from "matrix-react-sdk/src/Modal";
+import ErrorDialog from "matrix-react-sdk/src/components/views/dialogs/ErrorDialog";
+import { mediaFromMxc } from "matrix-react-sdk/src/customisations/Media";
+import AccessibleButton, { ButtonEvent } from "matrix-react-sdk/src/components/views/elements/AccessibleButton";
 import AvatarSetting from "matrix-react-sdk/src/components/views/settings/./AvatarSetting";
-import UserIdentifierCustomisations from "matrix-react-sdk/src/components/views/settings/../../../customisations/UserIdentifier";
-import { chromeFileInputFix } from "matrix-react-sdk/src/components/views/settings/../../../utils/BrowserWorkarounds";
-import PosthogTrackers from "matrix-react-sdk/src/components/views/settings/../../../PosthogTrackers";
+import UserIdentifierCustomisations from "matrix-react-sdk/src/customisations/UserIdentifier";
+import { chromeFileInputFix } from "matrix-react-sdk/src/utils/BrowserWorkarounds";
+import PosthogTrackers from "matrix-react-sdk/src/PosthogTrackers";
+import { SettingsSubsectionHeading } from "matrix-react-sdk/src/components/views/settings/shared/SettingsSubsectionHeading";
 
 interface IState {
-    userId?: string;
     originalDisplayName: string;
     displayName: string;
     originalAvatarUrl: string | null;
@@ -43,16 +43,16 @@ interface IState {
 }
 
 export default class ProfileSettings extends React.Component<{}, IState> {
+    private readonly userId: string;
     private avatarUpload: React.RefObject<HTMLInputElement> = createRef();
 
     public constructor(props: {}) {
         super(props);
 
-        const client = MatrixClientPeg.get();
+        this.userId = MatrixClientPeg.safeGet().getSafeUserId();
         let avatarUrl = OwnProfileStore.instance.avatarMxc;
         if (avatarUrl) avatarUrl = mediaFromMxc(avatarUrl).getSquareThumbnailHttp(96);
         this.state = {
-            userId: client.getUserId()!,
             originalDisplayName: OwnProfileStore.instance.displayName ?? "",
             displayName: OwnProfileStore.instance.displayName ?? "",
             originalAvatarUrl: avatarUrl,
@@ -68,7 +68,9 @@ export default class ProfileSettings extends React.Component<{}, IState> {
 
     private removeAvatar = (): void => {
         // clear file upload field so same file can be selected
-        this.avatarUpload.current.value = "";
+        if (this.avatarUpload.current) {
+            this.avatarUpload.current.value = "";
+        }
         this.setState({
             avatarUrl: undefined,
             avatarFile: null,
@@ -76,7 +78,7 @@ export default class ProfileSettings extends React.Component<{}, IState> {
         });
     };
 
-    private cancelProfileChanges = async (e: React.MouseEvent): Promise<void> => {
+    private cancelProfileChanges = async (e: ButtonEvent): Promise<void> => {
         e.stopPropagation();
         e.preventDefault();
 
@@ -89,17 +91,17 @@ export default class ProfileSettings extends React.Component<{}, IState> {
         });
     };
 
-    private saveProfile = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    private saveProfile = async (e: ButtonEvent): Promise<void> => {
         e.stopPropagation();
         e.preventDefault();
 
         if (!this.state.enableProfileSave) return;
         this.setState({ enableProfileSave: false });
 
-        const client = MatrixClientPeg.get();
         const newState: Partial<IState> = {};
 
         try {
+            const client = MatrixClientPeg.safeGet();
             if (this.state.avatarFile) {
                 logger.log(
                     `Uploading new avatar, ${this.state.avatarFile.name} of type ${this.state.avatarFile.type},` +
@@ -117,7 +119,7 @@ export default class ProfileSettings extends React.Component<{}, IState> {
             logger.log("Failed to save profile", err);
             Modal.createDialog(ErrorDialog, {
                 title: _t("Failed to save your profile"),
-                description: err && err.message ? err.message : _t("The operation could not be completed"),
+                description: err instanceof Error ? err.message : _t("The operation could not be completed"),
             });
         }
 
@@ -136,9 +138,9 @@ export default class ProfileSettings extends React.Component<{}, IState> {
 
         const file = e.target.files[0];
         const reader = new FileReader();
-        reader.onload = (ev) => {
+        reader.onload = (ev): void => {
             this.setState({
-                avatarUrl: ev.target?.result,
+                avatarUrl: ev.target?.result ?? undefined,
                 avatarFile: file,
                 enableProfileSave: true,
             });
@@ -147,7 +149,7 @@ export default class ProfileSettings extends React.Component<{}, IState> {
     };
 
     public render(): React.ReactNode {
-        const userIdentifier = UserIdentifierCustomisations.getDisplayUserIdentifier(this.state.userId, {
+        const userIdentifier = UserIdentifierCustomisations.getDisplayUserIdentifier(this.userId, {
             withDisplayName: true,
         });
 
@@ -161,7 +163,7 @@ export default class ProfileSettings extends React.Component<{}, IState> {
                     type="file"
                     ref={this.avatarUpload}
                     className="mx_ProfileSettings_avatarUpload"
-                    onClick={(ev) => {
+                    onClick={(ev): void => {
                         chromeFileInputFix(ev);
                         PosthogTrackers.trackInteraction("WebProfileSettingsAvatarUploadButton", ev);
                     }}
@@ -170,19 +172,23 @@ export default class ProfileSettings extends React.Component<{}, IState> {
                 />
                 <div className="mx_ProfileSettings_profile">
                     <div className="mx_ProfileSettings_profile_controls">
-                        <span className="mx_SettingsTab_subheading">{_t("Profile")}</span>
-                        <p>
-                            <span className="mx_ProfileSettings_profile_controls_userId">{_t("Display Name")}: {this.state.displayName}</span>
-                        </p>
+                        <SettingsSubsectionHeading heading={_t("Profile")} />
+                        <Field
+                            label={_t("Display Name")}
+                            type="text"
+                            value={this.state.displayName}
+                            autoComplete="off"
+                            readOnly={true}
+                        />
                         <p>
                             {userIdentifier && (
-                                <span className="mx_ProfileSettings_profile_controls_userId">Benutzer ID: {userIdentifier}</span>
+                                <span className="mx_ProfileSettings_profile_controls_userId">{userIdentifier}</span>
                             )}
                         </p>
                     </div>
                     <AvatarSetting
                         avatarUrl={avatarUrl}
-                        avatarName={this.state.displayName || this.state.userId}
+                        avatarName={this.state.displayName || this.userId}
                         avatarAltText={_t("Profile picture")}
                         uploadAvatar={this.uploadAvatar}
                         removeAvatar={this.removeAvatar}

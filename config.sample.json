@@ -13,15 +13,13 @@
     "branding": {
         "welcome_background_url": "https://example.org/assets/background.jpg",
         "auth_header_logo_url": "https://example.org/assets/logo.svg",
-        "auth_footer_links": [
-            { "text": "FAQ", "url": "https://example.org/faq" }
-        ]
+        "auth_footer_links": [{ "text": "FAQ", "url": "https://example.org/faq" }]
     },
     "_comment": {
-    "embedded_pages": {
-        "welcome_url": "https://example.org/assets/welcome.html",
-        "home_url": "https://example.org/assets/home.html"
-    }
+        "embedded_pages": {
+            "welcome_url": "https://example.org/assets/welcome.html",
+            "home_url": "https://example.org/assets/home.html"
+        }
     },
     "desktop_builds": {
         "available": false
