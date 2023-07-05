@@ -1,0 +1,11 @@
+.mx_LeftPanel_settingsButton::before {
+    mask-image: url("/res/custom-icons/settings.svg") !important;
+}
+
+.mx_LeftPanel_helpButton::before {
+    mask-image: url("/res/custom-icons/help.svg") !important;
+}
+
+.mx_LeftPanel_spacer {
+    width: 8px;
+}
