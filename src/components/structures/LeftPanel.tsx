@@ -406,7 +406,7 @@ export default class LeftPanel extends React.Component<IProps, IState> {
                 </UserMenu>
 
                 <div className="mx_LeftPanel_spacer"></div>
-                
+
                 <RoomSearch isMinimized={this.props.isMinimized} />
 
                 {dialPadButton}
