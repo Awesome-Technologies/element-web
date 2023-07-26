@@ -1,0 +1,3 @@
+.mx_UserSettingsDialog_FhirIcon::before {
+    mask-image: url("/res/custom-icons/compass-solid.svg");
+}

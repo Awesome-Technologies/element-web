@@ -28,5 +28,19 @@
     "Decentralised, encrypted chat &amp; collaboration powered by $matrixLogo": "Dezentralisierter, verschlüsselter Chat &amp; Zusammenarbeit unterstützt von $matrixLogo",
     "%(appName)s: %(browserName)s on %(osName)s": "%(appName)s: %(browserName)s auf %(osName)s",
     "%(brand)s Desktop: %(platformName)s": "%(brand)s Desktop: %(platformName)s",
-    "Invalid configuration: a default_hs_url can't be specified along with default_server_name or default_server_config": "Ungültige Konfiguration: default_hs_url kann nicht zeitgleich mit default_server_name oder default_server_config festgelegt werden"
+    "Invalid configuration: a default_hs_url can't be specified along with default_server_name or default_server_config": "Ungültige Konfiguration: default_hs_url kann nicht zeitgleich mit default_server_name oder default_server_config festgelegt werden",
+    "Close Window": "Fenster schließen",
+    "Edit my entry": "Meinen Eintrag bearbeiten",
+    "Person": "Person",
+    "Organisation": "Organisation",
+    "Group": "Gruppe",
+    "Error": "Fehler",
+    "Search..": "Suchen..",
+    "Enter search query to display results": "Suchabfrage eingeben um Ergebnisse anzuzeigen",
+    "No results": "Keine Ergebnisse",
+    "Selected": "Ausgewählt",
+    "Reset": "Zurücksetzen",
+    "Delete search": "Suche löschen",
+    "Start chat": "Chat starten",
+    "Location": "Ort"
 }

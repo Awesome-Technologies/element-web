@@ -1,0 +1,164 @@
+.aw_detailWindow {
+    display: flex;
+    flex-direction: column;
+    width: 90vw;
+    max-width: 700px;
+    height: 80vh;
+    max-height: 900px;
+}
+
+.aw_detailWindow__titlebar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+}
+
+.aw_detailWindow__titlebar__closeButton {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    color: #ff4344;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aw_detailWindow__titlebar__closeButton:hover {
+    opacity: 0.75;
+}
+
+.aw_detailWindow__titlebar__closeButton:focus-visible {
+    box-shadow: 0px 0px 0px 4px #212121;
+    border-radius: 1000px;
+}
+
+.aw_detailWindow__titlebar__favoriteButton {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    color: #00c5d5;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aw_detailWindow__titlebar__favoriteButton:hover {
+    opacity: 0.75;
+}
+
+.aw_detailWindow__titlebar__favoriteButton:focus-visible {
+    box-shadow: 0px 0px 0px 4px #212121;
+    border-radius: 1000px;
+}
+
+.aw_detailWindow__contentContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.aw_detailWindow__contentContainer__avatar {
+    height: 128px;
+    width: 128px;
+    background-color: #dadceb;
+    border-radius: 1000px;
+    position: relative;
+}
+
+.aw_detailWindow__contentContainer__contactType {
+    position: absolute;
+    bottom: -8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 0 4px white;
+    padding: 10px 20px;
+    border-radius: 1000px;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.aw_detailWindow__contentContainer__contactType.person {
+    color: #9d0490;
+    background-color: #e8b0ea;
+}
+
+.aw_detailWindow__contentContainer__contactType.group {
+    color: #ffffff;
+    background-color: #9d0490;
+}
+
+.aw_detailWindow__contentContainer__contactType.organisation {
+    color: #9d0490;
+    background-color: #ffffff;
+    border: 2px solid #e8b0ea;
+}
+
+.aw_detailWindow__contentContainer__name {
+    font-weight: 700;
+    font-size: 32px;
+    color: #3c3e4a;
+    margin-top: 32px;
+}
+
+.aw_detailWindow__contentContainer__value {
+    font-weight: 400;
+    font-size: 28px;
+    color: #3c3e4a;
+}
+
+.aw_detailWindow__contentContainer__title {
+    font-weight: 400;
+    margin-top: 24px;
+    font-size: 16px;
+    color: #9296b8;
+}
+
+.aw_detailWindow__buttonContainer {
+    width: 100%;
+    border-top: 1px solid #dadceb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 24px;
+}
+
+.aw_detailWindow__button {
+    background-color: #00c5d5;
+    border-radius: 1000px;
+    padding: 10px 32px;
+    color: white;
+    font-weight: 600;
+    font-size: 20px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.aw_detailWindow__button:hover {
+    background-color: #4fd0dc;
+}
+
+.aw_detailWindow__button:active {
+    background-color: #008b9d;
+}
+
+.aw_detailWindow__button:focus-visible {
+    box-shadow: 0px 0px 0px 4px #212121 inset;
+}

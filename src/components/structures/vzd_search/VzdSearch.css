@@ -1,0 +1,102 @@
+.aw_VzdSearch {
+    width: 90vw;
+    max-width: 1400px;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow: visible;
+}
+
+.mx_VzdSearch_wrapper {
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+}
+
+.aw_VzdSearch > .top > .titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+}
+
+.aw_VzdSearch > .top > .titlebar > .flex {
+    flex: 1;
+}
+
+.aw_VzdSearch > .top > .titlebar > .title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #212121 !important;
+}
+
+.aw_VzdSearch > .top > .titlebar > .close-button {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    color: #ff4344;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aw_VzdSearch > .top > .titlebar > .close-button:hover {
+    opacity: 0.75;
+}
+
+.aw_VzdSearch > .top > .titlebar > .close-button:focus-visible {
+    box-shadow: 0px 0px 0px 4px #212121;
+    border-radius: 1000px;
+}
+
+.aw_VzdSearch > .top > .titlebar > .edit-button {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    padding: 4px;
+    margin: 0;
+    color: #00c5d5;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.aw_VzdSearch > .top > .titlebar > .edit-button:hover {
+    text-decoration: underline;
+}
+
+.aw_VzdSearch > .top > .titlebar > .edit-button:focus-visible {
+    box-shadow: 0px 0px 0px 4px #212121;
+    border-radius: 1000px;
+}
+
+.aw_VzdSearch > .top {
+    gap: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.aw_VzdSearch > .top > .button-container {
+    gap: 16px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.aw_VzdSearch > .top > .button-container > .flex {
+    flex: 1;
+}
+
+.aw_VzdSearch > .results-list {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    border-radius: 12px;
+    flex: 1;
+    position: relative;
+}

@@ -41,7 +41,6 @@ import { MetaSpace, SpaceKey, UPDATE_SELECTED_SPACE } from "matrix-react-sdk/src
 import { getKeyBindingsManager } from "matrix-react-sdk/src/KeyBindingsManager";
 import UIStore from "matrix-react-sdk/src/stores/UIStore";
 import { IState as IRovingTabIndexState } from "matrix-react-sdk/src/accessibility/RovingTabIndex";
-import RoomListHeader from "matrix-react-sdk/src/components/views/rooms/RoomListHeader";
 import { BreadcrumbsStore } from "matrix-react-sdk/src/stores/BreadcrumbsStore";
 import RoomListStore, { LISTS_UPDATE_EVENT } from "matrix-react-sdk/src/stores/room-list/RoomListStore";
 import { UPDATE_EVENT } from "matrix-react-sdk/src/stores/AsyncStore";
@@ -437,7 +436,6 @@ export default class LeftPanel extends React.Component<IProps, IState> {
                 <div className="mx_LeftPanel_roomListContainer">
                     {shouldShowComponent(UIComponent.FilterContainer) && this.renderSearchDialExplore()}
                     {this.renderBreadcrumbs()}
-                    {!this.props.isMinimized && <RoomListHeader onVisibilityChange={this.refreshStickyHeaders} />}
                     <UserOnboardingButton
                         selected={this.props.pageType === PageType.HomePage}
                         minimized={this.props.isMinimized}

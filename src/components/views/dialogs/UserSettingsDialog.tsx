@@ -24,7 +24,6 @@ import TabbedView, { Tab } from "matrix-react-sdk/src/components/structures/Tabb
 import { _t, _td } from "matrix-react-sdk/src/languageHandler";
 import GeneralUserSettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/user/GeneralUserSettingsTab";
 import SettingsStore, { CallbackFn } from "matrix-react-sdk/src/settings/SettingsStore";
-import AppearanceUserSettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/user/AppearanceUserSettingsTab";
 import SecurityUserSettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/user/SecurityUserSettingsTab";
 import NotificationUserSettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/user/NotificationUserSettingsTab";
 import PreferencesUserSettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/user/PreferencesUserSettingsTab";
@@ -35,8 +34,10 @@ import { UIFeature } from "matrix-react-sdk/src/settings/UIFeature";
 import BaseDialog from "matrix-react-sdk/src/components/views/dialogs/BaseDialog";
 import KeyboardUserSettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/user/KeyboardUserSettingsTab";
 import SessionManagerTab from "matrix-react-sdk/src/components/views/settings/tabs/user/SessionManagerTab";
-import { UserTab } from "matrix-react-sdk/src/components/views/dialogs/UserTab";
 import { NonEmptyArray } from "matrix-react-sdk/src/@types/common";
+
+import { UserTab } from "./UserTab";
+import FhirSettings from "../settings/FhirSettings";
 
 interface IProps {
     initialTabId?: UserTab;
@@ -85,10 +86,10 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
         );
         tabs.push(
             new Tab(
-                UserTab.Appearance,
-                _td("Appearance"),
-                "mx_UserSettingsDialog_appearanceIcon",
-                <AppearanceUserSettingsTab />,
+                UserTab.FHIRTab,
+                _td("Visibility"),
+                "mx_UserSettingsDialog_FhirIcon",
+                <FhirSettings />,
                 "UserSettingsAppearance",
             ),
         );
