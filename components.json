@@ -4,5 +4,6 @@
     "src/components/views/auth/AuthPage.tsx": "src/components/views/auth/VectorAuthPage.tsx",
     "src/components/views/settings/ProfileSettings.tsx": "src/components/views/settings/ProfileSettings.tsx",
     "src/components/structures/LeftPanel.tsx": "src/components/structures/LeftPanel.tsx",
-    "src/components/structures/LoggedInView.tsx": "src/components/structures/LoggedInView.tsx"
+    "src/components/structures/LoggedInView.tsx": "src/components/structures/LoggedInView.tsx",
+    "src/Modal.tsx": "src/Modal.tsx"
 }

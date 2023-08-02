@@ -1,0 +1,17 @@
+.ex_customModalBackground {
+    background-color: #ffffffbc !important;
+    backdrop-filter: blur(4px) !important;
+    opacity: 1 !important;
+    animation: blurin 0.2s ease !important;
+}
+
+@keyframes blurin {
+    0% {
+        backdrop-filter: blur(0px) !important;
+        opacity: 0 !important;
+    }
+    100% {
+        backdrop-filter: blur(4px) !important;
+        opacity: 1 !important;
+    }
+}
