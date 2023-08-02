@@ -61,6 +61,16 @@
             {
                 "name": "awesome",
                 "is_dark": false,
+                "fonts": {
+                    "faces": [
+                        {
+                            "font-family": "opensans",
+                            "src": [{ "url": "./res/fonts/Open_Sans/OpenSans-Regular.ttf", "format": "ttf" }]
+                        }
+                    ],
+                    "general": "Inter, sans",
+                    "monospace": "'Courier New'"
+                },
                 "colors": {
                     "accent-color": "#FF0000",
                     "primary-color": "#00C5D5",
