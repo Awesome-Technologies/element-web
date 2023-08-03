@@ -20,42 +20,38 @@ limitations under the License.
 import * as React from "react";
 import { createRef } from "react";
 import classNames from "classnames";
-
-import './LeftPanel.css'
+import "./LeftPanel.css";
 import defaultDispatcher from "matrix-react-sdk/src/dispatcher/dispatcher";
-import { UserTab } from "matrix-react-sdk/src/components/views/dialogs/UserTab"
-
+import { UserTab } from "matrix-react-sdk/src/components/views/dialogs/UserTab";
 // Might be needed later for VZD Search
-// import RecentlyViewedButton from "matrix-react-sdk/src/components/structures/../views/rooms/RecentlyViewedButton";
-// import { ButtonEvent } from "matrix-react-sdk/src/components/structures/../views/elements/AccessibleButton";
-// import PosthogTrackers from "matrix-react-sdk/src/components/structures/../../PosthogTrackers";
-
-import dis from "matrix-react-sdk/src/components/structures/../../dispatcher/dispatcher";
-import { _t } from "matrix-react-sdk/src/components/structures/../../languageHandler";
-import RoomList from "matrix-react-sdk/src/components/structures/../views/rooms/RoomList";
-import LegacyCallHandler from "matrix-react-sdk/src/components/structures/../../LegacyCallHandler";
-import { HEADER_HEIGHT } from "matrix-react-sdk/src/components/structures/../views/rooms/RoomSublist";
-import { Action } from "matrix-react-sdk/src/components/structures/../../dispatcher/actions";
-import RoomSearch from "matrix-react-sdk/src/components/structures/./RoomSearch";
-import ResizeNotifier from "matrix-react-sdk/src/components/structures/../../utils/ResizeNotifier";
-import AccessibleTooltipButton from "matrix-react-sdk/src/components/structures/../views/elements/AccessibleTooltipButton";
-import SpaceStore from "matrix-react-sdk/src/components/structures/../../stores/spaces/SpaceStore";
-import { MetaSpace, SpaceKey, UPDATE_SELECTED_SPACE } from "matrix-react-sdk/src/components/structures/../../stores/spaces";
-import { getKeyBindingsManager } from "matrix-react-sdk/src/components/structures/../../KeyBindingsManager";
-import UIStore from "matrix-react-sdk/src/components/structures/../../stores/UIStore";
-import { IState as IRovingTabIndexState } from "matrix-react-sdk/src/components/structures/../../accessibility/RovingTabIndex";
-import RoomListHeader from "matrix-react-sdk/src/components/structures/../views/rooms/RoomListHeader";
-import { BreadcrumbsStore } from "matrix-react-sdk/src/components/structures/../../stores/BreadcrumbsStore";
-import RoomListStore, { LISTS_UPDATE_EVENT } from "matrix-react-sdk/src/components/structures/../../stores/room-list/RoomListStore";
-import { UPDATE_EVENT } from "matrix-react-sdk/src/components/structures/../../stores/AsyncStore";
-import IndicatorScrollbar from "matrix-react-sdk/src/components/structures/./IndicatorScrollbar";
-import RoomBreadcrumbs from "matrix-react-sdk/src/components/structures/../views/rooms/RoomBreadcrumbs";
-import SettingsStore from "matrix-react-sdk/src/components/structures/../../settings/SettingsStore";
-import { KeyBindingAction } from "matrix-react-sdk/src/components/structures/../../accessibility/KeyboardShortcuts";
-import { shouldShowComponent } from "matrix-react-sdk/src/components/structures/../../customisations/helpers/UIComponents";
-import { UIComponent } from "matrix-react-sdk/src/components/structures/../../settings/UIFeature";
-import PageType from "matrix-react-sdk/src/components/structures/../../PageTypes";
-import { UserOnboardingButton } from "matrix-react-sdk/src/components/structures/../views/user-onboarding/UserOnboardingButton";
+// import RecentlyViewedButton from "matrix-react-sdk/src/components/views/rooms/RecentlyViewedButton";
+// import { ButtonEvent } from "matrix-react-sdk/src/components/views/elements/AccessibleButton";
+// import PosthogTrackers from "matrix-react-sdk/src/PosthogTrackers";
+import dis from "matrix-react-sdk/src/dispatcher/dispatcher";
+import { _t } from "matrix-react-sdk/src/languageHandler";
+import RoomList from "matrix-react-sdk/src/components/views/rooms/RoomList";
+import LegacyCallHandler from "matrix-react-sdk/src/LegacyCallHandler";
+import { HEADER_HEIGHT } from "matrix-react-sdk/src/components/views/rooms/RoomSublist";
+import { Action } from "matrix-react-sdk/src/dispatcher/actions";
+import RoomSearch from "matrix-react-sdk/src/components/structures/RoomSearch";
+import ResizeNotifier from "matrix-react-sdk/src/utils/ResizeNotifier";
+import AccessibleTooltipButton from "matrix-react-sdk/src/components/views/elements/AccessibleTooltipButton";
+import SpaceStore from "matrix-react-sdk/src/stores/spaces/SpaceStore";
+import { MetaSpace, SpaceKey, UPDATE_SELECTED_SPACE } from "matrix-react-sdk/src/stores/spaces";
+import { getKeyBindingsManager } from "matrix-react-sdk/src/KeyBindingsManager";
+import UIStore from "matrix-react-sdk/src/stores/UIStore";
+import { IState as IRovingTabIndexState } from "matrix-react-sdk/src/accessibility/RovingTabIndex";
+import RoomListHeader from "matrix-react-sdk/src/components/views/rooms/RoomListHeader";
+import { BreadcrumbsStore } from "matrix-react-sdk/src/stores/BreadcrumbsStore";
+import RoomListStore, { LISTS_UPDATE_EVENT } from "matrix-react-sdk/src/stores/room-list/RoomListStore";
+import { UPDATE_EVENT } from "matrix-react-sdk/src/stores/AsyncStore";
+import IndicatorScrollbar from "matrix-react-sdk/src/components/structures/IndicatorScrollbar";
+import RoomBreadcrumbs from "matrix-react-sdk/src/components/views/rooms/RoomBreadcrumbs";
+import { KeyBindingAction } from "matrix-react-sdk/src/accessibility/KeyboardShortcuts";
+import { shouldShowComponent } from "matrix-react-sdk/src/customisations/helpers/UIComponents";
+import { UIComponent } from "matrix-react-sdk/src/settings/UIFeature";
+import PageType from "matrix-react-sdk/src/PageTypes";
+import { UserOnboardingButton } from "matrix-react-sdk/src/components/views/user-onboarding/UserOnboardingButton";
 import UserMenu from "matrix-react-sdk/src/components/structures/UserMenu";
 
 interface IProps {
@@ -95,16 +91,17 @@ export default class LeftPanel extends React.Component<IProps, IState> {
     }
 
     private static get breadcrumbsMode(): BreadcrumbsMode {
-        if (!BreadcrumbsStore.instance.visible) return BreadcrumbsMode.Disabled;
-        return SettingsStore.getValue("feature_breadcrumbs_v2") ? BreadcrumbsMode.Labs : BreadcrumbsMode.Legacy;
+        return !BreadcrumbsStore.instance.visible ? BreadcrumbsMode.Disabled : BreadcrumbsMode.Legacy;
     }
 
     public componentDidMount(): void {
-        UIStore.instance.trackElementDimensions("ListContainer", this.listContainerRef.current);
+        if (this.listContainerRef.current) {
+            UIStore.instance.trackElementDimensions("ListContainer", this.listContainerRef.current);
+            // Using the passive option to not block the main thread
+            // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#improving_scrolling_performance_with_passive_listeners
+            this.listContainerRef.current.addEventListener("scroll", this.onScroll, { passive: true });
+        }
         UIStore.instance.on("ListContainer", this.refreshStickyHeaders);
-        // Using the passive option to not block the main thread
-        // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#improving_scrolling_performance_with_passive_listeners
-        this.listContainerRef.current?.addEventListener("scroll", this.onScroll, { passive: true });
     }
 
     public componentWillUnmount(): void {
@@ -164,6 +161,7 @@ export default class LeftPanel extends React.Component<IProps, IState> {
     }
 
     private doStickyHeaders(list: HTMLDivElement): void {
+        if (!list.parentElement) return;
         const topEdge = list.scrollTop;
         const bottomEdge = list.offsetHeight + list.scrollTop;
         const sublists = list.querySelectorAll<HTMLDivElement>(".mx_RoomSublist:not(.mx_RoomSublist_hidden)");
@@ -374,9 +372,9 @@ export default class LeftPanel extends React.Component<IProps, IState> {
             helpButton = (
                 <AccessibleTooltipButton
                     className="mx_LeftPanel_exploreButton mx_LeftPanel_helpButton"
-                    onClick={() => {
-                        defaultDispatcher.dispatch({ action: Action.ViewUserSettings, initialTabId: UserTab.Help });
-                    }}
+                    onClick={(): void =>
+                        defaultDispatcher.dispatch({ action: Action.ViewUserSettings, initialTabId: UserTab.Help })
+                    }
                     title={_t("Help")}
                 />
             );
@@ -387,9 +385,7 @@ export default class LeftPanel extends React.Component<IProps, IState> {
             settingsButton = (
                 <AccessibleTooltipButton
                     className="mx_LeftPanel_exploreButton mx_LeftPanel_settingsButton"
-                    onClick={() => {
-                        defaultDispatcher.dispatch({ action: Action.ViewUserSettings });
-                    }}
+                    onClick={(): void => defaultDispatcher.dispatch({ action: Action.ViewUserSettings })}
                     title={_t("Settings")}
                 />
             );
@@ -402,10 +398,9 @@ export default class LeftPanel extends React.Component<IProps, IState> {
                 onBlur={this.onBlur}
                 onKeyDown={this.onKeyDown}
             >
-                <UserMenu isPanelCollapsed={true}>
-                </UserMenu>
+                <UserMenu isPanelCollapsed={true} />
 
-                <div className="mx_LeftPanel_spacer"></div>
+                <div className="mx_LeftPanel_spacer" />
 
                 <RoomSearch isMinimized={this.props.isMinimized} />
 

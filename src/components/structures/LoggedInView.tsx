@@ -26,53 +26,56 @@ import { ISyncStateData, SyncState } from "matrix-js-sdk/src/sync";
 import { IUsageLimit } from "matrix-js-sdk/src/@types/partials";
 import { RoomStateEvent } from "matrix-js-sdk/src/models/room-state";
 import { MatrixError } from "matrix-js-sdk/src/matrix";
+import { isOnlyCtrlOrCmdKeyEvent, Key } from "matrix-react-sdk/src/Keyboard";
+import PageTypes from "matrix-react-sdk/src/PageTypes";
+import MediaDeviceHandler from "matrix-react-sdk/src/MediaDeviceHandler";
+import { fixupColorFonts } from "matrix-react-sdk/src/utils/FontManager";
+import dis from "matrix-react-sdk/src/dispatcher/dispatcher";
+import { IMatrixClientCreds } from "matrix-react-sdk/src/MatrixClientPeg";
+import SettingsStore from "matrix-react-sdk/src/settings/SettingsStore";
+import { SettingLevel } from "matrix-react-sdk/src/settings/SettingLevel";
+import ResizeHandle from "matrix-react-sdk/src/components/views/elements/ResizeHandle";
+import { CollapseDistributor, Resizer } from "matrix-react-sdk/src/resizer";
+import MatrixClientContext from "matrix-react-sdk/src/contexts/MatrixClientContext";
+import ResizeNotifier from "matrix-react-sdk/src/utils/ResizeNotifier";
+import PlatformPeg from "matrix-react-sdk/src/PlatformPeg";
+import { DefaultTagID } from "matrix-react-sdk/src/stores/room-list/models";
+import {
+    hideToast as hideServerLimitToast,
+    showToast as showServerLimitToast,
+} from "matrix-react-sdk/src/toasts/ServerLimitToast";
+import { Action } from "matrix-react-sdk/src/dispatcher/actions";
+import LeftPanel from "matrix-react-sdk/src/components/structures/LeftPanel";
+import { ViewRoomDeltaPayload } from "matrix-react-sdk/src/dispatcher/payloads/ViewRoomDeltaPayload";
+import RoomListStore from "matrix-react-sdk/src/stores/room-list/RoomListStore";
+import NonUrgentToastContainer from "matrix-react-sdk/src/components/structures/NonUrgentToastContainer";
+import { IOOBData, IThreepidInvite } from "matrix-react-sdk/src/stores/ThreepidInviteStore";
+import Modal from "matrix-react-sdk/src/Modal";
+import { CollapseItem, ICollapseConfig } from "matrix-react-sdk/src/resizer/distributors/collapse";
+import { getKeyBindingsManager } from "matrix-react-sdk/src/KeyBindingsManager";
+import { IOpts } from "matrix-react-sdk/src/createRoom";
+import LegacyCallHandler, { LegacyCallHandlerEvent } from "matrix-react-sdk/src/LegacyCallHandler";
+import AudioFeedArrayForLegacyCall from "matrix-react-sdk/src/components/views/voip/AudioFeedArrayForLegacyCall";
+import { OwnProfileStore } from "matrix-react-sdk/src/stores/OwnProfileStore";
+import { UPDATE_EVENT } from "matrix-react-sdk/src/stores/AsyncStore";
+import RoomView from "matrix-react-sdk/src/components/structures/RoomView";
+import ToastContainer from "matrix-react-sdk/src/components/structures/ToastContainer";
+import UserView from "matrix-react-sdk/src/components/structures/UserView";
+import BackdropPanel from "matrix-react-sdk/src/components/structures/BackdropPanel";
+import { mediaFromMxc } from "matrix-react-sdk/src/customisations/Media";
+import { UserTab } from "matrix-react-sdk/src/components/views/dialogs/UserTab";
+import { OpenToTabPayload } from "matrix-react-sdk/src/dispatcher/payloads/OpenToTabPayload";
+import RightPanelStore from "matrix-react-sdk/src/stores/right-panel/RightPanelStore";
+import { TimelineRenderingType } from "matrix-react-sdk/src/contexts/RoomContext";
+import { KeyBindingAction } from "matrix-react-sdk/src/accessibility/KeyboardShortcuts";
+import { SwitchSpacePayload } from "matrix-react-sdk/src/dispatcher/payloads/SwitchSpacePayload";
+import LeftPanelLiveShareWarning from "matrix-react-sdk/src/components/views/beacon/LeftPanelLiveShareWarning";
+import { UserOnboardingPage } from "matrix-react-sdk/src/components/views/user-onboarding/UserOnboardingPage";
+import { PipContainer } from "matrix-react-sdk/src/components/structures/PipContainer";
+import { monitorSyncedPushRules } from "matrix-react-sdk/src/utils/pushRules/monitorSyncedPushRules";
+import { ConfigOptions } from "matrix-react-sdk/src/SdkConfig";
 
-import { isOnlyCtrlOrCmdKeyEvent, Key } from "matrix-react-sdk/src/components/structures/../../Keyboard";
-import PageTypes from "matrix-react-sdk/src/components/structures/../../PageTypes";
-import MediaDeviceHandler from "matrix-react-sdk/src/components/structures/../../MediaDeviceHandler";
-import { fixupColorFonts } from "matrix-react-sdk/src/components/structures/../../utils/FontManager";
-import dis from "matrix-react-sdk/src/components/structures/../../dispatcher/dispatcher";
-import { IMatrixClientCreds } from "matrix-react-sdk/src/components/structures/../../MatrixClientPeg";
-import SettingsStore from "matrix-react-sdk/src/components/structures/../../settings/SettingsStore";
-import { SettingLevel } from "matrix-react-sdk/src/components/structures/../../settings/SettingLevel";
-import ResizeHandle from "matrix-react-sdk/src/components/structures/../views/elements/ResizeHandle";
-import { CollapseDistributor, Resizer } from "matrix-react-sdk/src/components/structures/../../resizer";
-import MatrixClientContext from "matrix-react-sdk/src/components/structures/../../contexts/MatrixClientContext";
-import ResizeNotifier from "matrix-react-sdk/src/components/structures/../../utils/ResizeNotifier";
-import PlatformPeg from "matrix-react-sdk/src/components/structures/../../PlatformPeg";
-import { DefaultTagID } from "matrix-react-sdk/src/components/structures/../../stores/room-list/models";
-import { hideToast as hideServerLimitToast, showToast as showServerLimitToast } from "matrix-react-sdk/src/components/structures/../../toasts/ServerLimitToast";
-import { Action } from "matrix-react-sdk/src/components/structures/../../dispatcher/actions";
-import LeftPanel from "matrix-react-sdk/src/components/structures/./LeftPanel";
-import { ViewRoomDeltaPayload } from "matrix-react-sdk/src/components/structures/../../dispatcher/payloads/ViewRoomDeltaPayload";
-import RoomListStore from "matrix-react-sdk/src/components/structures/../../stores/room-list/RoomListStore";
-import NonUrgentToastContainer from "matrix-react-sdk/src/components/structures/./NonUrgentToastContainer";
-import { IOOBData, IThreepidInvite } from "matrix-react-sdk/src/components/structures/../../stores/ThreepidInviteStore";
-import Modal from "matrix-react-sdk/src/components/structures/../../Modal";
-import { ICollapseConfig } from "matrix-react-sdk/src/components/structures/../../resizer/distributors/collapse";
-import { getKeyBindingsManager } from "matrix-react-sdk/src/components/structures/../../KeyBindingsManager";
-import { IOpts } from "matrix-react-sdk/src/components/structures/../../createRoom";
-import LegacyCallHandler, { LegacyCallHandlerEvent } from "matrix-react-sdk/src/components/structures/../../LegacyCallHandler";
-import AudioFeedArrayForLegacyCall from "matrix-react-sdk/src/components/structures/../views/voip/AudioFeedArrayForLegacyCall";
-import { OwnProfileStore } from "matrix-react-sdk/src/components/structures/../../stores/OwnProfileStore";
-import { UPDATE_EVENT } from "matrix-react-sdk/src/components/structures/../../stores/AsyncStore";
-import RoomView from "matrix-react-sdk/src/components/structures/./RoomView";
-import type { RoomView as RoomViewType } from "matrix-react-sdk/src/components/structures/./RoomView";
-import ToastContainer from "matrix-react-sdk/src/components/structures/./ToastContainer";
-import UserView from "matrix-react-sdk/src/components/structures/./UserView";
-import BackdropPanel from "matrix-react-sdk/src/components/structures/./BackdropPanel";
-import { mediaFromMxc } from "matrix-react-sdk/src/components/structures/../../customisations/Media";
-import { UserTab } from "matrix-react-sdk/src/components/structures/../views/dialogs/UserTab";
-import { OpenToTabPayload } from "matrix-react-sdk/src/components/structures/../../dispatcher/payloads/OpenToTabPayload";
-import RightPanelStore from "matrix-react-sdk/src/components/structures/../../stores/right-panel/RightPanelStore";
-import { TimelineRenderingType } from "matrix-react-sdk/src/components/structures/../../contexts/RoomContext";
-import { KeyBindingAction } from "matrix-react-sdk/src/components/structures/../../accessibility/KeyboardShortcuts";
-import { SwitchSpacePayload } from "matrix-react-sdk/src/components/structures/../../dispatcher/payloads/SwitchSpacePayload";
-import { IConfigOptions } from "matrix-react-sdk/src/components/structures/../../IConfigOptions";
-import LeftPanelLiveShareWarning from "matrix-react-sdk/src/components/structures/../views/beacon/LeftPanelLiveShareWarning";
-import { UserOnboardingPage } from "matrix-react-sdk/src/components/structures/../views/user-onboarding/UserOnboardingPage";
-import { PipContainer } from "matrix-react-sdk/src/components/structures/./PipContainer";
-import { monitorSyncedPushRules } from "matrix-react-sdk/src/components/structures/../../utils/pushRules/monitorSyncedPushRules";
+import type { RoomView as RoomViewType } from "matrix-react-sdk/src/components/structures/RoomView";
 
 // We need to fetch each pinned message individually (if we don't already have it)
 // so each pinned message may trigger a request. Limit the number per room for sanity.
@@ -98,10 +101,10 @@ interface IProps {
     autoJoin?: boolean;
     threepidInvite?: IThreepidInvite;
     roomOobData?: IOOBData;
-    currentRoomId: string;
+    currentRoomId: string | null;
     collapseLhs: boolean;
-    config: IConfigOptions;
-    currentUserId?: string;
+    config: ConfigOptions;
+    currentUserId: string | null;
     justRegistered?: boolean;
     roomJustCreatedOpts?: IOpts;
     forceTimeline?: boolean; // see props on MatrixChat
@@ -133,10 +136,10 @@ class LoggedInView extends React.Component<IProps, IState> {
     protected readonly _roomView: React.RefObject<RoomViewType>;
     protected readonly _resizeContainer: React.RefObject<HTMLDivElement>;
     protected readonly resizeHandler: React.RefObject<HTMLDivElement>;
-    protected layoutWatcherRef: string;
-    protected compactLayoutWatcherRef: string;
-    protected backgroundImageWatcherRef: string;
-    protected resizer: Resizer;
+    protected layoutWatcherRef?: string;
+    protected compactLayoutWatcherRef?: string;
+    protected backgroundImageWatcherRef?: string;
+    protected resizer?: Resizer<ICollapseConfig, CollapseItem>;
 
     public constructor(props: IProps) {
         super(props);
@@ -202,10 +205,10 @@ class LoggedInView extends React.Component<IProps, IState> {
         this._matrixClient.removeListener(ClientEvent.Sync, this.onSync);
         this._matrixClient.removeListener(RoomStateEvent.Events, this.onRoomStateEvents);
         OwnProfileStore.instance.off(UPDATE_EVENT, this.refreshBackgroundImage);
-        SettingsStore.unwatchSetting(this.layoutWatcherRef);
-        SettingsStore.unwatchSetting(this.compactLayoutWatcherRef);
-        SettingsStore.unwatchSetting(this.backgroundImageWatcherRef);
-        this.resizer.detach();
+        if (this.layoutWatcherRef) SettingsStore.unwatchSetting(this.layoutWatcherRef);
+        if (this.compactLayoutWatcherRef) SettingsStore.unwatchSetting(this.compactLayoutWatcherRef);
+        if (this.backgroundImageWatcherRef) SettingsStore.unwatchSetting(this.backgroundImageWatcherRef);
+        this.resizer?.detach();
     }
 
     private onCallState = (): void => {
@@ -232,8 +235,8 @@ class LoggedInView extends React.Component<IProps, IState> {
         return this._roomView.current.canResetTimeline();
     };
 
-    private createResizer(): Resizer {
-        let panelSize: number;
+    private createResizer(): Resizer<ICollapseConfig, CollapseItem> {
+        let panelSize: number | null;
         let panelCollapsed: boolean;
         const collapseConfig: ICollapseConfig = {
             // TODO decrease this once Spaces launches as it'll no longer need to include the 56px Community Panel
@@ -266,7 +269,7 @@ class LoggedInView extends React.Component<IProps, IState> {
         const resizer = new Resizer(this._resizeContainer.current, CollapseDistributor, collapseConfig);
         resizer.setClassNames({
             handle: "mx_ResizeHandle",
-            vertical: "mx_ResizeHandle_vertical",
+            vertical: "mx_ResizeHandle--vertical",
             reverse: "mx_ResizeHandle_reverse",
         });
         return resizer;
@@ -277,7 +280,7 @@ class LoggedInView extends React.Component<IProps, IState> {
         if (isNaN(lhsSize)) {
             lhsSize = 350;
         }
-        this.resizer.forHandleWithId("lp-resizer")?.resize(lhsSize);
+        this.resizer?.forHandleWithId("lp-resizer")?.resize(lhsSize);
     }
 
     private onAccountData = (event: MatrixEvent): void => {
@@ -362,7 +365,7 @@ class LoggedInView extends React.Component<IProps, IState> {
             }
         }
 
-        if (pinnedEventTs && this.state.usageLimitEventTs > pinnedEventTs) {
+        if (pinnedEventTs && this.state.usageLimitEventTs && this.state.usageLimitEventTs > pinnedEventTs) {
             // We've processed a newer event than this one, so ignore it.
             return;
         }
@@ -648,7 +651,11 @@ class LoggedInView extends React.Component<IProps, IState> {
                 break;
 
             case PageTypes.UserView:
-                pageElement = <UserView userId={this.props.currentUserId} resizeNotifier={this.props.resizeNotifier} />;
+                if (this.props.currentUserId) {
+                    pageElement = (
+                        <UserView userId={this.props.currentUserId} resizeNotifier={this.props.resizeNotifier} />
+                    );
+                }
                 break;
         }
 
