@@ -127,7 +127,7 @@ module.exports = (env, argv) => {
     // directory, so we don't have to rely on an index.js or similar file existing.
     const reactSdkSrcDir = path.resolve(require.resolve("matrix-react-sdk/package.json"), "..", "src");
     const jsSdkSrcDir = path.resolve(require.resolve("matrix-js-sdk/package.json"), "..", "src");
-
+    const fhirJsSdkSrcDir = path.resolve(require.resolve("fhir-js-sdk/package.json"), "..", "src");
     const ACTIVE_THEMES = getActiveThemes();
     function getThemesImports() {
         const imports = ACTIVE_THEMES.map((t) => {
@@ -270,13 +270,7 @@ module.exports = (env, argv) => {
                         // include node modules inside these modules, so we add 'src'.
                         if (f.startsWith(reactSdkSrcDir)) return true;
                         if (f.startsWith(jsSdkSrcDir)) return true;
-
-                        // Some of the syntax in this package is not understood by
-                        // either webpack or our babel setup.
-                        // When we do get to upgrade our current setup, this should
-                        // probably be removed.
-                        if (f.includes("@vector-im/compound-web")) return true;
-
+                        if (f.startsWith(fhirJsSdkSrcDir)) return true;
                         // but we can't run all of our dependencies through babel (many of them still
                         // use module.exports which breaks if babel injects an 'include' for its
                         // polyfills: probably fixable but babeling all our dependencies is probably

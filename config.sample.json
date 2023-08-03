@@ -38,6 +38,7 @@
         "servers": ["tim.amp.chat"]
     },
     "setting_defaults": {
+        "fhir_vzd_base_url": "https://fhir-directory-ref.vzd.ti-dienste.de",
         "breadcrumbs": true,
         "UIFeature.urlPreviews": false,
         "UIFeature.feedback": false,
