@@ -29,8 +29,6 @@
         "android": null,
         "fdroid": null
     },
-    "bug_report_endpoint_url": "https://element.io/bugreports/submit",
-    "uisi_autorageshake_app": "element-auto-uisi",
     "default_country_code": "DE",
     "show_labs_settings": false,
     "default_federate": true,
