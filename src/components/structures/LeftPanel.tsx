@@ -63,7 +63,6 @@ interface IProps {
 enum BreadcrumbsMode {
     Disabled,
     Legacy,
-    Labs,
 }
 
 interface IState {
