@@ -9,10 +9,10 @@
     "disable_guests": true,
     "disable_login_language_selector": false,
     "disable_3pid_login": true,
-    "brand": "TI-Messenger",
+    "brand": "tim+",
     "branding": {
-        "welcome_background_url": "https://example.org/assets/background.jpg",
-        "auth_header_logo_url": "https://example.org/assets/logo.svg",
+        "welcome_background_url": "./tim-icons/background.jpg",
+        "auth_header_logo_url": "./tim-icons/tim+logo.svg",
         "auth_footer_links": [{ "text": "FAQ", "url": "https://example.org/faq" }]
     },
     "_comment": {

@@ -17,6 +17,7 @@ limitations under the License.
 
 import * as React from "react";
 import SdkConfig from "matrix-react-sdk/src/SdkConfig";
+import "./AuthView.css";
 
 export default class VectorAuthHeaderLogo extends React.PureComponent {
     public render(): React.ReactElement {
@@ -24,8 +25,8 @@ export default class VectorAuthHeaderLogo extends React.PureComponent {
         const logoUrl = brandingConfig?.get("auth_header_logo_url") ?? "themes/element/img/logos/element-logo.svg";
 
         return (
-            <aside className="mx_AuthHeaderLogo">
-                <img src={logoUrl} alt="Element" />
+            <aside className="tim_AuthHeaderLogo">
+                <img src={logoUrl} alt="tim+" />
             </aside>
         );
     }
