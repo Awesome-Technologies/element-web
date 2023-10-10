@@ -369,6 +369,16 @@ If any of these steps error with, `file table overflow`, you are probably on a m
 which has a very low limit on max open files. Run `ulimit -Sn 1024` and try again.
 You'll need to do this in each new terminal you open before building Element.
 
+## TI-M
+
+The TI-Messenger flavor is using the fhir-js-sdk to communicate with the FHIR VZD.
+The fhir-js-sdk is added as a git submodule. After the first cloning of the element-web repository you have to initialize the submodule:
+
+```
+git submodule init
+git submodule update
+```
+
 ## Running the tests
 
 There are a number of application-level tests in the `tests` directory; these
