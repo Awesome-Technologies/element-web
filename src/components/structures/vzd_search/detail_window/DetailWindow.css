@@ -113,10 +113,18 @@
     margin-top: 32px;
 }
 
+.aw_detailWindow__contentContainer__qualification {
+    font-weight: 700;
+    font-size: 28px;
+    color: #3c3e4a;
+    margin-top: 32px;
+}
+
 .aw_detailWindow__contentContainer__value {
     font-weight: 400;
     font-size: 28px;
     color: #3c3e4a;
+    text-align: center;
 }
 
 .aw_detailWindow__contentContainer__title {
@@ -124,6 +132,20 @@
     margin-top: 24px;
     font-size: 16px;
     color: #9296b8;
+}
+
+.aw_detailWindow__contentContainer__subtitle {
+    font-weight: 400;
+    margin-top: 24px;
+    font-size: 18px;
+    color: #9296b8;
+}
+
+.aw_detailWindow__contentContainer__value {
+    font-weight: 400;
+    margin-top: 24px;
+    font-size: 20px;
+    color: #3c3e4a;
 }
 
 .aw_detailWindow__buttonContainer {
@@ -157,6 +179,10 @@
 
 .aw_detailWindow__button:active {
     background-color: #008b9d;
+}
+
+.aw_detailWindow__button:disabled {
+    background-color: #7c9fa4;
 }
 
 .aw_detailWindow__button:focus-visible {

@@ -32,8 +32,9 @@
     "Close Window": "Fenster schließen",
     "Edit my entry": "Meinen Eintrag bearbeiten",
     "Person": "Person",
-    "Organisation": "Organisation",
+    "Organization": "Organisation",
     "Group": "Gruppe",
+    "Enter group": "Gruppe beitreten",
     "Error": "Fehler",
     "Search..": "Suchen..",
     "Enter search query to display results": "Suchabfrage eingeben um Ergebnisse anzuzeigen",
@@ -42,5 +43,9 @@
     "Reset": "Zurücksetzen",
     "Delete search": "Suche löschen",
     "Start chat": "Chat starten",
-    "Location": "Ort"
+    "Location": "Ort",
+    "Contact": "Kontakt",
+    "Phone": "Telefon",
+    "Available times": "Öffnungszeiten",
+    "All day": "ganztags"
 }

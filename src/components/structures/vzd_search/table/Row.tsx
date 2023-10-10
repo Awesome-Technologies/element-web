@@ -64,7 +64,7 @@ const Row: React.FC<IProps> = ({ data }) => {
             resourceTypeComponent = (
                 <span className="aw_result_resourceType organisation">
                     <Icon icon="searchFilterOrganizations" />
-                    {_t("Organisation")}
+                    {_t("Organization")}
                 </span>
             );
             data.qualification.forEach((element: any) => {
