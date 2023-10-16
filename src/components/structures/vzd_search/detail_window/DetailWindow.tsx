@@ -77,9 +77,6 @@ const DetailWindow: React.FC<IProps> = ({ onFinished, data }) => {
     return (
         <div className="aw_detailWindow">
             <div className="aw_detailWindow__titlebar">
-                <button tabIndex={0} className="aw_detailWindow__titlebar__favoriteButton mx_Dialog_nonDialogButton">
-                    <Icon icon="favorite" />
-                </button>
                 <button
                     className="aw_detailWindow__titlebar__closeButton mx_Dialog_nonDialogButton"
                     onClick={onFinished}
