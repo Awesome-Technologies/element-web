@@ -68,5 +68,12 @@
     "Sign In": "Sign In",
     "Create Account": "Create Account",
     "Explore rooms": "Explore groups",
-    "Rooms": "Groups"
+    "Rooms": "Groups",
+    "mon": "Monday",
+    "tue": "Tuesday",
+    "wed": "Wednesday",
+    "thu": "Thursday",
+    "fri": "Friday",
+    "sat": "Saturday",
+    "sun": "Sunday"
 }

@@ -16,17 +16,30 @@ interface IProps {
     data: any;
 }
 
-function mapAvailableTimes(availableTimes: Array<any>): Array<string> {
+function mapAvailableTimes(availableTimes: Array<any>): any {
     if (!availableTimes) return [];
 
-    const times: Array<string> = [];
+    const times: Array<any> = [];
     availableTimes.forEach((element) => {
-        const days = element.daysOfWeek?.toString();
-        const time = element.allDay ? _t("All day") : element.availableStartTime + " - " + element.availableEndTime;
-        times.push(days + " " + time);
+        element.daysOfWeek.forEach((day: any) => {
+            const start = `${element.availableStartTime.substring(0, 2)}:${element.availableStartTime.substring(3, 5)}`;
+            const end = `${element.availableEndTime.substring(0, 2)}:${element.availableEndTime.substring(3, 5)}`;
+            const time = element.allDay ? _t("All day") : `${start} - ${end}`;
+            times.push(<span>{_t(day) + " " + time}</span>);
+        });
     });
+    const result = times
+        ? times.map(function (line) {
+              return (
+                  <div>
+                      {line}
+                      <br />
+                  </div>
+              );
+          })
+        : "-";
 
-    return times;
+    return result;
 }
 
 const DetailWindow: React.FC<IProps> = ({ onFinished, data }) => {
@@ -106,18 +119,7 @@ const DetailWindow: React.FC<IProps> = ({ onFinished, data }) => {
                     {data.location[0]?.address?.state ? `${data.location[0].address.state}` : ""}
                 </span>
                 <span className="aw_detailWindow__contentContainer__title">{_t("Available times")}</span>
-                <span className="aw_detailWindow__contentContainer__value">
-                    {availableTimes
-                        ? availableTimes.map(function (line) {
-                              return (
-                                  <div>
-                                      {line}
-                                      <br />
-                                  </div>
-                              );
-                          })
-                        : "-"}
-                </span>
+                <span className="aw_detailWindow__contentContainer__value">{availableTimes}</span>
             </div>
             <div className="aw_detailWindow__buttonContainer">
                 <button

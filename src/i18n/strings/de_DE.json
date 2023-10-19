@@ -48,5 +48,12 @@
     "Phone": "Telefon",
     "Available times": "Öffnungszeiten",
     "All day": "ganztags",
-    "Rooms":"Gruppen"
+    "Rooms":"Gruppen",
+    "mon": "Montag",
+    "tue": "Dienstag",
+    "wed": "Mittwoch",
+    "thu": "Donnerstag",
+    "fri": "Freitag",
+    "sat": "Samstag",
+    "sun": "Sonntag"
 }
