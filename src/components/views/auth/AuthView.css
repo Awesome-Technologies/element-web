@@ -5,3 +5,44 @@
     flex: 1;
     padding: 0 3px;
 }
+
+.mx_Login_submit {
+    background-color: #00c5d5 !important;
+    color: #ffffff !important;
+}
+
+.mx_Field_valid.mx_Field,
+.mx_Field_valid.mx_Field:focus-within,
+.mx_Dialog,
+.mx_CompleteSecurityBody {
+    --cpd-color-text-action-accent: #00c5d5 !important;
+}
+
+.mx_AccessibleButton.mx_AccessibleButton_kind_link,
+.mx_AccessibleButton.mx_AccessibleButton_kind_link_inline {
+    color: #00c5d5 !important;
+}
+
+.mx_ButtonSignIn {
+    background-color: #00c5d5 !important;
+    color: #ffffff !important;
+    border-radius: 1000px !important;
+    padding: 16px 32px !important;
+}
+
+.mx_Button_iconSignIn {
+    background-image: none !important;
+}
+
+.mx_ButtonRow > * {
+    margin: 0px !important;
+}
+
+.mx_ButtonLabel {
+    margin: 0px !important;
+}
+
+.mx_Login_submit,
+.mx_AccessibleButton.mx_AccessibleButton_hasKind {
+    border-radius: 1000px !important;
+}
