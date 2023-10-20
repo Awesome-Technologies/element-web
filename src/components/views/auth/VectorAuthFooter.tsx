@@ -17,7 +17,6 @@ limitations under the License.
 
 import React, { ReactElement } from "react";
 import SdkConfig from "matrix-react-sdk/src/SdkConfig";
-import { _t } from "matrix-react-sdk/src/languageHandler";
 
 const VectorAuthFooter = (): ReactElement => {
     const brandingConfig = SdkConfig.getObject("branding");
@@ -39,9 +38,6 @@ const VectorAuthFooter = (): ReactElement => {
     return (
         <footer className="mx_AuthFooter" role="contentinfo">
             {authFooterLinks}
-            <a href="https://matrix.org" target="_blank" rel="noreferrer noopener">
-                {_t("Powered by Matrix")}
-            </a>
         </footer>
     );
 };
