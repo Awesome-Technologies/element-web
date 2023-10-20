@@ -49,6 +49,7 @@ const DetailWindow: React.FC<IProps> = ({ onFinished, data }) => {
     let namePrefix: string | null = null;
     let qualification: string | null = null;
     let availableTimes: Array<string> | null = null;
+    let availableTimeTitle = "";
 
     switch (data.resourceType) {
         case "person":
@@ -60,6 +61,7 @@ const DetailWindow: React.FC<IProps> = ({ onFinished, data }) => {
                 <span className="aw_detailWindow__contentContainer__contactType person">{_t("Person")}</span>
             );
             qualification = data.qualification[0]?.code?.coding[0]?.display;
+            availableTimeTitle = _t("Availability");
             availableTimes = mapAvailableTimes(data.availableTime);
             break;
         case "group":
@@ -79,6 +81,7 @@ const DetailWindow: React.FC<IProps> = ({ onFinished, data }) => {
                 data.qualification[0]?.coding[0]?.system,
                 data.qualification[0]?.coding[0]?.code,
             );
+            availableTimeTitle = _t("Available times");
             availableTimes = mapAvailableTimes(data.availableTime);
             break;
         default:
@@ -118,7 +121,7 @@ const DetailWindow: React.FC<IProps> = ({ onFinished, data }) => {
                     <br />
                     {data.location[0]?.address?.state ? `${data.location[0].address.state}` : ""}
                 </span>
-                <span className="aw_detailWindow__contentContainer__title">{_t("Available times")}</span>
+                <span className="aw_detailWindow__contentContainer__title">{availableTimeTitle}</span>
                 <span className="aw_detailWindow__contentContainer__value">{availableTimes}</span>
             </div>
             <div className="aw_detailWindow__buttonContainer">

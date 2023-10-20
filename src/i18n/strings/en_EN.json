@@ -54,6 +54,7 @@
     "Phone": "Phone",
     "Location": "Location",
     "Available times": "Available times",
+    "Availability": "Availability",
     "Use %(brand)s on mobile": "Use %(brand)s on mobile",
     "Unsupported browser": "Unsupported browser",
     "Your browser can't run %(brand)s": "Your browser can't run %(brand)s",
