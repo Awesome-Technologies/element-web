@@ -69,8 +69,6 @@
 .aw_detailWindow__contentContainer__avatar {
     height: 128px;
     width: 128px;
-    background-color: #dadceb;
-    border-radius: 1000px;
     position: relative;
 }
 
