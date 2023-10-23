@@ -58,7 +58,18 @@ const DetailWindow: React.FC<IProps> = ({ onFinished, data }) => {
                 namePrefix = data.name[0].prefix[0];
             }
             contactTypeComponent = (
-                <span className="aw_detailWindow__contentContainer__contactType person">{_t("Person")}</span>
+                <div>
+                    <span className="aw_detailWindow__contentContainer__avatar__icon">
+                        <Icon
+                            style={{
+                                height: "60px",
+                                width: "60px",
+                            }}
+                            icon="avatarPerson"
+                        />
+                    </span>
+                    <span className="aw_detailWindow__contentContainer__contactType person">{_t("Person")}</span>
+                </div>
             );
             qualification = data.qualification[0]?.code?.coding[0]?.display;
             availableTimeTitle = _t("Availability");
@@ -73,9 +84,20 @@ const DetailWindow: React.FC<IProps> = ({ onFinished, data }) => {
         case "organization":
             name = data.name || "name error";
             contactTypeComponent = (
-                <span className="aw_detailWindow__contentContainer__contactType organisation">
-                    {_t("Organization")}
-                </span>
+                <div>
+                    <span className="aw_detailWindow__contentContainer__avatar__icon">
+                        <Icon
+                            style={{
+                                height: "60px",
+                                width: "60px",
+                            }}
+                            icon="avatarOrganization"
+                        />
+                    </span>
+                    <span className="aw_detailWindow__contentContainer__contactType organisation">
+                        {_t("Organization")}
+                    </span>
+                </div>
             );
             qualification = getCodeDisplay(
                 data.qualification[0]?.coding[0]?.system,

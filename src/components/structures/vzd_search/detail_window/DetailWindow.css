@@ -70,6 +70,14 @@
     height: 128px;
     width: 128px;
     position: relative;
+    background-color: #dadceb;
+    border-radius: 1000px;
+}
+
+.aw_detailWindow__contentContainer__avatar__icon {
+    position: relative;
+    top: 24px;
+    left: 34px;
 }
 
 .aw_detailWindow__contentContainer__contactType {
