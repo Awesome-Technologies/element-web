@@ -6,10 +6,12 @@
     "src/components/views/dialogs/InviteDialog.tsx": "src/components/views/dialogs/InviteDialog.tsx",
     "src/components/views/dialogs/UserSettingsDialog.tsx": "src/components/views/dialogs/UserSettingsDialog.tsx",
     "src/components/views/settings/ProfileSettings.tsx": "src/components/views/settings/ProfileSettings.tsx",
+    "src/components/views/settings/tabs/user/SecurityUserSettingsTab.tsx": "src/components/views/settings/tabs/user/SecurityUserSettingsTab.tsx",
     "src/components/structures/LeftPanel.tsx": "src/components/structures/LeftPanel.tsx",
     "src/components/structures/LoggedInView.tsx": "src/components/structures/LoggedInView.tsx",
     "src/components/views/dialogs/UserTab.ts": "src/components/views/dialogs/UserTab.ts",
     "src/Modal.tsx": "src/Modal.tsx",
+    "src/settings/Settings.tsx": "src/settings/Settings.tsx",
     "src/components/structures/RoomSearch.tsx": "src/components/structures/RoomSearch.tsx",
     "src/components/structures/TabbedView.tsx": "src/components/structures/TabbedView.tsx"
 }
