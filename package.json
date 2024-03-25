@@ -109,6 +109,7 @@
         "@types/jest": "^29.0.0",
         "@types/jitsi-meet": "^2.0.2",
         "@types/jsrsasign": "^10.5.4",
+        "@types/lodash": "^4.17.0",
         "@types/modernizr": "^3.5.3",
         "@types/node": "^16",
         "@types/node-fetch": "^2.6.4",
