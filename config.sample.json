@@ -9,10 +9,10 @@
     "disable_guests": true,
     "disable_login_language_selector": false,
     "disable_3pid_login": true,
-    "brand": "tim+",
+    "brand": "AMP.tim",
     "branding": {
         "welcome_background_url": "./tim-icons/background.jpg",
-        "auth_header_logo_url": "./tim-icons/tim+logo.svg",
+        "auth_header_logo_url": "./tim-icons/tim_logo.svg",
         "auth_footer_links": [{ "text": "FAQ", "url": "https://example.org/faq" }]
     },
     "_comment": {

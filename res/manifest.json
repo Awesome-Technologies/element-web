@@ -1,6 +1,6 @@
 {
-    "name": "tim+",
-    "short_name": "tim+",
+    "name": "AMP.tim",
+    "short_name": "AMP.tim",
     "display": "standalone",
     "theme_color": "#02c5d5",
     "start_url": "index.html",

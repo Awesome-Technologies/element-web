@@ -26,7 +26,7 @@ export default class VectorAuthHeaderLogo extends React.PureComponent {
 
         return (
             <aside className="tim_AuthHeaderLogo">
-                <img src={logoUrl} alt="tim+" />
+                <img src={logoUrl} alt="AMP.tim" />
             </aside>
         );
     }
