@@ -373,7 +373,7 @@ export const SETTINGS: { [setting: string]: ISetting } = {
     "sendReadReceipts": {
         supportedLevels: LEVELS_ACCOUNT_SETTINGS,
         displayName: _td("Send read receipts"),
-        default: true,
+        default: false,
         controller: new ServerSupportUnstableFeatureController(
             "sendReadReceipts",
             defaultWatchManager,
@@ -654,7 +654,7 @@ export const SETTINGS: { [setting: string]: ISetting } = {
     "sendTypingNotifications": {
         supportedLevels: LEVELS_ACCOUNT_SETTINGS,
         displayName: _td("Send typing notifications"),
-        default: true,
+        default: false,
         invertedSettingName: "dontSendTypingNotifications",
     },
     "showTypingNotifications": {
@@ -837,7 +837,7 @@ export const SETTINGS: { [setting: string]: ISetting } = {
             "default": _td("Never send encrypted messages to unverified sessions from this session"),
             "room-device": _td("Never send encrypted messages to unverified sessions in this room from this session"),
         },
-        default: false,
+        default: true,
         controller: new UIFeatureController(UIFeature.AdvancedEncryption),
     },
     "urlPreviewsEnabled": {
