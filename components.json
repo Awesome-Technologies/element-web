@@ -12,6 +12,7 @@
     "src/components/views/settings/tabs/user/SecurityUserSettingsTab.tsx": "src/components/views/settings/tabs/user/SecurityUserSettingsTab.tsx",
     "src/components/structures/LeftPanel.tsx": "src/components/structures/LeftPanel.tsx",
     "src/components/structures/LoggedInView.tsx": "src/components/structures/LoggedInView.tsx",
+    "src/components/structures/UserMenu.tsx": "src/components/structures/UserMenu.tsx",
     "src/components/views/dialogs/UserTab.ts": "src/components/views/dialogs/UserTab.ts",
     "src/Modal.tsx": "src/Modal.tsx",
     "src/Presence.ts": "src/Presence.ts",
