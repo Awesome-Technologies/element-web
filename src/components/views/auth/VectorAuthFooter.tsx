@@ -1,6 +1,7 @@
 /*
 Copyright 2015, 2016 OpenMarket Ltd
 Copyright 2019 New Vector Ltd
+Copyright 2024 Awesome Technologies Innovationslabor GmbH
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +18,7 @@ limitations under the License.
 
 import React, { ReactElement } from "react";
 import SdkConfig from "matrix-react-sdk/src/SdkConfig";
+import { _t } from "matrix-react-sdk/src/languageHandler";
 
 const VectorAuthFooter = (): ReactElement => {
     const brandingConfig = SdkConfig.getObject("branding");
@@ -38,6 +40,9 @@ const VectorAuthFooter = (): ReactElement => {
     return (
         <footer className="mx_AuthFooter" role="contentinfo">
             {authFooterLinks}
+            <a href="https://ti-messenger.chat/privacy" target="_blank" rel="noopener">
+                {_t("Privacy")}
+            </a>
         </footer>
     );
 };

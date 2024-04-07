@@ -60,5 +60,6 @@
     "sun": "Sonntag",
     "Bitte nutzen Sie den TI-Messenger nicht auf öffentlich zugänglichen Endgeräten oder Endgeräten ohne Sicherheitsüberwachung. Die Nutzung auf solchen Endgeräten erhöht das Risiko einer Kompromittierung Ihres Zugangs oder der Inhalte im TI-Messenger.": "Bitte nutzen Sie den TI-Messenger nicht auf öffentlich zugänglichen Endgeräten oder Endgeräten ohne Sicherheitsüberwachung. Die Nutzung auf solchen Endgeräten erhöht das Risiko einer Kompromittierung Ihres Zugangs oder der Inhalte im TI-Messenger.",
     "Auto logout": "Automatisches ausloggen",
-    "Time of inactivity until user is logged out (min)": "Dauer der Inaktivität, nach der automatisch ausgeloggt wird (min)"
+    "Time of inactivity until user is logged out (min)": "Dauer der Inaktivität, nach der automatisch ausgeloggt wird (min)",
+    "Privacy": "Datenschutz"
 }
