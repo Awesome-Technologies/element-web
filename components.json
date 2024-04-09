@@ -8,15 +8,18 @@
     "src/components/views/location/LocationPicker.tsx": "src/components/views/location/LocationPicker.tsx",
     "src/components/views/location/LocationShareMenu.tsx": "src/components/views/location/LocationShareMenu.tsx",
     "src/components/views/location/shareLocation.ts": "src/components/views/location/shareLocation.ts",
+    "src/components/views/room_settings/RoomProfileSettings.tsx": "src/components/views/room_settings/RoomProfileSettings.tsx",
     "src/components/views/settings/ProfileSettings.tsx": "src/components/views/settings/ProfileSettings.tsx",
     "src/components/views/settings/tabs/user/SecurityUserSettingsTab.tsx": "src/components/views/settings/tabs/user/SecurityUserSettingsTab.tsx",
     "src/components/structures/LeftPanel.tsx": "src/components/structures/LeftPanel.tsx",
     "src/components/structures/LoggedInView.tsx": "src/components/structures/LoggedInView.tsx",
     "src/components/structures/UserMenu.tsx": "src/components/structures/UserMenu.tsx",
     "src/components/views/dialogs/UserTab.ts": "src/components/views/dialogs/UserTab.ts",
+    "src/createRoom.ts": "src/createRoom.ts",
     "src/Modal.tsx": "src/Modal.tsx",
     "src/Presence.ts": "src/Presence.ts",
     "src/settings/Settings.tsx": "src/settings/Settings.tsx",
+    "src/hooks/room/useTopic.ts": "src/hooks/room/useTopic.ts",
     "src/components/structures/RoomSearch.tsx": "src/components/structures/RoomSearch.tsx",
     "src/components/structures/TabbedView.tsx": "src/components/structures/TabbedView.tsx"
 }
