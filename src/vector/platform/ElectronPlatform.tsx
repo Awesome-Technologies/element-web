@@ -276,6 +276,14 @@ export default class ElectronPlatform extends VectorBasePlatform {
         return this.ipc.call("getAppVersion");
     }
 
+    public async getBasedOnVersion(): Promise<string> {
+        return this.ipc.call("getBasedOnVersion");
+    }
+
+    public async getProductTypeVersion(): Promise<string> {
+        return this.ipc.call("getProductTypeVersion");
+    }
+
     public supportsSetting(settingName?: string): boolean {
         switch (settingName) {
             case "Electron.showTrayIcon": // Things other than Mac support tray icons

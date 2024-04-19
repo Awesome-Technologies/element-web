@@ -100,5 +100,10 @@
     "Automatic deletion of rooms": "Automatisches Löschen von Räumen",
     "Timespan after which inactive rooms are suggested for deletion": "Dauer der Inaktivität von Räumen nach der sie zur Löschung vorgeschlagen werden",
     "Timespan of inactivity of a room (days)": "Dauer der Inaktivität eines Raums (Tage)",
-    "You have inactive rooms. Do you want to delete them?": "Du hast inaktive Räume oder Gruppen. Möchtest du sie löschen?"
+    "You have inactive rooms. Do you want to delete them?": "Du hast inaktive Räume oder Gruppen. Möchtest du sie löschen?",
+    "Manufacturer ID:": "Hersteller-ID:",
+    "Short product name:": "Produktkürzel:",
+    "Product type:": "Produkttyp:",
+    "Product type version:": "Produkttypversion:",
+    "based on Element version:": "basierend auf Element Version:"
 }

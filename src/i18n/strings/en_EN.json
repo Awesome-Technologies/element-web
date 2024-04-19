@@ -118,5 +118,10 @@
     "Automatic deletion of rooms": "Automatic deletion of rooms",
     "Timespan after which inactive rooms are suggested for deletion": "Timespan after which inactive rooms are suggested for deletion",
     "Timespan of inactivity of a room (days)": "Timespan of inactivity of a room (days)",
-    "You have inactive rooms. Do you want to delete them?": "You have inactive rooms. Do you want to delete them?"
+    "You have inactive rooms. Do you want to delete them?": "You have inactive rooms. Do you want to delete them?",
+    "Manufacturer ID:": "Manufacturer ID:",
+    "Short product name:": "Short product name:",
+    "Product type:": "Product type:",
+    "Product type version:": "Product type version:",
+    "based on Element version:": "based on Element version:"
 }

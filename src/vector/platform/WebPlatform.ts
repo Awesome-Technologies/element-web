@@ -41,6 +41,8 @@ function getNormalizedAppVersion(version: string): string {
 
 export default class WebPlatform extends VectorBasePlatform {
     private static readonly VERSION = process.env.VERSION!; // baked in by Webpack
+    private static readonly BASEDONVERSION = process.env.BASEDONVERSION!; // baked in by Webpack
+    private static readonly PRODUCTTYPEVERSION = process.env.PRODUCTTYPEVERSION!; // baked in by Webpack
 
     public constructor() {
         super();
@@ -104,6 +106,14 @@ export default class WebPlatform extends VectorBasePlatform {
 
     public getAppVersion(): Promise<string> {
         return Promise.resolve(getNormalizedAppVersion(WebPlatform.VERSION));
+    }
+
+    public getBasedOnVersion(): Promise<string> {
+        return Promise.resolve(getNormalizedAppVersion(WebPlatform.BASEDONVERSION));
+    }
+
+    public getProductTypeVersion(): Promise<string> {
+        return Promise.resolve(getNormalizedAppVersion(WebPlatform.PRODUCTTYPEVERSION));
     }
 
     public startUpdater(): void {

@@ -87,4 +87,14 @@ export default abstract class VectorBasePlatform extends BasePlatform {
     public getDefaultDeviceDisplayName(): string {
         return _t("Unknown device");
     }
+
+    /**
+     * Returns a promise that resolves to a string representing the version of Element the application is based on.
+     */
+    public abstract getBasedOnVersion(): Promise<string>;
+
+    /**
+     * Returns a promise that resolves to a string representing the product type version (gematik specification) the application is based on.
+     */
+    public abstract getProductTypeVersion(): Promise<string>;
 }

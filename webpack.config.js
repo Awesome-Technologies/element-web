@@ -28,6 +28,8 @@ if (!ogImageUrl) ogImageUrl = "https://app.element.io/themes/element/img/logos/o
 if (!process.env.VERSION) {
     console.warn("Unset VERSION variable - this may affect build output");
     process.env.VERSION = "!!UNSET!!";
+    process.env.BASEDONVERSION = "!!UNSET!!";
+    process.env.PRODUCTTYPEVERSION = "!!UNSET!!";
 }
 
 const cssThemes = {
