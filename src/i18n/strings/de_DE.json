@@ -105,5 +105,7 @@
     "Short product name:": "Produktkürzel:",
     "Product type:": "Produkttyp:",
     "Product type version:": "Produkttypversion:",
-    "based on Element version:": "basierend auf Element Version:"
+    "based on Element version:": "basierend auf Element Version:",
+    "Failed to check federation status.": "Fehler beim Prüfen des Föderationsstatus.",
+    "Messenger-Service is not part of the federation. Please contact your administrator.": "Der Messenger-Service ist nicht Teil der Föderation. Bitte wenden Sie sich an Ihren Administrator."
 }

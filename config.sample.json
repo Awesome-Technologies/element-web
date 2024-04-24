@@ -39,7 +39,7 @@
     },
     "setting_defaults": {
         "fhir_vzd_base_url": "https://fhir-directory-ref.vzd.ti-dienste.de",
-        "contact_api_base_url": "https://tim.amp.chat/tim-contact-mgmt",
+        "messenger_proxy_base_url": "https://messenger-proxy.ti-messenger.chat",
         "breadcrumbs": true,
         "UIFeature.urlPreviews": false,
         "UIFeature.feedback": false,

@@ -85,7 +85,7 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
             openIdToken: "",
             tokenExpiry: new Date(),
             metaData: "",
-            api_url: config?.get("contact_api_base_url"),
+            api_url: config?.get("messenger_proxy_base_url") + "/tim-contact-mgmt",
             startInvite: 0,
             endInvite: 0,
             fieldValid: {},

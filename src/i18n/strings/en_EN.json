@@ -123,5 +123,7 @@
     "Short product name:": "Short product name:",
     "Product type:": "Product type:",
     "Product type version:": "Product type version:",
-    "based on Element version:": "based on Element version:"
+    "based on Element version:": "based on Element version:",
+    "Failed to check federation status.": "Failed to check federation status.",
+    "Messenger-Service is not part of the federation. Please contact your administrator.": "Messenger-Service is not part of the federation. Please contact your administrator."
 }
