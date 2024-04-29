@@ -1178,4 +1178,9 @@ export const SETTINGS: { [setting: string]: ISetting } = {
         displayName: _td("Time of inactivity until user is logged out"),
         default: 60,
     },
+    "roomInactivityTimespan": {
+        supportedLevels: [SettingLevel.DEVICE],
+        displayName: _td("Timespan after which inactive rooms are suggested for deletion"),
+        default: 180,
+    },
 };

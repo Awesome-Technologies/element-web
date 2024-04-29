@@ -96,5 +96,9 @@
     "Edit": "Bearbeiten",
     "Search contacts": "Kontakte durchsuchen",
     "No contacts in the whitelist": "Keine Kontakte in der Freigabeliste",
-    "No matches for: ": "Keine Kontakte gefunden mit: "
+    "No matches for: ": "Keine Kontakte gefunden mit: ",
+    "Automatic deletion of rooms": "Automatisches Löschen von Räumen",
+    "Timespan after which inactive rooms are suggested for deletion": "Dauer der Inaktivität von Räumen nach der sie zur Löschung vorgeschlagen werden",
+    "Timespan of inactivity of a room (days)": "Dauer der Inaktivität eines Raums (Tage)",
+    "You have inactive rooms. Do you want to delete them?": "Du hast inaktive Räume oder Gruppen. Möchtest du sie löschen?"
 }

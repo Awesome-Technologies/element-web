@@ -114,5 +114,9 @@
     "Edit": "Edit",
     "Search contacts": "Search Contacts",
     "No contacts in the whitelist": "No contacts in the whitelist",
-    "No matches for: ": "No matches for: "
+    "No matches for: ": "No matches for: ",
+    "Automatic deletion of rooms": "Automatic deletion of rooms",
+    "Timespan after which inactive rooms are suggested for deletion": "Timespan after which inactive rooms are suggested for deletion",
+    "Timespan of inactivity of a room (days)": "Timespan of inactivity of a room (days)",
+    "You have inactive rooms. Do you want to delete them?": "You have inactive rooms. Do you want to delete them?"
 }
