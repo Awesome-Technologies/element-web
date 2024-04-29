@@ -8,6 +8,7 @@ import React, { createContext, useContext, ReactNode } from "react";
 import { MatrixClientPeg } from "matrix-react-sdk/src/MatrixClientPeg";
 import { FHIRClient } from "tim-js-sdk";
 import SdkConfig from "matrix-react-sdk/src/SdkConfig";
+import { OwnerPollResponse } from "fhir-js-sdk";
 
 interface IProps {
     children: ReactNode;
@@ -15,7 +16,7 @@ interface IProps {
 
 const config = SdkConfig.getObject("setting_defaults");
 const FHIR_VZD_BASEURL = config?.get("fhir_vzd_base_url");
-const FHIRContext = createContext<any | undefined>(undefined);
+export const FHIRContext = createContext<any | undefined>(undefined);
 
 export function FHIRContextProvider({ children }: IProps): JSX.Element {
     const fhirClient = new FHIRClient({
@@ -41,12 +42,47 @@ export function FHIRContextProvider({ children }: IProps): JSX.Element {
         return allResults;
     };
 
+    const isOwnerLoggedIn = async (): Promise<boolean> => {
+        return await fhirClient.isOwnerLoggedIn();
+    };
+
+    const ownerLogin = async (): Promise<void> => {
+        await fhirClient.loginHbaUser();
+    };
+
+    const pollOwnerLogin = async (): Promise<OwnerPollResponse> => {
+        return await fhirClient.pollOwnerAuth();
+    };
+
+    const setOwnerVisibility = async (visibility: boolean): Promise<any> => {
+        return await fhirClient.setVzdVisibility(visibility);
+    };
+
+    const getContact = async (): Promise<any> => {
+        return await fhirClient.getMxidFromVzd();
+    };
+
+    const setContact = async (contact: boolean): Promise<any> => {
+        const userId = MatrixClientPeg.get()?.getUserId();
+        if (!userId) return;
+        let displayName = MatrixClientPeg.get()?.getUser(userId)?.displayName;
+        if (!displayName) displayName = userId;
+        if (contact) return await fhirClient.addMxidToVzd(userId, displayName);
+        else return await fhirClient.deleteMxidFromVzd();
+    };
+
     return (
         <FHIRContext.Provider
             value={{
                 searchPractitionerDirectory,
                 searchOrganizationDirectory,
                 searchDirectory,
+                isOwnerLoggedIn,
+                ownerLogin,
+                pollOwnerLogin,
+                setOwnerVisibility,
+                getContact,
+                setContact,
             }}
         >
             {children}

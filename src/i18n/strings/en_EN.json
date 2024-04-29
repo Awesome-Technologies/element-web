@@ -80,5 +80,16 @@
     "Bitte nutzen Sie den TI-Messenger nicht auf öffentlich zugänglichen Endgeräten oder Endgeräten ohne Sicherheitsüberwachung. Die Nutzung auf solchen Endgeräten erhöht das Risiko einer Kompromittierung Ihres Zugangs oder der Inhalte im TI-Messenger.": "Bitte nutzen Sie den TI-Messenger nicht auf öffentlich zugänglichen Endgeräten oder Endgeräten ohne Sicherheitsüberwachung. Die Nutzung auf solchen Endgeräten erhöht das Risiko einer Kompromittierung Ihres Zugangs oder der Inhalte im TI-Messenger.",
     "Auto logout": "Auto logout",
     "Time of inactivity until user is logged out (min)": "Time of inactivity until user is logged out (min)",
-    "Privacy": "Privacy"
+    "Privacy": "Privacy",
+    "Login with HBA": "Login with HBA",
+    "Directory": "Directory",
+    "No authentication process found": "No authentication process found",
+    "Authentication timed out": "Authentication timed out",
+    "Failed to start authentication": "Failed to start authentication",
+    "Authentication failed": "Authentication failed",
+    "Directory (FHIR VZD)": "Directory (FHIR VZD)",
+    "Visible": "Visible",
+    "Determines if you are visible and contactable in the directory.": "Determines if you are visible and contactable in the directory.",
+    "Add own contact": "Add own contact",
+    "Add your address (mxid) to the directory.": "Add your address (mxid) to the directory."
 }

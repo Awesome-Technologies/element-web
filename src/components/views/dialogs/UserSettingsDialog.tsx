@@ -38,6 +38,7 @@ import { NonEmptyArray } from "matrix-react-sdk/src/@types/common";
 
 import { UserTab } from "./UserTab";
 import FhirSettings from "../settings/FhirSettings";
+import { FHIRContextProvider } from "../../context/FHIRContext";
 
 interface IProps {
     initialTabId?: UserTab;
@@ -87,7 +88,7 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
         tabs.push(
             new Tab(
                 UserTab.FHIRTab,
-                _td("Visibility"),
+                _td("Directory"),
                 "mx_UserSettingsDialog_FhirIcon",
                 <FhirSettings />,
                 "UserSettingsAppearance",
@@ -209,11 +210,13 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
                 title={_t("Settings")}
             >
                 <div className="mx_SettingsDialog_content">
-                    <TabbedView
-                        tabs={this.getTabs()}
-                        initialTabId={this.props.initialTabId}
-                        screenName="UserSettings"
-                    />
+                    <FHIRContextProvider>
+                        <TabbedView
+                            tabs={this.getTabs()}
+                            initialTabId={this.props.initialTabId}
+                            screenName="UserSettings"
+                        />
+                    </FHIRContextProvider>
                 </div>
             </BaseDialog>
         );
