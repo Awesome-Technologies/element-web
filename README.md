@@ -371,8 +371,8 @@ You'll need to do this in each new terminal you open before building Element.
 
 ## TI-M
 
-The TI-Messenger flavor is using the fhir-js-sdk to communicate with the FHIR VZD.
-The fhir-js-sdk is added as a git submodule. After the first cloning of the element-web repository you have to initialize the submodule:
+The TI-Messenger flavor is using the fhir-js-sdk (through the tim-js-sdk) to communicate with the FHIR VZD.
+The tim-js-sdk is added as a git submodule. After the first cloning of the element-web repository you have to initialize the submodule:
 
 ```
 git submodule init

@@ -6,7 +6,7 @@ All rights reserved
 
 import React, { createContext, useContext, ReactNode } from "react";
 import { MatrixClientPeg } from "matrix-react-sdk/src/MatrixClientPeg";
-import * as fhirSdk from "fhir-js-sdk";
+import { FHIRClient } from "tim-js-sdk";
 import SdkConfig from "matrix-react-sdk/src/SdkConfig";
 
 interface IProps {
@@ -18,7 +18,7 @@ const FHIR_VZD_BASEURL = config?.get("fhir_vzd_base_url");
 const FHIRContext = createContext<any | undefined>(undefined);
 
 export function FHIRContextProvider({ children }: IProps): JSX.Element {
-    const fhirClient = fhirSdk.createClient({
+    const fhirClient = new FHIRClient({
         baseUrl: FHIR_VZD_BASEURL,
         userId: MatrixClientPeg.get()?.getUserId() as string | undefined,
         openIdTokenCallback: MatrixClientPeg.get()?.getOpenIdToken.bind(MatrixClientPeg.get()),
@@ -37,7 +37,7 @@ export function FHIRContextProvider({ children }: IProps): JSX.Element {
     const searchDirectory = async (options: any): Promise<any> => {
         const personResults = await fhirClient.searchPractitionerDirectory({ "practitioner.name": options.name });
         const organizationResults = await fhirClient.searchOrganizationDirectory({ "organization.name": options.name });
-        const allResults = personResults.concat(organizationResults);
+        const allResults = organizationResults ? personResults?.concat(organizationResults) : personResults;
         return allResults;
     };
 

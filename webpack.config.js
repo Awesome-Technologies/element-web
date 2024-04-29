@@ -128,6 +128,7 @@ module.exports = (env, argv) => {
     const reactSdkSrcDir = path.resolve(require.resolve("matrix-react-sdk/package.json"), "..", "src");
     const jsSdkSrcDir = path.resolve(require.resolve("matrix-js-sdk/package.json"), "..", "src");
     const fhirJsSdkSrcDir = path.resolve(require.resolve("fhir-js-sdk/package.json"), "..", "src");
+    const timJsSdkSrcDir = path.resolve(require.resolve("tim-js-sdk/package.json"), "..", "src");
     const ACTIVE_THEMES = getActiveThemes();
     function getThemesImports() {
         const imports = ACTIVE_THEMES.map((t) => {
@@ -216,6 +217,8 @@ module.exports = (env, argv) => {
                 // Same goes for js/react-sdk - we don't need two copies.
                 "matrix-js-sdk": path.resolve(__dirname, "node_modules/matrix-js-sdk"),
                 "matrix-react-sdk": path.resolve(__dirname, "node_modules/matrix-react-sdk"),
+                "fhir-js-sdk": path.resolve(__dirname, "node_modules/fhir-js-sdk"),
+
                 "@matrix-org/react-sdk-module-api": path.resolve(
                     __dirname,
                     "node_modules/@matrix-org/react-sdk-module-api",
@@ -275,6 +278,7 @@ module.exports = (env, argv) => {
                         if (f.startsWith(reactSdkSrcDir)) return true;
                         if (f.startsWith(jsSdkSrcDir)) return true;
                         if (f.startsWith(fhirJsSdkSrcDir)) return true;
+                        if (f.startsWith(timJsSdkSrcDir)) return true;
 
                         // Some of the syntax in this package is not understood by
                         // either webpack or our babel setup.
