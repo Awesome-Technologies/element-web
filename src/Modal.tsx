@@ -27,8 +27,10 @@ import classNames from "classnames";
 import { defer, sleep } from "matrix-js-sdk/src/utils";
 import { TypedEventEmitter } from "matrix-js-sdk/src/models/typed-event-emitter";
 import dis from "matrix-react-sdk/src/./dispatcher/dispatcher";
-import AsyncWrapper from "matrix-react-sdk/src/./AsyncWrapper";
-import { Defaultize } from "matrix-react-sdk/src/./@types/common";
+import AsyncWrapper from "matrix-react-sdk/src/AsyncWrapper";
+import { Defaultize } from "matrix-react-sdk/src/@types/common";
+
+import { FHIRContextProvider } from "./components/context/FHIRContext";
 
 const DIALOG_CONTAINER_ID = "mx_Dialog_Container";
 const STATIC_DIALOG_CONTAINER_ID = "mx_Dialog_StaticContainer";
@@ -189,7 +191,11 @@ export class ModalManager extends TypedEventEmitter<ModalManagerEvent, HandlerMa
 
         // FIXME: If a dialog uses getDefaultProps it clobbers the onFinished
         // property set here so you can't close the dialog from a button click!
-        modal.elem = <AsyncWrapper key={modalCount} prom={prom} {...props} onFinished={closeDialog} />;
+        modal.elem = (
+            <FHIRContextProvider>
+                <AsyncWrapper key={modalCount} prom={prom} {...props} onFinished={closeDialog} />
+            </FHIRContextProvider>
+        );
         modal.close = closeDialog;
 
         return { modal, closeDialog, onFinishedProm };

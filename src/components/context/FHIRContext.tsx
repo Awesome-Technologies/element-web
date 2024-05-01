@@ -14,11 +14,11 @@ interface IProps {
     children: ReactNode;
 }
 
-const config = SdkConfig.getObject("setting_defaults");
-const FHIR_VZD_BASEURL = config?.get("fhir_vzd_base_url");
 export const FHIRContext = createContext<any | undefined>(undefined);
 
 export function FHIRContextProvider({ children }: IProps): JSX.Element {
+    const config = SdkConfig.getObject("setting_defaults");
+    const FHIR_VZD_BASEURL = config?.get("fhir_vzd_base_url");
     const fhirClient = new FHIRClient({
         baseUrl: FHIR_VZD_BASEURL,
         userId: MatrixClientPeg.get()?.getUserId() as string | undefined,

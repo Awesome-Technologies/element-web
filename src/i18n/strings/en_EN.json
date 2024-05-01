@@ -91,5 +91,7 @@
     "Visible": "Visible",
     "Determines if you are visible and contactable in the directory.": "Determines if you are visible and contactable in the directory.",
     "Add own contact": "Add own contact",
-    "Add your address (mxid) to the directory.": "Add your address (mxid) to the directory."
+    "Add your address (mxid) to the directory.": "Add your address (mxid) to the directory.",
+    "Practitioner": "Practitioner",
+    "Organizations": "Organizations"
 }

@@ -73,5 +73,7 @@
     "Visible": "Sichtbar",
     "Determines if you are visible and contactable in the directory.": "Entscheidet ob Sie im zentralen Nutzerverzeichnis auffindbar und kontaktierbar sind.",
     "Add own contact": "Kontaktdaten hinzufügen",
-    "Add your address (mxid) to the directory.": "Füge deine Kontaktdaten (mxid) zum Verzeichnis hinzu."
+    "Add your address (mxid) to the directory.": "Füge deine Kontaktdaten (mxid) zum Verzeichnis hinzu.",
+    "Practitioner": "Personen",
+    "Organizations": "Organisationen"
 }

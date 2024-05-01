@@ -84,6 +84,10 @@ import AskInviteAnywayDialog, {
 } from "matrix-react-sdk/src/components/views/dialogs/AskInviteAnywayDialog";
 import { SdkContextClass } from "matrix-react-sdk/src/contexts/SDKContext";
 import { UserProfilesStore } from "matrix-react-sdk/src/stores/UserProfilesStore";
+import { ISearchResult } from "tim-js-sdk";
+import { HumanName } from "fhir/r4";
+
+import { FHIRContext } from "../../context/FHIRContext";
 
 // we have a number of types defined from the Matrix spec which can't reasonably be altered here.
 /* eslint-disable camelcase */
@@ -114,8 +118,20 @@ const extractTargetUnknownProfiles = async (
 
 interface Result {
     userId: string;
-    user: Member;
+    user: Member | Practitioner | Organization;
     lastActive?: number;
+}
+
+// interpretation of the Practitioner FHIR ressource from the VZD
+interface Practitioner extends Member {
+    fhirId: string;
+    address?: string;
+}
+
+// interpretation of the Organization FHIR ressource from the VZD
+interface Organization extends Member {
+    fhirId: string;
+    address?: string;
 }
 
 const INITIAL_ROOMS_SHOWN = 3; // Number of rooms to show at first
@@ -340,6 +356,10 @@ interface IInviteDialogState {
     numRecentsShown: number;
     suggestions: Result[];
     numSuggestionsShown: number;
+    numPractitionersShown: number;
+    practitioners: Result[];
+    numOrganizationsShown: number;
+    organizations: Result[];
     serverResultsMixin: Result[];
     threepidResultsMixin: Result[];
     canUseIdentityServer: boolean;
@@ -354,6 +374,8 @@ interface IInviteDialogState {
 }
 
 export default class InviteDialog extends React.PureComponent<Props, IInviteDialogState> {
+    public static contextType = FHIRContext;
+
     public static defaultProps: Partial<Props> = {
         kind: InviteKind.Dm,
         initialText: "",
@@ -366,8 +388,8 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
     private encryptionByDefault = false;
     private profilesStore: UserProfilesStore;
 
-    public constructor(props: Props) {
-        super(props);
+    public constructor(props: Props, context: any) {
+        super(props, context);
 
         if (props.kind === InviteKind.Invite && !props.roomId) {
             throw new Error("When using InviteKind.Invite a roomId is required for an InviteDialog");
@@ -398,6 +420,10 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
             numRecentsShown: INITIAL_ROOMS_SHOWN,
             suggestions: this.buildSuggestions(alreadyInvited),
             numSuggestionsShown: INITIAL_ROOMS_SHOWN,
+            practitioners: [],
+            numPractitionersShown: INITIAL_ROOMS_SHOWN,
+            organizations: [],
+            numOrganizationsShown: INITIAL_ROOMS_SHOWN,
             serverResultsMixin: [],
             threepidResultsMixin: [],
             canUseIdentityServer: !!MatrixClientPeg.safeGet().getIdentityServerUrl(),
@@ -806,6 +832,62 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
         }
     };
 
+    // search in VZD for persons
+    private updatePractitioners = async (term: string): Promise<void> => {
+        const fhirContext = this.context;
+        fhirContext
+            .searchPractitionerDirectory({ "practitioner.name": term })
+            .then(async (r: ISearchResult[]): Promise<void> => {
+                // add results to the result list
+                this.setState({
+                    practitioners: r.map((u: ISearchResult) => {
+                        const name = u.name as unknown as HumanName[];
+
+                        return {
+                            userId: u.mxid,
+                            user: {
+                                userId: u.mxid,
+                                name: name[0].text ? name[0].text : "",
+                                fhirId: u.id,
+                                getMxcAvatarUrl: () => undefined,
+                            },
+                        };
+                    }),
+                });
+            })
+            .catch((e: any) => {
+                logger.error("Error searching practitioner directory:");
+                logger.error(e);
+                this.setState({ practitioners: [] }); // clear results because it's moderately fatal
+            });
+    };
+
+    // search in VZD for organizations
+    private updateOrganizations = async (term: string): Promise<void> => {
+        const fhirContext = this.context;
+        fhirContext
+            .searchOrganizationDirectory({ "organization.name": term })
+            .then(async (r: ISearchResult[]): Promise<void> => {
+                // add results to the result list
+                this.setState({
+                    organizations: r.map((u) => ({
+                        userId: u.mxid,
+                        user: {
+                            userId: u.mxid,
+                            name: u.name,
+                            fhirId: u.id,
+                            getMxcAvatarUrl: () => undefined,
+                        },
+                    })),
+                });
+            })
+            .catch((e: any) => {
+                logger.error("Error searching organization directory:");
+                logger.error(e);
+                this.setState({ organizations: [] }); // clear results because it's moderately fatal
+            });
+    };
+
     private updateFilter = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const term = e.target.value;
         this.setState({ filterText: term });
@@ -818,6 +900,8 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
         }
         this.debounceTimer = window.setTimeout(() => {
             this.updateSuggestions(term);
+            this.updatePractitioners(term);
+            this.updateOrganizations(term);
         }, 150); // 150ms debounce (human reaction time + some)
     };
 
@@ -827,6 +911,14 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
 
     private showMoreSuggestions = (): void => {
         this.setState({ numSuggestionsShown: this.state.numSuggestionsShown + INCREMENT_ROOMS_SHOWN });
+    };
+
+    private showMorePractitioner = (): void => {
+        this.setState({ numPractitionersShown: this.state.numPractitionersShown + INCREMENT_ROOMS_SHOWN });
+    };
+
+    private showMoreOrganizations = (): void => {
+        this.setState({ numOrganizationsShown: this.state.numOrganizationsShown + INCREMENT_ROOMS_SHOWN });
     };
 
     private toggleMember = (member: Member): void => {
@@ -999,15 +1091,41 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
         this.props.onFinished(false);
     };
 
-    private renderSection(kind: "recents" | "suggestions"): ReactNode {
-        let sourceMembers = kind === "recents" ? this.state.recents : this.state.suggestions;
-        let showNum = kind === "recents" ? this.state.numRecentsShown : this.state.numSuggestionsShown;
-        const showMoreFn = kind === "recents" ? this.showMoreRecents.bind(this) : this.showMoreSuggestions.bind(this);
+    private renderSection(kind: "recents" | "suggestions" | "practitioner" | "organizations"): ReactNode {
+        let sourceMembers: Result[] = [];
+        let showNum = 0;
+        let showMoreFn = this.showMoreRecents.bind(this);
         const lastActive = (m: Result): number | undefined => (kind === "recents" ? m.lastActive : undefined);
-        let sectionName = kind === "recents" ? _t("Recent Conversations") : _t("Suggestions");
+        let sectionName;
+        switch (kind) {
+            case "recents":
+                sourceMembers = this.state.recents;
+                showNum = this.state.numRecentsShown;
+                showMoreFn = this.showMoreRecents.bind(this);
+                sectionName = _t("Recent Conversations");
+                break;
+            case "suggestions":
+                sourceMembers = this.state.suggestions;
+                showNum = this.state.numSuggestionsShown;
+                showMoreFn = this.showMoreSuggestions.bind(this);
+                sectionName = _t("Suggestions");
+                break;
+            case "practitioner":
+                sourceMembers = this.state.practitioners;
+                showNum = this.state.numPractitionersShown;
+                showMoreFn = this.showMorePractitioner.bind(this);
+                sectionName = _t("Practitioner");
+                break;
+            case "organizations":
+                sourceMembers = this.state.organizations;
+                showNum = this.state.numOrganizationsShown;
+                showMoreFn = this.showMoreOrganizations.bind(this);
+                sectionName = _t("Organizations");
+                break;
+        }
 
-        if (this.props.kind === InviteKind.Invite) {
-            sectionName = kind === "recents" ? _t("Recently Direct Messaged") : _t("Suggestions");
+        if (this.props.kind === InviteKind.Invite && kind === "recents") {
+            sectionName = _t("Recently Direct Messaged");
         }
 
         // Mix in the server results if we have any, but only if we're searching. We track the additional
@@ -1032,6 +1150,7 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
             priorityAdditionalMembers = this.state.threepidResultsMixin.filter(notAlreadyExists);
         }
         const hasAdditionalMembers = priorityAdditionalMembers.length > 0 || otherAdditionalMembers.length > 0;
+        const hasVZDMembers = this.state.practitioners || this.state.organizations;
 
         // Hide the section if there's nothing to filter by
         if (sourceMembers.length === 0 && !hasAdditionalMembers) return null;
@@ -1048,7 +1167,7 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
                 (m) => m.user.name.toLowerCase().includes(filterBy) || m.userId.toLowerCase().includes(filterBy),
             );
 
-            if (sourceMembers.length === 0 && !hasAdditionalMembers) {
+            if (sourceMembers.length === 0 && !hasAdditionalMembers && !hasVZDMembers) {
                 return (
                     <div className="mx_InviteDialog_section">
                         <h3>{sectionName}</h3>
@@ -1081,16 +1200,26 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
             );
         }
 
-        const tiles = toRender.map((r) => (
-            <DMRoomTile
-                member={r.user}
-                lastActiveTs={lastActive(r)}
-                key={r.user.userId}
-                onToggle={this.toggleMember}
-                highlightWord={this.state.filterText}
-                isSelected={this.state.targets.some((t) => t.userId === r.userId)}
-            />
-        ));
+        const tiles = toRender.map((r) => {
+            let key: string;
+            const user = r.user as Practitioner | Organization;
+            if (user.fhirId) {
+                key = user.fhirId;
+            } else {
+                key = r.user.userId;
+            }
+
+            return (
+                <DMRoomTile
+                    member={r.user}
+                    lastActiveTs={lastActive(r)}
+                    key={key}
+                    onToggle={this.toggleMember}
+                    highlightWord={this.state.filterText}
+                    isSelected={this.state.targets.some((t) => t.userId === r.userId)}
+                />
+            );
+        });
         return (
             <div className="mx_InviteDialog_section">
                 <h3>{sectionName}</h3>
@@ -1479,6 +1608,8 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
                 <div className="mx_InviteDialog_userSections">
                     {this.renderSection("recents")}
                     {this.renderSection("suggestions")}
+                    {this.renderSection("practitioner")}
+                    {this.renderSection("organizations")}
                     {extraSection}
                 </div>
             );
