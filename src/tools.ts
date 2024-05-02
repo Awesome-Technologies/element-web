@@ -4,7 +4,9 @@ Copyright 2023 Awesome Technologies Innovationslabor GmbH
 All rights reserved
 */
 
-import organizationProfessionOID from "./code-systems/organizationProfessionOID";
+import OrganizationProfessionOID from "./code-systems/OrganizationProfessionOID";
+import PractitionerProfessionOID from "./code-systems/PractitionerProfessionOID";
+import PractitionerQualificationVS from "./code-systems/PractitionerQualificationVS";
 
 export const levenshteinDistance = (a: string, b: string): number => {
     const m: number = a.length;
@@ -46,13 +48,29 @@ interface CodeConcept {
 }
 
 export const getCodeDisplay = (systemName: string, code: string): string => {
-    const codeSystem: Record<string, CodeConcept[]> = {
-        "https://gematik.de/fhir/directory/CodeSystem/OrganizationProfessionOID": organizationProfessionOID.concept,
+    const codeSystem: Record<string, CodeConcept[] | undefined> = {
+        "https://gematik.de/fhir/directory/CodeSystem/OrganizationProfessionOID": OrganizationProfessionOID.concept,
+        "https://gematik.de/fhir/directory/CodeSystem/PractitionerProfessionOID": PractitionerProfessionOID.concept,
+        "urn:oid:1.2.276.0.76.5.114": PractitionerQualificationVS.compose.include.find(
+            (x) => x.system === "urn:oid:1.2.276.0.76.5.114",
+        )?.concept,
+        "urn:oid:1.2.276.0.76.5.514": PractitionerQualificationVS.compose.include.find(
+            (x) => x.system === "urn:oid:1.2.276.0.76.5.514",
+        )?.concept,
+        "urn:oid:1.2.276.0.76.5.492": PractitionerQualificationVS.compose.include.find(
+            (x) => x.system === "urn:oid:1.2.276.0.76.5.492",
+        )?.concept,
+        "urn:oid:1.3.6.1.4.1.19376.3.276.1.5.11": PractitionerQualificationVS.compose.include.find(
+            (x) => x.system === "urn:oid:1.3.6.1.4.1.19376.3.276.1.5.11",
+        )?.concept,
+        "urn:oid:1.2.276.0.76.5.493": PractitionerQualificationVS.compose.include.find(
+            (x) => x.system === "urn:oid:1.2.276.0.76.5.493",
+        )?.concept,
     };
 
     if (!codeSystem[systemName]) return `Code system "${systemName}" not found`;
 
-    const concept = codeSystem[systemName].find((item) => item.code === code);
+    const concept = codeSystem[systemName]?.find((item) => item.code === code);
 
     return concept ? concept.display : `Code "${code}" not found`;
 };

@@ -13,7 +13,6 @@ export default {
     title: "CodeSystem for ProfessionOID of Institutions",
     description:
         "The codes for Organizations based on Profession OIDs defined in [gemSpec_OID](https://fachportal.gematik.de/fachportal-import/files/gemSpec_OID_V3.10.0.pdf)",
-    version: "0.10.1",
     url: "https://gematik.de/fhir/directory/CodeSystem/OrganizationProfessionOID",
     concept: [
         {
@@ -229,6 +228,10 @@ export default {
             display: "Ernährungstherapeutische Praxis",
         },
         {
+            code: "1.2.276.0.76.4.282",
+            display: "DIGA-Hersteller und Anbieter",
+        },
+        {
             code: "1.2.276.0.76.4.284",
             display: "Betriebsstätte Weitere Kostenträger im Gesundheitswesen",
         },
@@ -240,8 +243,29 @@ export default {
             code: "1.2.276.0.76.4.286",
             display: "KIM-Hersteller und -Anbieter",
         },
+        {
+            code: "1.2.276.0.76.4.292",
+            display: "NCPeH Fachdienst",
+        },
+        {
+            code: "1.2.276.0.76.4.295",
+            display: "TIM-Hersteller und -Anbieter",
+        },
+        {
+            code: "1.2.276.0.76.4.303",
+            display: "Ombudsstelle eines Kostenträgers",
+        },
+        {
+            code: "1.2.276.0.76.4.304",
+            display: "Betriebsstätte Augenoptiker und Hörakustiker",
+        },
+        {
+            code: "1.2.276.0.76.4.306",
+            display: "Betriebsstätte Orthopädieschuhmacher und Orthopädietechniker",
+        },
     ],
     publisher: "gematik GmbH",
+    version: "0.11.5",
     caseSensitive: false,
-    count: 56,
+    count: 62,
 };
