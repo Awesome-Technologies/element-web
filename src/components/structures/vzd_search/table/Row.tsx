@@ -56,7 +56,11 @@ const Row: React.FC<IProps> = ({ data }) => {
                 </span>
             );
             data.qualification.forEach((element: any) => {
-                type.push(element?.code?.coding?.[0]?.display);
+                if (element?.code?.coding?.[0]?.display) {
+                    type.push(element?.code?.coding?.[0]?.display);
+                } else {
+                    type.push(getCodeDisplay(element?.code?.coding?.[0]?.system, element?.code?.coding?.[0]?.code));
+                }
             });
             break;
         case "organization":
