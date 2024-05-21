@@ -1,0 +1,99 @@
+.aw_whitelist_table__container {
+    display: flex;
+    flex-direction: column;
+}
+
+.aw_WhitelistTable_searchBar {
+    border: none !important;
+    padding: 8px 16px 8px 16px !important;
+    margin: 0 0 16px 0 !important;
+    color: black !important;
+    border-radius: 1000px !important;
+    font-size: 16px !important;
+    align-self: stretch !important;
+    background-color: #f0f0f4 !important;
+}
+
+.aw_whitelist_table__container {
+    overflow: auto;
+    position: relative;
+    flex: 1;
+    flex-shrink: 1;
+    border-radius: 12px;
+}
+
+.aw_whitelist_table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.aw_whitelist_table__header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 25px 20px -20px;
+}
+
+.aw_whitelist_columnHeader {
+    display: flex;
+    color: #6f727a;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px;
+    gap: 8px;
+    user-select: none;
+    align-items: center;
+    background-color: white;
+    border-bottom: 2px solid #e0e2e7;
+}
+
+.aw_whitelist_columnHeader > span {
+    display: flex;
+    align-items: center;
+}
+
+th {
+    padding: 0;
+}
+
+th:nth-child(1) {
+    width: 40%;
+}
+
+th:nth-child(2) {
+    width: 40%;
+}
+
+th:nth-child(3) {
+    width: 20%;
+}
+
+th:nth-child(3) > .aw_columnHeader {
+    justify-content: flex-end;
+}
+
+.aw_whitelist_table__message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+    gap: 16px;
+    color: #9296b8;
+    padding-top: 50px;
+    padding-bottom: 50px;
+}
+
+.aw_whitelist_table__message > span {
+    font-size: 20px;
+    text-align: center;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.aw_whitelist_table__container > input {
+    border: 1px black;
+}

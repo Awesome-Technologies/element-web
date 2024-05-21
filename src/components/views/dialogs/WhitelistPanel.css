@@ -1,0 +1,12 @@
+.aw_WhitelistPanel_warningContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #f0d07a;
+    background-color: #f0d07a34;
+    padding: 32px;
+    border-radius: 16px;
+    color: #402900;
+    gap: 16px;
+    font-weight: 500;
+}

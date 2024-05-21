@@ -27,6 +27,7 @@ import { _t } from "matrix-react-sdk/src/languageHandler";
 import Spinner from "matrix-react-sdk/src/components/views/elements/Spinner";
 
 import { FHIRContext } from "../../context/FHIRContext";
+import WhitelistPanel from "../dialogs/WhitelistPanel";
 
 interface IState {
     visibility: boolean;
@@ -149,11 +150,20 @@ export default class FhirSettings extends React.Component<any, IState> {
     };
 
     public render(): React.ReactNode {
-        const content = [];
+        const whitelist = (
+            <div>
+                <SettingsSubsectionText style={{ margin: "0px 0px 10px 0px", fontSize: "13px" }}>
+                    {_t("Add a contact to the whitelist")}
+                </SettingsSubsectionText>
+                <WhitelistPanel />
+            </div>
+        );
+
+        const fhirVzdContent = [];
         if (!this.state.loggedIn) {
             if (this.state.loginInProgress) {
                 // show spinner and poll for updates
-                content.push(
+                fhirVzdContent.push(
                     <>
                         <Spinner w={40} h={40} />
                         <AccessibleButton
@@ -168,7 +178,7 @@ export default class FhirSettings extends React.Component<any, IState> {
                 );
             } else {
                 // show button to start hba login flow
-                content.push(
+                fhirVzdContent.push(
                     <AccessibleButton
                         kind="primary"
                         key="login"
@@ -182,14 +192,14 @@ export default class FhirSettings extends React.Component<any, IState> {
 
             if (this.state.errorText) {
                 // style error message
-                content.push(
+                fhirVzdContent.push(
                     <div className="error" key="error">
                         {this.state.errorText}
                     </div>,
                 );
             }
         } else {
-            content.push(
+            fhirVzdContent.push(
                 <>
                     <SettingsSubsectionText>{_t("Settings for the directory")}</SettingsSubsectionText>
                     <LabelledToggleSwitch
@@ -211,8 +221,10 @@ export default class FhirSettings extends React.Component<any, IState> {
         }
         return (
             <SettingsTab>
+                <SettingsSection heading={_t("Whitelist")} key="whitelist" />
+                {whitelist}
                 <SettingsSection heading={_t("Directory (FHIR VZD)")} key="fhirvzd" />
-                {content}
+                {fhirVzdContent}
             </SettingsTab>
         );
     }

@@ -25,7 +25,7 @@ export default class AuthBody extends React.PureComponent {
                 <br />
                 <span>
                     {_t(
-                        "Bitte nutzen Sie den TI-Messenger nicht auf öffentlich zugänglichen Endgeräten oder Endgeräten ohne Sicherheitsüberwachung. Die Nutzung auf solchen Endgeräten erhöht das Risiko einer Kompromittierung Ihres Zugangs oder der Inhalte im TI-Messenger.",
+                        "Please do not use the TI-Messenger on publicly accessible devices or devices without security monitoring. Use on such devices increases the risk of your access or the content in TI Messenger being compromised.",
                     )}
                 </span>
             </div>
