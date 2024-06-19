@@ -9,6 +9,7 @@
     "src/components/views/location/LocationPicker.tsx": "src/components/views/location/LocationPicker.tsx",
     "src/components/views/location/LocationShareMenu.tsx": "src/components/views/location/LocationShareMenu.tsx",
     "src/components/views/location/shareLocation.ts": "src/components/views/location/shareLocation.ts",
+    "src/components/views/rooms/NewRoomIntro.tsx": "src/components/views/rooms/NewRoomIntro.tsx",
     "src/components/views/rooms/RoomList.tsx": "src/components/views/rooms/RoomList.tsx",
     "src/components/views/room_settings/RoomProfileSettings.tsx": "src/components/views/room_settings/RoomProfileSettings.tsx",
     "src/components/views/settings/ProfileSettings.tsx": "src/components/views/settings/ProfileSettings.tsx",
