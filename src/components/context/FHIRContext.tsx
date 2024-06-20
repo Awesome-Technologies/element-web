@@ -6,9 +6,8 @@ All rights reserved
 
 import React, { createContext, useContext, ReactNode } from "react";
 import { MatrixClientPeg } from "matrix-react-sdk/src/MatrixClientPeg";
-import { FHIRClient } from "tim-js-sdk";
 import SdkConfig from "matrix-react-sdk/src/SdkConfig";
-import { OwnerPollResponse } from "fhir-js-sdk";
+import { FHIRClient, OwnerPollResponse } from "fhir-js-sdk";
 
 interface IProps {
     children: ReactNode;

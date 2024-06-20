@@ -6058,17 +6058,6 @@ fflate@^0.4.1:
   resolved "https://registry.yarnpkg.com/fflate/-/fflate-0.4.8.tgz#f90b82aefbd8ac174213abb338bd7ef848f0f5ae"
   integrity sha512-FJqqoDBR00Mdj9ppamLa/Y7vxm+PRmNWA67N846RvsoYVMKB4q3y/de5PA7gUmRMYK/8CMz2GDZQmCRN1wBcWA==
 
-"fhir-js-sdk@file:../tim-js-sdk/packages/fhir-js-sdk":
-  version "0.1.0"
-  dependencies:
-    "@babel/runtime" "^7.12.5"
-    another-json "^0.2.0"
-    bs58 "^5.0.0"
-    content-type "^1.0.4"
-    jwt-decode "^3.1.2"
-    loglevel "^1.7.1"
-    unhomoglyph "^1.0.6"
-
 "fhir-js-sdk@link:../tim-js-sdk/packages/fhir-js-sdk":
   version "0.0.0"
   uid ""
@@ -12688,10 +12677,6 @@ thunky@^1.0.2:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/thunky/-/thunky-1.1.0.tgz#5abaf714a9405db0504732bbccd2cedd9ef9537d"
   integrity sha512-eHY7nBftgThBqOyHGVN+l8gF0BucP09fMo0oO/Lb0w1OF80dJv+lDVpXG60WMQvkcxAkNybKsrEIE3ZtKGmPrA==
-
-"tim-js-sdk@link:../tim-js-sdk/packages/core":
-  version "0.0.0"
-  uid ""
 
 timers-browserify@^2.0.4:
   version "2.0.12"

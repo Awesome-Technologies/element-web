@@ -84,7 +84,7 @@ import AskInviteAnywayDialog, {
 } from "matrix-react-sdk/src/components/views/dialogs/AskInviteAnywayDialog";
 import { SdkContextClass } from "matrix-react-sdk/src/contexts/SDKContext";
 import { UserProfilesStore } from "matrix-react-sdk/src/stores/UserProfilesStore";
-import { ISearchResult } from "tim-js-sdk";
+import { ISearchResult } from "fhir-js-sdk";
 import { HumanName } from "fhir/r4";
 
 import { FHIRContext } from "../../context/FHIRContext";
@@ -874,7 +874,7 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
                         userId: u.mxid,
                         user: {
                             userId: u.mxid,
-                            name: u.name,
+                            name: u.name as string,
                             fhirId: u.id,
                             getMxcAvatarUrl: () => undefined,
                         },

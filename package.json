@@ -83,7 +83,6 @@
         "matrix-widget-api": "^1.3.1",
         "react": "17.0.2",
         "react-dom": "17.0.2",
-        "tim-js-sdk": "link:../tim-js-sdk/packages/core",
         "ua-parser-js": "^1.0.0"
     },
     "devDependencies": {
