@@ -39,7 +39,7 @@
     },
     "setting_defaults": {
         "fhir_vzd_base_url": "https://fhir-directory-ref.vzd.ti-dienste.de",
-        "messenger_proxy_base_url": "https://messenger-proxy.ti-messenger.chat",
+        "messenger_proxy_base_url": "https://test1.ti-messenger.chat/proxy",
         "breadcrumbs": true,
         "UIFeature.urlPreviews": false,
         "UIFeature.feedback": false,

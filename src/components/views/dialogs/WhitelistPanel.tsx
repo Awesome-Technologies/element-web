@@ -24,7 +24,6 @@ import withValidation, {
 import AccessibleButton from "matrix-react-sdk/src/components/views/elements/AccessibleButton";
 import { _t } from "matrix-react-sdk/src/languageHandler";
 import { MatrixClientPeg } from "matrix-react-sdk/src/MatrixClientPeg";
-import SdkConfig from "matrix-react-sdk/src/SdkConfig";
 
 import "./WhitelistPanel.css";
 import WhitelistTable from "./whitelist/table/WhitelistTable";
@@ -76,8 +75,7 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
     public constructor(props: IProps) {
         super(props);
 
-        const config = SdkConfig.getObject("setting_defaults");
-
+        const client = MatrixClientPeg.get();
         this.state = {
             mxid: "",
             displayName: "",
@@ -85,7 +83,7 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
             openIdToken: "",
             tokenExpiry: new Date(),
             metaData: "",
-            api_url: config?.get("messenger_proxy_base_url") + "/tim-contact-mgmt",
+            api_url: client!.getHomeserverUrl() + "/proxy/tim-contact-mgmt",
             startInvite: 0,
             endInvite: 0,
             fieldValid: {},
