@@ -28,7 +28,13 @@ if (!ogImageUrl) ogImageUrl = "https://app.element.io/themes/element/img/logos/o
 if (!process.env.VERSION) {
     console.warn("Unset VERSION variable - this may affect build output");
     process.env.VERSION = "!!UNSET!!";
+}
+if (!process.env.BASEDONVERSION) {
+    console.warn("Unset BASEDONVERSION variable - this may affect build output");
     process.env.BASEDONVERSION = "!!UNSET!!";
+}
+if (!process.env.PRODUCTTYPEVERSION) {
+    console.warn("Unset PRODUCTTYPEVERSION variable - this may affect build output");
     process.env.PRODUCTTYPEVERSION = "!!UNSET!!";
 }
 
@@ -695,7 +701,7 @@ module.exports = (env, argv) => {
                         console.log(`::warning title=Sentry error::${err.message}`);
                     },
                 }),
-            new webpack.EnvironmentPlugin(["VERSION"]),
+            new webpack.EnvironmentPlugin(["VERSION", "BASEDONVERSION", "PRODUCTTYPEVERSION"]),
         ].filter(Boolean),
 
         output: {

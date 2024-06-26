@@ -82,7 +82,7 @@ export default class HelpUserSettingsTab extends React.Component<IProps, IState>
                 logger.error("Error getting vector version: ", e);
             });
         platform
-            .getBasedOnVersion()
+            .getProductTypeVersion()
             .then((ver) => this.setState({ productTypeVersion: ver }))
             .catch((e) => {
                 logger.error("Error getting product type version: ", e);
