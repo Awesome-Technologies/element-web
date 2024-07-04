@@ -551,19 +551,12 @@ export default class RoomList extends React.PureComponent<IProps, IState> {
         const roomInactivityTimespan = SettingsStore.getValue("roomInactivityTimespan");
         // calculate inactivity timespan in milliseconds
         const inactivityThreshold = Date.now() - roomInactivityTimespan * 24 * 60 * 60 * 1000;
-        console.log("AMP TEST");
-        //console.log(inactivityThreshold);
-        //console.log(newLists);
+
         const inactiveRooms = [];
         for (const tag in newLists) {
-            //console.log(tag);
             for (const room of newLists[tag]) {
-                //console.log(room);
-                //console.log(room.roomId);
-                //console.log(room.getLastActiveTimestamp());
                 const difference = room.getLastActiveTimestamp() - inactivityThreshold;
                 if (difference < 0) inactiveRooms.push(room.roomId);
-                //console.log(difference);
             }
         }
         console.log(inactiveRooms);
