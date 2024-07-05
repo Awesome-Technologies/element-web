@@ -701,6 +701,7 @@ module.exports = (env, argv) => {
                         console.log(`::warning title=Sentry error::${err.message}`);
                     },
                 }),
+
             new webpack.EnvironmentPlugin(["VERSION", "BASEDONVERSION", "PRODUCTTYPEVERSION"]),
         ].filter(Boolean),
 
