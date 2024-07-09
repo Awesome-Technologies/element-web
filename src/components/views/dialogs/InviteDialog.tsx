@@ -842,11 +842,12 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
                 this.setState({
                     practitioners: r.map((u: ISearchResult) => {
                         const name = u.name as unknown as HumanName[];
+                        const mxid = "@" + u.mxid.split("matrix:u/")[1];
 
                         return {
-                            userId: u.mxid,
+                            userId: mxid,
                             user: {
-                                userId: u.mxid,
+                                userId: mxid,
                                 name: name[0].text ? name[0].text : "",
                                 fhirId: u.id,
                                 getMxcAvatarUrl: () => undefined,
@@ -870,15 +871,18 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
             .then(async (r: ISearchResult[]): Promise<void> => {
                 // add results to the result list
                 this.setState({
-                    organizations: r.map((u) => ({
-                        userId: u.mxid,
-                        user: {
-                            userId: u.mxid,
-                            name: u.name as string,
-                            fhirId: u.id,
-                            getMxcAvatarUrl: () => undefined,
-                        },
-                    })),
+                    organizations: r.map((u: ISearchResult) => {
+                        const mxid = "@" + u.mxid.split("matrix:u/")[1];
+                        return {
+                            userId: mxid,
+                            user: {
+                                userId: mxid,
+                                name: u.name as string,
+                                fhirId: u.id,
+                                getMxcAvatarUrl: () => undefined,
+                            },
+                        };
+                    }),
                 });
             })
             .catch((e: any) => {

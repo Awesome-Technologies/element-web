@@ -66,7 +66,11 @@ export function FHIRContextProvider({ children }: IProps): JSX.Element {
         if (!userId) return;
         let displayName = MatrixClientPeg.get()?.getUser(userId)?.displayName;
         if (!displayName) displayName = userId;
-        if (contact) return await fhirClient.addMxidToVzd(userId, displayName);
+
+        // convert mxid to uri scheme
+        const mxidURI = "matrix:u/" + userId.split("@")[1];
+
+        if (contact) return await fhirClient.addMxidToVzd(mxidURI, displayName);
         else return await fhirClient.deleteMxidFromVzd();
     };
 
