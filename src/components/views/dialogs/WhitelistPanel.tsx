@@ -333,7 +333,9 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
             {
                 key: "pattern",
                 test({ value }): boolean | Promise<boolean> {
-                    return /@[a-z0-9-_.]{1,248}:(?!-)[A-Za-z0-9-]+([\\-\\.]{1}[a-z0-9]+)*\.[A-Za-z]{2,6}$/.test(value!);
+                    return /@[a-z0-9-_.]{1,248}:(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/.test(
+                        value!,
+                    );
                 },
                 invalid: (): string | null => _t("wrong MXID format"),
             },
