@@ -43,13 +43,6 @@ exports[`<VectorAuthPage /> should match snapshot 1`] = `
       >
         GitHub
       </a>
-      <a
-        href="https://ti-messenger.chat/privacy"
-        rel="noopener"
-        target="_blank"
-      >
-        Privacy
-      </a>
     </footer>
   </div>
 </DocumentFragment>

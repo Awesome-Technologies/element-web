@@ -13,7 +13,10 @@
     "branding": {
         "welcome_background_url": "./tim-icons/background.jpg",
         "auth_header_logo_url": "./tim-icons/tim_logo.svg",
-        "auth_footer_links": [{ "text": "FAQ", "url": "https://example.org/faq" }]
+        "auth_footer_links": [
+            { "text": "FAQ", "url": "https://example.org/faq" },
+            { "text": "Datenschutz", "url": "https://ti-messenger.chat/privacy" }
+        ]
     },
     "_comment": {
         "embedded_pages": {
@@ -34,6 +37,7 @@
     "default_federate": true,
     "default_theme": "custom-awesome",
     "permalink_prefix": "https://tim.amp.chat",
+    "privacy_policy_url": "https://ti-messenger.chat/privacy",
     "room_directory": {
         "servers": ["tim.amp.chat"]
     },
