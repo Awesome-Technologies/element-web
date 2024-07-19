@@ -298,7 +298,7 @@ export default class UserMenu extends React.Component<IProps, IState> {
         ev.preventDefault();
         ev.stopPropagation();
 
-        window.open("https://ti-messenger.chat/privacy", "_blank");
+        window.open("https://ti-messenger.chat/privacy", "_blank", "noopener");
         this.setState({ contextMenuPosition: null }); // also close the menu
     };
 
