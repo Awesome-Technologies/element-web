@@ -2,6 +2,7 @@
 Copyright 2015, 2016 OpenMarket Ltd
 Copyright 2018 New Vector Ltd
 Copyright 2019 The Matrix.org Foundation C.I.C.
+Copyright 2024 Awesome Technologies Innovationslabor GmbH
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,7 +25,7 @@ import { MatrixClientPeg } from "matrix-react-sdk/src/MatrixClientPeg";
 import dis from "matrix-react-sdk/src/dispatcher/dispatcher";
 import Timer from "matrix-react-sdk/src/utils/Timer";
 import { ActionPayload } from "matrix-react-sdk/src/dispatcher/payloads";
-import { softLogout } from "matrix-react-sdk/src/Lifecycle";
+import { logout } from "matrix-react-sdk/src/Lifecycle";
 import SettingsStore from "matrix-react-sdk/src/settings/SettingsStore";
 
 // Time in ms after that a user is considered as unavailable/away
@@ -47,10 +48,8 @@ class Presence {
      * Any state change will be sent to the homeserver.
      */
     public async start(): Promise<void> {
-        // load time from settings
-        const inactivityTimeOnLock = SettingsStore.getValue("inactivityTimeOnLock");
-        // set autoLogout timer to the value stored in the settings minus the three minutes of the unavailable timer
-        this.autoLogoutTimer = new Timer(inactivityTimeOnLock * 60 * 1000 - UNAVAILABLE_TIME_MS);
+        // also start the autologout timer
+        this.startAutologout();
 
         this.unavailableTimer = new Timer(UNAVAILABLE_TIME_MS);
         // the user_activity_start action starts the timer
@@ -59,19 +58,30 @@ class Presence {
             try {
                 await this.unavailableTimer.finished();
                 this.setState(State.Unavailable);
-
-                // wait until auto logout timer finished to soft logout
-                while (this.autoLogoutTimer) {
-                    try {
-                        await this.autoLogoutTimer.finished();
-                        // do a soft logout
-                        softLogout();
-                    } catch (e) {
-                        /* aborted, stop got called */
-                    }
-                }
             } catch (e) {
                 /* aborted, stop got called */
+            }
+        }
+    }
+
+    /**
+     * Start listening the user activity to evaluate the autologout time.
+     */
+    public async startAutologout(): Promise<void> {
+        // load time from settings
+        const inactivityTimeOnLock = SettingsStore.getValue("inactivityTimeOnLock");
+        // set autoLogout timer to the value stored in the settings
+        const autoLogoutTime: number = +(inactivityTimeOnLock * 60 * 1000);
+        this.autoLogoutTimer = new Timer(autoLogoutTime);
+
+        while (this.autoLogoutTimer) {
+            try {
+                await this.autoLogoutTimer.finished();
+                // logout the user
+                logout();
+            } catch (e) {
+                /* aborted, stop got called */
+                console.log("Autologout timer was stopped.");
             }
         }
     }
@@ -87,6 +97,11 @@ class Presence {
         if (this.unavailableTimer) {
             this.unavailableTimer.abort();
             this.unavailableTimer = null;
+        }
+
+        if (this.autoLogoutTimer) {
+            this.autoLogoutTimer.abort();
+            this.autoLogoutTimer = null;
         }
     }
 

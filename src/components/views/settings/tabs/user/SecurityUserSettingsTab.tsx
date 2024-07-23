@@ -48,6 +48,7 @@ import { SettingsSection } from "matrix-react-sdk/src/components/views/settings/
 import SettingsSubsection, {
     SettingsSubsectionText,
 } from "matrix-react-sdk/src/components/views/settings/shared/SettingsSubsection";
+import Presence from "matrix-react-sdk/src/Presence";
 
 import type { IServerVersions } from "matrix-js-sdk/src/matrix";
 
@@ -236,8 +237,14 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
 
     // save time of inactivity until user is logged out
     private onInactivityTimeOnLockChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-        this.setState({ inactivityTimeOnLock: e.target.value });
-        SettingsStore.setValue("inactivityTimeOnLock", null, SettingLevel.DEVICE, e.target.value);
+        if (+e.target.value > 0) {
+            // check for positive time values
+            this.setState({ inactivityTimeOnLock: e.target.value });
+            SettingsStore.setValue("inactivityTimeOnLock", null, SettingLevel.DEVICE, e.target.value);
+            // restart the autologout timer with the new value
+            Presence.stop();
+            Presence.start();
+        }
     };
 
     private renderIgnoredUsers(): JSX.Element {
