@@ -83,7 +83,7 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
             openIdToken: "",
             tokenExpiry: new Date(),
             metaData: "",
-            api_url: client!.getHomeserverUrl() + "/proxy/tim-contact-mgmt",
+            api_url: client!.getHomeserverUrl() + "/tim-contact-mgmt",
             startInvite: 0,
             endInvite: 0,
             fieldValid: {},
