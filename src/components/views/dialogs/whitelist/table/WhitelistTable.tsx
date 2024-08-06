@@ -26,6 +26,16 @@ const ColumnHeader = (): JSX.Element => {
             </th>
             <th>
                 <div className="aw_whitelist_columnHeader">
+                    <span>{_t("Starting time")}</span>
+                </div>
+            </th>
+            <th>
+                <div className="aw_whitelist_columnHeader">
+                    <span>{_t("Ending time")}</span>
+                </div>
+            </th>
+            <th>
+                <div className="aw_whitelist_columnHeader">
                     <span>{_t("Edit")}</span>
                 </div>
             </th>
@@ -36,8 +46,8 @@ const ColumnHeader = (): JSX.Element => {
 interface ITableProps {
     rows: Array<Contact>;
     isInputEmpty: boolean;
-    editContact: (contactName: string, mxid: string) => void;
-    deleteContact: (contactName: string, mxid: string) => void;
+    editContact: (contactName: string, mxid: string, start: string, end: string) => void;
+    deleteContact: (contactName: string, mxid: string, start: string, end: string) => void;
 }
 
 const WhitelistTable: React.FC<ITableProps> = ({ rows, isInputEmpty = false, editContact, deleteContact }) => {

@@ -125,5 +125,7 @@
     "based on Element version:": "based on Element version:",
     "Failed to check federation status.": "Failed to check federation status.",
     "Messenger-Service is not part of the federation. Please contact your administrator.": "Messenger-Service is not part of the federation. Please contact your administrator.",
-    "By exporting data it will leave the secure space of the TI-Messenger. You are responsible for securing the data from now on.": "By exporting data it will leave the secure space of the TI-Messenger. You are responsible for securing the data from now on."
+    "By exporting data it will leave the secure space of the TI-Messenger. You are responsible for securing the data from now on.": "By exporting data it will leave the secure space of the TI-Messenger. You are responsible for securing the data from now on.",
+    "Starting time": "Starting time",
+    "Ending time": "Ending time"
 }

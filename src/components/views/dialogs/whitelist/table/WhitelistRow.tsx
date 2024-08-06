@@ -15,23 +15,29 @@ import Icon from "../../../../Icon";
 
 interface IProps {
     contact: Contact;
-    editContact: (contactName: string, mxid: string) => void;
-    deleteContact: (contactName: string, mxid: string) => void;
+    editContact: (contactName: string, mxid: string, start: string, end: string) => void;
+    deleteContact: (contactName: string, mxid: string, start: string, end: string) => void;
 }
 
 const Row: React.FC<IProps> = ({ contact: contact, editContact, deleteContact }) => {
     const [editMode, setEditMode] = useState<boolean>(false);
     const [contactName, setContactName] = useState<string>(contact.displayName);
+    const [contactStart, setContactStart] = useState<string>(contact.inviteSettings.start);
+    const [contactEnd, setContactEnd] = useState<string>(contact.inviteSettings.end);
 
     const startEditMode = (): void => {
         setContactName(contact.displayName);
+        setContactStart(contact.inviteSettings.start);
+        setContactEnd(contact.inviteSettings.end);
         setEditMode(true);
     };
 
     const saveData = (): void => {
         if (checkName()) {
-            editContact(contactName, contact.mxid);
+            editContact(contactName, contact.mxid, contactStart, contactEnd);
             contact.displayName = contactName;
+            contact.inviteSettings.start = contactStart;
+            contact.inviteSettings.end = contactEnd;
             setEditMode(false);
         }
     };
@@ -40,11 +46,19 @@ const Row: React.FC<IProps> = ({ contact: contact, editContact, deleteContact })
         setEditMode(false);
     };
     const onDeleteContact = (): void => {
-        deleteContact(contactName, contact.mxid);
+        deleteContact(contactName, contact.mxid, contact.inviteSettings.start, contact.inviteSettings.end);
     };
 
     const onChangeName = (ev: React.ChangeEvent<HTMLInputElement>): void => {
         setContactName(ev.target.value);
+    };
+
+    const onChangeStart = (ev: React.ChangeEvent<HTMLInputElement>): void => {
+        setContactStart(ev.target.value);
+    };
+
+    const onChangeEnd = (ev: React.ChangeEvent<HTMLInputElement>): void => {
+        setContactEnd(ev.target.value);
     };
 
     const checkName = (): boolean => {
@@ -80,6 +94,30 @@ const Row: React.FC<IProps> = ({ contact: contact, editContact, deleteContact })
             </td>
             <td>
                 <span className="aw_result_data">{contact.mxid}</span>
+            </td>
+            <td>
+                {editMode ? (
+                    <div className="aw_whitelist_popup">
+                        <Field type="date" label={_t("Change start")} value={contactStart} onChange={onChangeStart} />
+                        <span className="popuptext" id="whitelist_Popup">
+                            {_t("The start field can not be empty")}
+                        </span>
+                    </div>
+                ) : (
+                    <span className="aw_result_data">{contact.inviteSettings.start}</span>
+                )}
+            </td>
+            <td>
+                {editMode ? (
+                    <div className="aw_whitelist_popup">
+                        <Field type="date" label={_t("Change end")} value={contactEnd} onChange={onChangeEnd} />
+                        <span className="popuptext" id="whitelist_Popup">
+                            {_t("The end field can not be empty")}
+                        </span>
+                    </div>
+                ) : (
+                    <span className="aw_result_data">{contact.inviteSettings.end}</span>
+                )}
             </td>
             <td>
                 {editMode ? (

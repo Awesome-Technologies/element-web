@@ -37,8 +37,8 @@ export type Contact = {
     mxid: string;
     displayName: string;
     inviteSettings: {
-        start: number;
-        end: number;
+        start: string;
+        end: string;
     };
 };
 
@@ -57,8 +57,8 @@ interface IState {
     tokenExpiry: Date;
     metaData: string;
     api_url: string;
-    startInvite: number;
-    endInvite: number;
+    startInvite: string;
+    endInvite: string;
     fieldValid: Partial<Record<FieldType, boolean>>;
     error: string | null;
 }
@@ -84,12 +84,36 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
             tokenExpiry: new Date(),
             metaData: "",
             api_url: client!.getHomeserverUrl() + "/tim-contact-mgmt",
-            startInvite: 0,
-            endInvite: 0,
+            startInvite: "",
+            endInvite: "",
             fieldValid: {},
             error: null,
         };
     }
+
+    private convertToTimestamp = (date: string): number => {
+        // convert date to timestamp
+        const dateSplitted = date.split("-");
+        const dateTimestamp = new Date(
+            parseInt(dateSplitted[0]),
+            parseInt(dateSplitted[1]) - 1,
+            parseInt(dateSplitted[2]),
+        ).getTime();
+
+        return dateTimestamp;
+    };
+
+    private convertFromTimestamp = (timestamp: number): string => {
+        // convert timestamp to date
+        const date = new Date(timestamp);
+        const formattedDate = new Intl.DateTimeFormat("fr-CA", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+        }).format(date);
+
+        return formattedDate;
+    };
 
     public getAuthToken = async (): Promise<void> => {
         const client = MatrixClientPeg.get();
@@ -153,6 +177,17 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
                 throw new Error("Network response was not ok");
             }
             const resData = await response.json();
+            // convert times
+            for (let index = 0; index < resData.length; index++) {
+                if (resData[index].inviteSettings) {
+                    resData[index].inviteSettings.start = this.convertFromTimestamp(
+                        resData[index].inviteSettings.start,
+                    );
+                    resData[index].inviteSettings.end = this.convertFromTimestamp(resData[index].inviteSettings.end);
+                }
+            }
+            console.log(resData);
+
             const sortedContacts = this.sortContacts(resData);
             this.setState({ contacts: sortedContacts });
         } catch (error) {
@@ -187,8 +222,8 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
                     displayName: this.state.displayName,
                     mxid: this.state.mxid,
                     inviteSettings: {
-                        start: this.state.startInvite,
-                        end: this.state.endInvite,
+                        start: this.convertToTimestamp(this.state.startInvite),
+                        end: this.convertToTimestamp(this.state.endInvite),
                     },
                 }),
                 headers: {
@@ -237,7 +272,7 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
         }
     };
 
-    protected onEditContact = async (name: string, selectedMxid: string): Promise<void> => {
+    protected onEditContact = async (name: string, selectedMxid: string, start: string, end: string): Promise<void> => {
         this.getAuthToken();
         if (!this.state.openIdToken) {
             this.setState({ error: "Authentication failed: No OpenID Token found." });
@@ -254,8 +289,8 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
                     displayName: name,
                     mxid: selectedMxid,
                     inviteSettings: {
-                        start: 0,
-                        end: 0,
+                        start: this.convertToTimestamp(start),
+                        end: this.convertToTimestamp(end),
                     },
                 }),
             });
@@ -297,6 +332,20 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
     private onInsertContactName = (ev: React.ChangeEvent<HTMLInputElement>): void => {
         this.setState({
             displayName: ev.target.value,
+            error: null,
+        });
+    };
+
+    private onInsertStartInvite = (ev: React.ChangeEvent<HTMLInputElement>): void => {
+        this.setState({
+            startInvite: ev.target.value,
+            error: null,
+        });
+    };
+
+    private onInsertEndInvite = (ev: React.ChangeEvent<HTMLInputElement>): void => {
+        this.setState({
+            endInvite: ev.target.value,
             error: null,
         });
     };
@@ -454,6 +503,20 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
                         value={this.state.mxid}
                         onChange={this.onInsertMXID}
                         onValidate={this.onMxidValidate}
+                    />
+                    <Field
+                        element="input"
+                        type="date"
+                        onInput={this.onInsertStartInvite}
+                        value={this.state.startInvite}
+                        label={_t("Starting time")}
+                    />
+                    <Field
+                        element="input"
+                        type="date"
+                        onChange={this.onInsertEndInvite}
+                        value={this.state.endInvite}
+                        label={_t("Ending time")}
                     />
                     <div className="mx_ProfileSettings_buttons" style={{ marginBottom: "0", marginTop: "8px" }}>
                         <AccessibleButton onClick={this.onSaveContact} kind="primary">

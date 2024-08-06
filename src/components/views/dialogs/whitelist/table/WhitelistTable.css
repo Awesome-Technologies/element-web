@@ -25,7 +25,7 @@
 .aw_whitelist_table {
     border-collapse: collapse;
     width: 100%;
-    table-layout: fixed;
+    /*table-layout: fixed;*/
 }
 
 .aw_whitelist_table__header {
