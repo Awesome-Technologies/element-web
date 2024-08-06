@@ -22,11 +22,13 @@
     "src/components/structures/LeftPanel.tsx": "src/components/structures/LeftPanel.tsx",
     "src/components/structures/LoggedInView.tsx": "src/components/structures/LoggedInView.tsx",
     "src/components/structures/UserMenu.tsx": "src/components/structures/UserMenu.tsx",
+    "src/components/structures/ViewSource.tsx": "src/components/structures/ViewSource.tsx",
     "src/components/views/dialogs/UserTab.ts": "src/components/views/dialogs/UserTab.ts",
     "src/createRoom.ts": "src/createRoom.ts",
     "src/Modal.tsx": "src/Modal.tsx",
     "src/Presence.ts": "src/Presence.ts",
     "src/settings/Settings.tsx": "src/settings/Settings.tsx",
+    "src/utils/EventUtils.ts": "src/utils/EventUtils.ts",
     "src/hooks/room/useTopic.ts": "src/hooks/room/useTopic.ts",
     "src/components/structures/RoomSearch.tsx": "src/components/structures/RoomSearch.tsx",
     "src/components/structures/TabbedView.tsx": "src/components/structures/TabbedView.tsx"
