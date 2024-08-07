@@ -38,10 +38,12 @@ export function FHIRContextProvider({ children }: IProps): JSX.Element {
         const personResults = await fhirClient.searchPractitionerDirectory({
             "practitioner.name": options.name,
             "location.address": options.address,
+            "practitioner.qualification": options.qualification,
         });
         const organizationResults = await fhirClient.searchOrganizationDirectory({
             "organization.name": options.name,
             "location.address": options.address,
+            "organization.type": options.qualification,
         });
         const allResults = organizationResults ? personResults?.concat(organizationResults) : personResults;
         return allResults;

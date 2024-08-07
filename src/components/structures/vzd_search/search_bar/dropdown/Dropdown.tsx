@@ -24,6 +24,7 @@ interface ICategoryProps {
 }
 
 interface IDropdownProps {
+    onSelectType: any;
     text: string;
     options: DropdownCategory[];
 }
@@ -48,7 +49,7 @@ const Category: React.FC<ICategoryProps> = ({ title, children, highlight = false
     );
 };
 
-const Dropdown: React.FC<IDropdownProps> = ({ text, options }) => {
+const Dropdown: React.FC<IDropdownProps> = ({ onSelectType, text, options }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
     const [selectedList, setSelectedList] = useState<DropdownItem[]>([]);
     const [searchResults, setSearchResults] = useState<DropdownCategory[]>([]);
@@ -64,10 +65,14 @@ const Dropdown: React.FC<IDropdownProps> = ({ text, options }) => {
     const toggleSelected = (newSelected: DropdownItem): void => {
         if (selectedList.includes(newSelected)) {
             // Remove the item if it's already in the array
-            setSelectedList(selectedList.filter((selected) => selected !== newSelected));
+            const newList = selectedList.filter((selected) => selected !== newSelected);
+            setSelectedList(newList);
+            onSelectType(newList.map((qualification: DropdownItem) => qualification.identifier));
         } else {
             // Add the item if it's not in the array
-            setSelectedList([...selectedList, newSelected]);
+            const newList = [...selectedList, newSelected];
+            setSelectedList(newList);
+            onSelectType(newList.map((qualification: DropdownItem) => qualification.identifier));
         }
     };
 
@@ -96,6 +101,7 @@ const Dropdown: React.FC<IDropdownProps> = ({ text, options }) => {
     const resetSelectedList = (): void => {
         setSearchQuery("");
         setSelectedList([]);
+        onSelectType([]);
     };
 
     useEffect(() => {

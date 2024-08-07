@@ -15,6 +15,9 @@ import Table from "./table/Table";
 import Icon from "../../Icon";
 import { FHIRContextProvider, useFHIRContext } from "../../context/FHIRContext";
 import SearchBar from "./search_bar/SearchBar";
+import { typeOptions } from "./searchDropdownOptions";
+import Dropdown from "./search_bar/dropdown/Dropdown";
+
 const CLOSE_BUTTON_STRING = _t("Close Window");
 const EDIT_PROFILE_LINK_STRING = _t("Edit my entry");
 const DEBOUNCE_TIME = 300;
@@ -79,6 +82,7 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [searchQueryName, setSearchQueryName] = useState<string>("");
     const [searchQueryLocation, setSearchQueryLocation] = useState<string>("");
+    const [searchQueryQualification, setSearchQueryQualification] = useState<string>("");
     const [results, setResults] = useState<object[]>([]);
     const [option, setOption] = useState<string>(switchOptions[0].id);
 
@@ -100,16 +104,22 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
                         allResults = await searchPractitionerDirectory({
                             "practitioner.name": searchQueryName,
                             "location.address": searchQueryLocation,
+                            "practitioner.qualification": searchQueryQualification.toString(),
                         });
                         break;
                     case "organisations":
                         allResults = await searchOrganizationDirectory({
                             "organization.name": searchQueryName,
                             "location.address": searchQueryLocation,
+                            "organization.type": searchQueryQualification.toString(),
                         });
                         break;
                     default:
-                        allResults = await searchDirectory({ name: searchQueryName, address: searchQueryLocation });
+                        allResults = await searchDirectory({
+                            name: searchQueryName,
+                            address: searchQueryLocation,
+                            qualification: searchQueryQualification,
+                        });
                         break;
                 }
                 setResults(allResults);
@@ -129,7 +139,7 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
 
         return () => clearTimeout(delayTimer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchQueryName, searchQueryLocation, option]);
+    }, [searchQueryName, searchQueryLocation, searchQueryQualification, option]);
 
     return (
         <div className="aw_VzdSearch">
@@ -177,6 +187,11 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
                         options={switchOptions}
                         onChange={(e: string): void => setOption(e)}
                         defaultOption={switchOptions[0]}
+                    />
+                    <Dropdown
+                        text="Typ"
+                        options={typeOptions}
+                        onSelectType={(value: any): void => setSearchQueryQualification(value)}
                     />
                 </div>
             </div>
