@@ -15,9 +15,10 @@ import "./SearchBar.css";
 interface IProps {
     onChange: React.ChangeEventHandler<HTMLInputElement> | undefined;
     value: string;
+    type: string;
 }
 
-const SearchBar: React.FC<IProps> = ({ onChange, value }) => {
+const SearchBar: React.FC<IProps> = ({ onChange, value, type }) => {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const focusSearchBar = (): void => {
@@ -27,9 +28,9 @@ const SearchBar: React.FC<IProps> = ({ onChange, value }) => {
     };
 
     useEffect(() => {
-        // Focuses user input on searchbar so they can start typing on search window open
-        focusSearchBar();
-    }, []);
+        // Focuses user input on name searchbar so they can start typing on search window open
+        if (type === "name") focusSearchBar();
+    }, [type]);
 
     return (
         <div className="aw_searchbar">
@@ -38,12 +39,12 @@ const SearchBar: React.FC<IProps> = ({ onChange, value }) => {
                 ref={inputRef}
                 className="mx_no_textinput"
                 type="text"
-                placeholder={_t("Search..")}
+                placeholder={type === "name" ? _t("Search name..") : _t("Search location..")}
                 onChange={onChange}
                 value={value}
             />
             <div className="aw_searchbar__divider" />
-            <Dropdown text="Typ" options={typeOptions} />
+            {type === "name" && <Dropdown text="Typ" options={typeOptions} />}
         </div>
     );
 };

@@ -35,8 +35,14 @@ export function FHIRContextProvider({ children }: IProps): JSX.Element {
     };
 
     const searchDirectory = async (options: any): Promise<any> => {
-        const personResults = await fhirClient.searchPractitionerDirectory({ "practitioner.name": options.name });
-        const organizationResults = await fhirClient.searchOrganizationDirectory({ "organization.name": options.name });
+        const personResults = await fhirClient.searchPractitionerDirectory({
+            "practitioner.name": options.name,
+            "location.address": options.address,
+        });
+        const organizationResults = await fhirClient.searchOrganizationDirectory({
+            "organization.name": options.name,
+            "location.address": options.address,
+        });
         const allResults = organizationResults ? personResults?.concat(organizationResults) : personResults;
         return allResults;
     };

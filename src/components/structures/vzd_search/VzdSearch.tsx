@@ -77,27 +77,39 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
     const { searchPractitionerDirectory, searchOrganizationDirectory, searchDirectory } = useFHIRContext();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [searchQuery, setSearchQuery] = useState<string>("");
+    const [searchQueryName, setSearchQueryName] = useState<string>("");
+    const [searchQueryLocation, setSearchQueryLocation] = useState<string>("");
     const [results, setResults] = useState<object[]>([]);
     const [option, setOption] = useState<string>(switchOptions[0].id);
 
     useEffect(() => {
         // Makes sure "no results" doesnt flash in the debounce timer (DEBOUNCE_TIME)
-        searchQuery.length > 0 ? setIsLoading(true) : setIsLoading(false);
+        if (searchQueryName.length > 0 || searchQueryLocation.length > 0) {
+            setIsLoading(true);
+        } else {
+            setIsLoading(false);
+        }
 
         const performSearch = async (): Promise<void> => {
             setIsLoading(true);
+
             try {
                 let allResults;
                 switch (option) {
                     case "people":
-                        allResults = await searchPractitionerDirectory({ "practitioner.name": searchQuery });
+                        allResults = await searchPractitionerDirectory({
+                            "practitioner.name": searchQueryName,
+                            "location.address": searchQueryLocation,
+                        });
                         break;
                     case "organisations":
-                        allResults = await searchOrganizationDirectory({ "organization.name": searchQuery });
+                        allResults = await searchOrganizationDirectory({
+                            "organization.name": searchQueryName,
+                            "location.address": searchQueryLocation,
+                        });
                         break;
                     default:
-                        allResults = await searchDirectory({ name: searchQuery });
+                        allResults = await searchDirectory({ name: searchQueryName, address: searchQueryLocation });
                         break;
                 }
                 setResults(allResults);
@@ -108,7 +120,7 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
         };
 
         const delayTimer = setTimeout(() => {
-            if (searchQuery.length > 0) {
+            if (searchQueryName.length > 0 || searchQueryLocation.length > 0) {
                 performSearch();
             } else {
                 setResults([]);
@@ -117,7 +129,7 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
 
         return () => clearTimeout(delayTimer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchQuery, option]);
+    }, [searchQueryName, searchQueryLocation, option]);
 
     return (
         <div className="aw_VzdSearch">
@@ -149,7 +161,16 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
                     </button>
                 </div>
 
-                <SearchBar onChange={(e): void => setSearchQuery(e.target.value)} value={searchQuery} />
+                <SearchBar
+                    onChange={(e): void => setSearchQueryName(e.target.value)}
+                    value={searchQueryName}
+                    type="name"
+                />
+                <SearchBar
+                    onChange={(e): void => setSearchQueryLocation(e.target.value)}
+                    value={searchQueryLocation}
+                    type="location"
+                />
 
                 <div className="button-container">
                     <Switch
@@ -160,7 +181,7 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
                 </div>
             </div>
             <Table
-                isInputEmpty={searchQuery.length === 0}
+                isInputEmpty={searchQueryName.length === 0 && searchQueryLocation.length === 0}
                 isLoading={isLoading}
                 rows={results}
                 columnStructure={columnOptions}

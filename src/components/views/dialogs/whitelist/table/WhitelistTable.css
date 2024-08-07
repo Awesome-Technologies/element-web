@@ -69,7 +69,7 @@ th:nth-child(3) {
     width: 20%;
 }
 
-th:nth-child(3) > .aw_columnHeader {
+th:nth-child(3) > .aw_whitelist_columnHeader {
     justify-content: flex-end;
 }
 
