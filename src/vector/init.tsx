@@ -30,6 +30,7 @@ import SdkConfig from "matrix-react-sdk/src/SdkConfig";
 import { setTheme } from "matrix-react-sdk/src/theme";
 import { logger } from "matrix-js-sdk/src/logger";
 import { ModuleRunner } from "matrix-react-sdk/src/modules/ModuleRunner";
+import { logout } from "matrix-react-sdk/src/Lifecycle";
 
 import ElectronPlatform from "./platform/ElectronPlatform";
 import PWAPlatform from "./platform/PWAPlatform";
@@ -141,6 +142,12 @@ export async function loadTheme(): Promise<void> {
 }
 
 export async function loadApp(fragParams: {}): Promise<void> {
+    window.addEventListener("beforeunload", () => {
+        logger.log("tab/window closing");
+        // invalidate the session/logout
+        logout();
+    });
+
     // load app.js async so that its code is not executed immediately and we can catch any exceptions
     const module = await import(
         /* webpackChunkName: "element-web-app" */
