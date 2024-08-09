@@ -1,7 +1,7 @@
 /*
 Copyright 2019 New Vector Ltd
 Copyright 2019 - 2021 The Matrix.org Foundation C.I.C.
-Copyright 2023 Awesome Technologies Innovationslabor GmbH
+Copyright 2023 - 2024 Awesome Technologies Innovationslabor GmbH
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ export default class FhirSettings extends React.Component<any, IState> {
         const fhirContext = this.context;
 
         fhirContext.setContact(checked);
-        this.setState({ contactAdded: checked });
+        this.setState({ contactAdded: checked, visibility: checked });
     };
 
     private poll = async (): Promise<void> => {
@@ -119,8 +119,14 @@ export default class FhirSettings extends React.Component<any, IState> {
 
             // check if mxid is already added to the VZD
             const isContactAdded = await fhirContext.getContact();
+            let isActive = false;
+            console.log(isContactAdded);
+            if (isContactAdded && isContactAdded["status"] === "active") {
+                isActive = true;
+                console.log("set visibility to true");
+            }
 
-            this.setState({ loggedIn: true, contactAdded: isContactAdded });
+            this.setState({ loggedIn: true, contactAdded: isContactAdded, visibility: isActive });
         }
 
         // on errors or timeout stop polling
