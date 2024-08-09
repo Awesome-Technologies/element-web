@@ -68,6 +68,14 @@
     align-items: center;
 }
 
+.aw_result_hcsname {
+    color: #9d9d9d;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
 .aw_result_name_prefix {
     color: #9296b8;
     font-weight: 700;

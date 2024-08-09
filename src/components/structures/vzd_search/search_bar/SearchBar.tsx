@@ -1,11 +1,10 @@
 /*
-Copyright 2023 Awesome Technologies Innovationslabor GmbH
+Copyright 2023-2024 Awesome Technologies Innovationslabor GmbH
 
 All rights reserved
 */
 
 import React, { useEffect, useRef } from "react";
-import { _t } from "matrix-react-sdk/src/languageHandler";
 
 import Icon from "../../../Icon";
 import "./SearchBar.css";
@@ -14,9 +13,10 @@ interface IProps {
     onChange: React.ChangeEventHandler<HTMLInputElement> | undefined;
     value: string;
     type: string;
+    placeholder: string;
 }
 
-const SearchBar: React.FC<IProps> = ({ onChange, value, type }) => {
+const SearchBar: React.FC<IProps> = ({ onChange, value, type, placeholder }) => {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const focusSearchBar = (): void => {
@@ -37,7 +37,7 @@ const SearchBar: React.FC<IProps> = ({ onChange, value, type }) => {
                 ref={inputRef}
                 className="mx_no_textinput"
                 type="text"
-                placeholder={type === "name" ? _t("Search name..") : _t("Search location..")}
+                placeholder={placeholder}
                 onChange={onChange}
                 value={value}
             />

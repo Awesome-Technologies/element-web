@@ -119,6 +119,13 @@
     margin-top: 32px;
 }
 
+.aw_detailWindow__contentContainer__hcsName {
+    font-weight: 700;
+    font-size: 20px;
+    color: #767a90;
+    margin-top: 32px;
+}
+
 .aw_detailWindow__contentContainer__qualification {
     font-weight: 700;
     font-size: 28px;

@@ -22,6 +22,7 @@ interface IProps {
 const Row: React.FC<IProps> = ({ data }) => {
     let nameString: string | null = EMPTY_FIELD_STRING;
     let namePrefixString: string | null = null;
+    let hcsNameString: string | null = EMPTY_FIELD_STRING;
 
     const type: any[] = [];
     let typeString: string = EMPTY_FIELD_STRING;
@@ -30,11 +31,13 @@ const Row: React.FC<IProps> = ({ data }) => {
     const locationArray: any[] = [];
     let locationString: string = EMPTY_FIELD_STRING;
 
-    locations.forEach((element: any) => {
-        if (element.address.city) {
-            locationArray.push(element.address.city);
-        }
-    });
+    if (locations) {
+        locations.forEach((element: any) => {
+            if (element.address.city) {
+                locationArray.push(element.address.city);
+            }
+        });
+    }
 
     if (locationArray.length > 0) {
         locationString = locationArray.join(", ");
@@ -46,6 +49,7 @@ const Row: React.FC<IProps> = ({ data }) => {
     switch (resourceType) {
         case "person":
             nameString = data.name[0].text || "name error";
+            hcsNameString = data.hcsName || null;
             if (data.name[0].prefix) {
                 namePrefixString = data.name[0].prefix[0];
             }
@@ -65,6 +69,7 @@ const Row: React.FC<IProps> = ({ data }) => {
             break;
         case "organization":
             nameString = data.name || "name error";
+            hcsNameString = data.hcsName || null;
             resourceTypeComponent = (
                 <span className="aw_result_resourceType organisation">
                     <Icon icon="searchFilterOrganizations" />
@@ -101,12 +106,19 @@ const Row: React.FC<IProps> = ({ data }) => {
                         {resourceType == "person" && <Icon icon="avatarPerson" />}
                         {resourceType == "organization" && <Icon icon="avatarOrganization" />}
                     </div>
-                    <span className="aw_result_name">
-                        {nameString || "-"}
-                        {!!namePrefixString && (
-                            <span className="aw_result_name_prefix">&nbsp;({namePrefixString})</span>
+                    <div>
+                        <span className="aw_result_name">
+                            {nameString || "-"}
+                            {!!namePrefixString && (
+                                <span className="aw_result_name_prefix">&nbsp;({namePrefixString})</span>
+                            )}
+                        </span>
+                        {hcsNameString && (
+                            <>
+                                <span className="aw_result_hcsname">&nbsp;({hcsNameString})</span>
+                            </>
                         )}
-                    </span>
+                    </div>
                 </div>
             </td>
             <td>

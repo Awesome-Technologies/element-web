@@ -37,11 +37,6 @@ const VzdSearch: React.FC<IProps> = ({ onFinished }) => {
 
 const switchOptions = [
     {
-        id: "all",
-        name: "Alle",
-        icon: "searchFilterAll",
-    },
-    {
         id: "people",
         name: "Personen",
         icon: "searchFilterPeople",
@@ -77,10 +72,11 @@ const columnOptions = [
 ];
 
 const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
-    const { searchPractitionerDirectory, searchOrganizationDirectory, searchDirectory } = useFHIRContext();
+    const { searchPractitionerDirectory, searchOrganizationDirectory } = useFHIRContext();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [searchQueryName, setSearchQueryName] = useState<string>("");
+    const [searchQueryHCSName, setSearchQueryHCSName] = useState<string>("");
     const [searchQueryLocation, setSearchQueryLocation] = useState<string>("");
     const [searchQueryQualification, setSearchQueryQualification] = useState<string>("");
     const [results, setResults] = useState<object[]>([]);
@@ -88,7 +84,12 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
 
     useEffect(() => {
         // Makes sure "no results" doesnt flash in the debounce timer (DEBOUNCE_TIME)
-        if (searchQueryName.length > 0 || searchQueryLocation.length > 0) {
+        if (
+            searchQueryName.length > 0 ||
+            searchQueryHCSName.length > 0 ||
+            searchQueryLocation.length > 0 ||
+            searchQueryQualification.length > 0
+        ) {
             setIsLoading(true);
         } else {
             setIsLoading(false);
@@ -99,29 +100,36 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
 
             try {
                 let allResults;
+                const searchQuery: any = { "endpoint:Endpoint.status": "active" };
+                if (searchQueryLocation) {
+                    searchQuery["location.address"] = searchQueryLocation;
+                }
+
                 switch (option) {
                     case "people":
-                        allResults = await searchPractitionerDirectory({
-                            "practitioner.name": searchQueryName,
-                            "location.address": searchQueryLocation,
-                            "practitioner.qualification": searchQueryQualification.toString(),
-                        });
+                        if (searchQueryName) {
+                            searchQuery["practitioner.name"] = searchQueryName;
+                        }
+                        if (searchQueryQualification) {
+                            searchQuery["practitioner.qualification"] = searchQueryQualification.toString();
+                        }
+
+                        allResults = await searchPractitionerDirectory(searchQuery);
                         break;
                     case "organisations":
-                        allResults = await searchOrganizationDirectory({
-                            "organization.name": searchQueryName,
-                            "location.address": searchQueryLocation,
-                            "organization.type": searchQueryQualification.toString(),
-                        });
-                        break;
-                    default:
-                        allResults = await searchDirectory({
-                            name: searchQueryName,
-                            address: searchQueryLocation,
-                            qualification: searchQueryQualification,
-                        });
+                        if (searchQueryName) {
+                            searchQuery["organization.name"] = searchQueryName;
+                        }
+                        if (searchQueryHCSName) {
+                            searchQuery["name:contains"] = searchQueryHCSName;
+                        }
+                        if (searchQueryQualification) {
+                            searchQuery["organization.type"] = searchQueryQualification.toString();
+                        }
+                        allResults = await searchOrganizationDirectory(searchQuery);
                         break;
                 }
+                console.log(allResults);
                 setResults(allResults);
             } catch (error) {
                 console.error(error);
@@ -130,7 +138,12 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
         };
 
         const delayTimer = setTimeout(() => {
-            if (searchQueryName.length > 0 || searchQueryLocation.length > 0) {
+            if (
+                searchQueryName.length > 0 ||
+                searchQueryHCSName.length > 0 ||
+                searchQueryLocation.length > 0 ||
+                searchQueryQualification.length > 0
+            ) {
                 performSearch();
             } else {
                 setResults([]);
@@ -139,7 +152,7 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
 
         return () => clearTimeout(delayTimer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchQueryName, searchQueryLocation, searchQueryQualification, option]);
+    }, [searchQueryName, searchQueryHCSName, searchQueryLocation, searchQueryQualification, option]);
 
     return (
         <div className="aw_VzdSearch">
@@ -175,11 +188,21 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
                     onChange={(e): void => setSearchQueryName(e.target.value)}
                     value={searchQueryName}
                     type="name"
+                    placeholder={option === "people" ? _t("Search name..") : _t("Search Organization name..")}
                 />
+                {option === "organisations" && (
+                    <SearchBar
+                        onChange={(e): void => setSearchQueryHCSName(e.target.value)}
+                        value={searchQueryHCSName}
+                        type="hcsname"
+                        placeholder={_t("Search HealthcareService name..")}
+                    />
+                )}
                 <SearchBar
                     onChange={(e): void => setSearchQueryLocation(e.target.value)}
                     value={searchQueryLocation}
                     type="location"
+                    placeholder={_t("Search location..")}
                 />
 
                 <div className="button-container">
@@ -190,13 +213,18 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
                     />
                     <Dropdown
                         text="Typ"
-                        options={typeOptions}
+                        options={typeOptions(option)}
                         onSelectType={(value: any): void => setSearchQueryQualification(value)}
                     />
                 </div>
             </div>
             <Table
-                isInputEmpty={searchQueryName.length === 0 && searchQueryLocation.length === 0}
+                isInputEmpty={
+                    searchQueryName.length === 0 &&
+                    searchQueryHCSName.length === 0 &&
+                    searchQueryLocation.length === 0 &&
+                    searchQueryQualification.length === 0
+                }
                 isLoading={isLoading}
                 rows={results}
                 columnStructure={columnOptions}

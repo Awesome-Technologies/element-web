@@ -77,6 +77,7 @@ export default class ErrorDialog extends React.Component<IProps, IState> {
         let contactTypeComponent;
         let connectButtonText = _t("Start chat");
         let name: string | null = null;
+        let hcsName: string | null = null;
         let namePrefix: string | null = null;
         let qualification: string | null = null;
         let availableTimes: Array<string> | null = null;
@@ -118,6 +119,7 @@ export default class ErrorDialog extends React.Component<IProps, IState> {
                 break;
             case "organization":
                 name = data.name || "name error";
+                hcsName = data.hcsName || null;
                 contactTypeComponent = (
                     <div>
                         <span className="aw_detailWindow__contentContainer__avatar__icon">
@@ -156,6 +158,8 @@ export default class ErrorDialog extends React.Component<IProps, IState> {
                             {!!namePrefix && namePrefix + " "}
                             {name}
                         </span>
+                        {hcsName && <span className="aw_detailWindow__contentContainer__hcsName">{hcsName}</span>}
+
                         <span className="aw_detailWindow__contentContainer__qualification">{qualification}</span>
                         <span className="aw_detailWindow__contentContainer__title">{_t("Phone")}</span>
                         <span className="aw_detailWindow__contentContainer__value">
@@ -164,13 +168,19 @@ export default class ErrorDialog extends React.Component<IProps, IState> {
                         </span>
                         <span className="aw_detailWindow__contentContainer__title">{_t("Location")}</span>
                         <span className="aw_detailWindow__contentContainer__value">
-                            {data.location[0]?.address?.line ? `${data.location[0]?.address?.line[0]}` : ""}
-                            <br />
-                            {data.location[0]?.address?.postalCode ? `${data.location[0]?.address?.postalCode}` : ""}
-                            &nbsp;
-                            {data.location[0]?.address?.city ? `${data.location[0].address.city}` : ""}
-                            <br />
-                            {data.location[0]?.address?.state ? `${data.location[0].address.state}` : ""}
+                            {data.location && (
+                                <>
+                                    {data.location[0]?.address?.line ? `${data.location[0]?.address?.line[0]}` : ""}
+                                    <br />
+                                    {data.location[0]?.address?.postalCode
+                                        ? `${data.location[0]?.address?.postalCode}`
+                                        : ""}
+                                    &nbsp;
+                                    {data.location[0]?.address?.city ? `${data.location[0].address.city}` : ""}
+                                    <br />
+                                    {data.location[0]?.address?.state ? `${data.location[0].address.state}` : ""}
+                                </>
+                            )}
                         </span>
                         <span className="aw_detailWindow__contentContainer__title">{availableTimeTitle}</span>
                         <span className="aw_detailWindow__contentContainer__value">{availableTimes}</span>

@@ -3,7 +3,7 @@
     position: relative;
     justify-self: end;
     display: flex;
-    margin: 4px 0;
+    margin: 4px auto;
 }
 
 /* Dropdown button */
