@@ -27,19 +27,24 @@ interface IState {
     onFinished: (success: boolean) => void;
 }
 
+export interface MxidEntry {
+    name: string | undefined;
+    address: string;
+}
+
 export default class ErrorDialog extends React.Component<IProps, IState> {
     public static defaultProps: Partial<IProps> = {
         focus: true,
     };
 
-    private onClick = async (): Promise<void> => {
+    private onClick = async (mxid: string): Promise<void> => {
         // convert to matrixid
-        const mxid = "@" + this.props.data.mxid.split("matrix:u/")[1];
+        const inviteMxid = "@" + mxid.split("matrix:u/")[1];
         console.log("invite user " + mxid);
 
         // start chat
         const cli = MatrixClientPeg.safeGet();
-        await startDmOnFirstMessage(cli, [new DirectoryMember({ user_id: mxid })]);
+        await startDmOnFirstMessage(cli, [new DirectoryMember({ user_id: inviteMxid })]);
 
         this.props.onFinished(true);
     };
@@ -185,16 +190,23 @@ export default class ErrorDialog extends React.Component<IProps, IState> {
                         <span className="aw_detailWindow__contentContainer__title">{availableTimeTitle}</span>
                         <span className="aw_detailWindow__contentContainer__value">{availableTimes}</span>
                     </div>
-                    <div className="aw_detailWindow__buttonContainer">
-                        <button
-                            className="aw_detailWindow__button mx_Dialog_nonDialogButton"
-                            disabled={data.mxid ? false : true}
-                            onClick={this.onClick}
-                        >
-                            <Icon icon="startChat" />
-                            {connectButtonText}
-                        </button>
-                    </div>
+                    {data.mxid.map((mxid: MxidEntry) => {
+                        return (
+                            <div>
+                                <div className="aw_detailWindow__mxidContainer">{mxid.name}</div>
+                                <div className="aw_detailWindow__buttonContainer">
+                                    <button
+                                        className="aw_detailWindow__button mx_Dialog_nonDialogButton"
+                                        disabled={mxid ? false : true}
+                                        onClick={(): Promise<void> => this.onClick(mxid.address)}
+                                    >
+                                        <Icon icon="startChat" />
+                                        {connectButtonText}
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </BaseDialog>
         );

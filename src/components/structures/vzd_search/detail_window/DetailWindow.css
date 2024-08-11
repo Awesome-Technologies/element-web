@@ -161,9 +161,20 @@
     color: #3c3e4a;
 }
 
-.aw_detailWindow__buttonContainer {
+.aw_detailWindow__mxidContainer {
     width: 100%;
     border-top: 1px solid #dadceb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 24px;
+    font-weight: 700;
+    font-size: 18px;
+    color: #767a90;
+}
+
+.aw_detailWindow__buttonContainer {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
