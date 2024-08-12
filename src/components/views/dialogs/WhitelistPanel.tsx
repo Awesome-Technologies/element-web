@@ -186,7 +186,6 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
                     resData[index].inviteSettings.end = this.convertFromTimestamp(resData[index].inviteSettings.end);
                 }
             }
-            console.log(resData);
 
             const sortedContacts = this.sortContacts(resData);
             this.setState({ contacts: sortedContacts });
@@ -237,6 +236,12 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
                 throw new Error("Network response was not ok");
             }
             const newContact = await response.json();
+            // convert times
+            if (newContact.inviteSettings) {
+                newContact.inviteSettings.start = this.convertFromTimestamp(newContact.inviteSettings.start);
+                newContact.inviteSettings.end = this.convertFromTimestamp(newContact.inviteSettings.end);
+            }
+
             const contactData = this.state.contacts;
             contactData.push(newContact);
             const sortedContacts = this.sortContacts(contactData);
@@ -451,6 +456,8 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
             mxid: "",
             displayName: "",
             error: null,
+            startInvite: "",
+            endInvite: "",
         });
     };
 
