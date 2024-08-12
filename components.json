@@ -20,6 +20,7 @@
     "src/components/views/settings/ProfileSettings.tsx": "src/components/views/settings/ProfileSettings.tsx",
     "src/components/views/settings/tabs/user/GeneralUserSettingsTab.tsx": "src/components/views/settings/tabs/user/GeneralUserSettingsTab.tsx",
     "src/components/views/settings/tabs/user/HelpUserSettingsTab.tsx": "src/components/views/settings/tabs/user/HelpUserSettingsTab.tsx",
+    "src/components/views/settings/tabs/user/PreferencesUserSettingsTab.tsx": "src/components/views/settings/tabs/user/PreferencesUserSettingsTab.tsx",
     "src/components/views/settings/tabs/user/SecurityUserSettingsTab.tsx": "src/components/views/settings/tabs/user/SecurityUserSettingsTab.tsx",
     "src/components/structures/LeftPanel.tsx": "src/components/structures/LeftPanel.tsx",
     "src/components/structures/LoggedInView.tsx": "src/components/structures/LoggedInView.tsx",

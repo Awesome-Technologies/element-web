@@ -36,7 +36,6 @@ import EventIndexPeg from "matrix-react-sdk/src/indexing/EventIndexPeg";
 import createMatrixClient from "matrix-react-sdk/src/utils/createMatrixClient";
 import Notifier from "matrix-react-sdk/src/Notifier";
 import UserActivity from "matrix-react-sdk/src/UserActivity";
-import Presence from "matrix-react-sdk/src/Presence";
 import dis from "matrix-react-sdk/src/dispatcher/dispatcher";
 import DMRoomMap from "matrix-react-sdk/src/utils/DMRoomMap";
 import Modal from "matrix-react-sdk/src/Modal";
@@ -72,6 +71,8 @@ import { messageForLoginError } from "matrix-react-sdk/src/utils/ErrorUtils";
 import { completeOidcLogin } from "matrix-react-sdk/src/utils/oidc/authorize";
 import { persistOidcAuthenticatedSettings } from "matrix-react-sdk/src/utils/oidc/persistOidcSettings";
 import GenericToast from "matrix-react-sdk/src/components/views/toasts/GenericToast";
+
+import Presence from "./Presence";
 
 const HOMESERVER_URL_KEY = "mx_hs_url";
 const ID_SERVER_URL_KEY = "mx_is_url";
@@ -951,6 +952,12 @@ export function isLoggingOut(): boolean {
  */
 async function startMatrixClient(client: MatrixClient, startSyncing = true): Promise<void> {
     logger.log(`Lifecycle: Starting MatrixClient`);
+
+    // do set presence status to 'offline' on sync per default
+    MatrixClientPeg.opts = {
+        initialSyncLimit: 20,
+        disablePresence: true,
+    };
 
     // dispatch this before starting the matrix client: it's used
     // to add listeners for the 'sync' event so otherwise we'd have

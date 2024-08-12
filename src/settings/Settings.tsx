@@ -1173,6 +1173,8 @@ export const SETTINGS: { [setting: string]: ISetting } = {
         displayName: _td("Enable hardware acceleration"),
         default: true,
     },
+
+    // TI-Messenger specific settings
     "inactivityTimeOnLock": {
         supportedLevels: [SettingLevel.DEVICE],
         displayName: _td("Time of inactivity until user is logged out"),
@@ -1182,5 +1184,10 @@ export const SETTINGS: { [setting: string]: ISetting } = {
         supportedLevels: [SettingLevel.DEVICE],
         displayName: _td("Timespan after which inactive rooms are suggested for deletion"),
         default: 180,
+    },
+    "sendPresence": {
+        supportedLevels: LEVELS_ACCOUNT_SETTINGS,
+        displayName: _td("Send presence status"),
+        default: false,
     },
 };
