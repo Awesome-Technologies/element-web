@@ -85,7 +85,6 @@ import AskInviteAnywayDialog, {
 import { SdkContextClass } from "matrix-react-sdk/src/contexts/SDKContext";
 import { UserProfilesStore } from "matrix-react-sdk/src/stores/UserProfilesStore";
 import { ISearchResult } from "fhir-js-sdk";
-import { HumanName } from "fhir/r4";
 
 import { FHIRContext } from "../../context/FHIRContext";
 
@@ -836,24 +835,28 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
     private updatePractitioners = async (term: string): Promise<void> => {
         const fhirContext = this.context;
         fhirContext
-            .searchPractitionerDirectory({ "practitioner.name": term })
+            .searchPractitionerDirectory({ "practitioner.name": term, "endpoint.status": "active" })
             .then(async (r: ISearchResult[]): Promise<void> => {
                 // add results to the result list
-                this.setState({
-                    practitioners: r.map((u: ISearchResult) => {
-                        const name = u.name as unknown as HumanName[];
-                        const mxid = "@" + u.mxid.split("matrix:u/")[1];
+                const practitioners: Result[] = r.flatMap((searchResultEntry) =>
+                    searchResultEntry.mxid.map((mxidEntry) => {
+                        const name = searchResultEntry.name[0].text + " - " + mxidEntry.name;
+                        const mxid = "@" + mxidEntry.address.split("matrix:u/")[1];
 
                         return {
                             userId: mxid,
                             user: {
                                 userId: mxid,
-                                name: name[0].text ? name[0].text : "",
-                                fhirId: u.id,
+                                name: name,
+                                fhirId: searchResultEntry.id,
                                 getMxcAvatarUrl: () => undefined,
                             },
                         };
                     }),
+                );
+
+                this.setState({
+                    practitioners: practitioners,
                 });
             })
             .catch((e: any) => {
@@ -867,22 +870,29 @@ export default class InviteDialog extends React.PureComponent<Props, IInviteDial
     private updateOrganizations = async (term: string): Promise<void> => {
         const fhirContext = this.context;
         fhirContext
-            .searchOrganizationDirectory({ "organization.name": term })
+            .searchOrganizationDirectory({ "organization.name": term, "endpoint.status": "active" })
             .then(async (r: ISearchResult[]): Promise<void> => {
                 // add results to the result list
-                this.setState({
-                    organizations: r.map((u: ISearchResult) => {
-                        const mxid = "@" + u.mxid.split("matrix:u/")[1];
+                const organizations: Result[] = r.flatMap((searchResultEntry) =>
+                    searchResultEntry.mxid.map((mxidEntry) => {
+                        const name =
+                            searchResultEntry.name + " - " + searchResultEntry.hcsName + " - " + mxidEntry.name;
+                        const mxid = "@" + mxidEntry.address.split("matrix:u/")[1];
+
                         return {
                             userId: mxid,
                             user: {
                                 userId: mxid,
-                                name: u.name as string,
-                                fhirId: u.id,
+                                name: name,
+                                fhirId: searchResultEntry.id,
                                 getMxcAvatarUrl: () => undefined,
                             },
                         };
                     }),
+                );
+
+                this.setState({
+                    organizations: organizations,
                 });
             })
             .catch((e: any) => {
