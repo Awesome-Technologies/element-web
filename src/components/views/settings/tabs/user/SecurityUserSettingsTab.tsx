@@ -15,6 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// ORIGINAL CODE
+// https://github.com/matrix-org/matrix-react-sdk/blob/v3.79.0/src/components/views/settings/tabs/user/SecurityUserSettingsTab.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/components/views/settings/tabs/user
 
