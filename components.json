@@ -7,6 +7,7 @@
     "src/components/views/dialogs/ExportDialog.tsx": "src/components/views/dialogs/ExportDialog.tsx",
     "src/components/views/dialogs/ServerPickerDialog.tsx": "src/components/views/dialogs/ServerPickerDialog.tsx",
     "src/components/views/dialogs/UserSettingsDialog.tsx": "src/components/views/dialogs/UserSettingsDialog.tsx",
+    "src/components/views/dialogs/spotlight/SpotlightDialog.tsx": "src/components/views/dialogs/spotlight/SpotlightDialog.tsx",
     "src/components/views/location/LocationPicker.tsx": "src/components/views/location/LocationPicker.tsx",
     "src/components/views/location/LocationShareMenu.tsx": "src/components/views/location/LocationShareMenu.tsx",
     "src/components/views/location/shareLocation.ts": "src/components/views/location/shareLocation.ts",
