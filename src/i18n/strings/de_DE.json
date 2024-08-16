@@ -113,5 +113,7 @@
     "Messenger-Service is not part of the federation. Please contact your administrator.": "Der Messenger-Service ist nicht Teil der Föderation. Bitte wenden Sie sich an Ihren Administrator.",
     "By exporting data it will leave the secure space of the TI-Messenger. You are responsible for securing the data from now on.": "Mit dem Exportieren von Daten verlassen diese den sicheren Bereich des TI-Messengers. Sie sind für die weitere Sicherheit der Daten verantwortlich.",
     "Starting time": "Startzeitpunkt",
-    "Ending time": "Endzeitpunkt"
+    "Ending time": "Endzeitpunkt",
+    "Send presence status": "Sende Anwesenheitsstatus",
+    "Your contact data as QR code": "Ihre Kontaktdaten als QR-Code"
 }

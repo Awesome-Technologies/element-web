@@ -68,6 +68,9 @@ import MatrixClientContext from "matrix-react-sdk/src/contexts/MatrixClientConte
 import { ThirdPartyIdentifier } from "matrix-react-sdk/src/AddThreepid";
 import { getDelegatedAuthAccountUrl } from "matrix-react-sdk/src/utils/oidc/getDelegatedAuthAccountUrl";
 import Field from "matrix-react-sdk/src/components/views/elements/Field";
+import QRCode from "matrix-react-sdk/src/components/views/elements/QRCode";
+import { MatrixClientPeg } from "matrix-react-sdk/src/MatrixClientPeg";
+import { OwnProfileStore } from "matrix-react-sdk/src/stores/OwnProfileStore";
 
 interface IProps {
     closeSettingsFn: () => void;
@@ -593,10 +596,25 @@ export default class GeneralUserSettingsTab extends React.Component<IProps, ISta
             );
         }
 
+        // construct qr code
+        const userId = MatrixClientPeg.safeGet().getSafeUserId();
+        const displayName = OwnProfileStore.instance.displayName;
+        const firstName = displayName?.split(", ")[1];
+        const lastName = displayName?.split(", ")[0];
+        const matrixId = userId.replace("@", "matrix:u/");
+        const qrCodeText = `BEGIN:VCARD
+VERSION:4.0
+N:${lastName};${firstName};;;
+FN:${firstName} ${lastName}
+IMPP:${matrixId}
+END:VCARD`;
+
         return (
             <SettingsTab data-testid="mx_GeneralUserSettingsTab">
                 <SettingsSection heading={_t("General")}>
                     <ProfileSettings />
+                    {_t("Your contact data as QR code")}
+                    <QRCode data={qrCodeText} className="contactQrCode" />
                     {this.renderAccountSection()}
                     {this.renderLanguageSection()}
                     {supportsMultiLanguageSpellCheck ? this.renderSpellCheckSection() : null}
