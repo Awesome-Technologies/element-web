@@ -91,6 +91,8 @@
     "Failed to start authentication": "Failed to start authentication",
     "Authentication failed": "Authentication failed",
     "Directory (FHIR VZD)": "Directory (FHIR VZD)",
+    "Settings for the directory for this session": "Settings for the directory for this session",
+    "Other entries for your HBA": "Other entries for your HBA",
     "Visible": "Visible",
     "Determines if you are visible and contactable in the directory.": "Determines if you are visible and contactable in the directory.",
     "Add own contact": "Add own contact",

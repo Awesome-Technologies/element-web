@@ -62,7 +62,10 @@ export function FHIRContextProvider({ children }: IProps): JSX.Element {
     };
 
     const setOwnerVisibility = async (visibility: boolean): Promise<any> => {
-        return await fhirClient.setVzdVisibility(visibility);
+        const userId = MatrixClientPeg.get()?.getUserId();
+        const mxidURI = "matrix:u/" + userId!.split("@")[1];
+        console.log(`set visibility of ${mxidURI} to, ${visibility}`);
+        return await fhirClient.setVzdVisibility(mxidURI, visibility);
     };
 
     const getContact = async (): Promise<any> => {
@@ -79,7 +82,7 @@ export function FHIRContextProvider({ children }: IProps): JSX.Element {
         const mxidURI = "matrix:u/" + userId.split("@")[1];
 
         if (contact) return await fhirClient.addMxidToVzd(mxidURI, displayName);
-        else return await fhirClient.deleteMxidFromVzd();
+        else return await fhirClient.deleteMxidFromVzd(mxidURI);
     };
 
     return (

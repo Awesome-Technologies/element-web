@@ -25,6 +25,8 @@ import { SettingsSubsectionText } from "matrix-react-sdk/src/components/views/se
 import AccessibleButton from "matrix-react-sdk/src/components/views/elements/AccessibleButton";
 import { _t } from "matrix-react-sdk/src/languageHandler";
 import Spinner from "matrix-react-sdk/src/components/views/elements/Spinner";
+import { Endpoint } from "fhir/r4";
+import { MatrixClientPeg } from "matrix-react-sdk/src/MatrixClientPeg";
 
 import { FHIRContext } from "../../context/FHIRContext";
 import WhitelistPanel from "../dialogs/WhitelistPanel";
@@ -36,6 +38,7 @@ interface IState {
     pollCount: number;
     errorText: string;
     contactAdded: boolean;
+    contacts: Endpoint[];
 }
 
 export default class FhirSettings extends React.Component<any, IState> {
@@ -48,11 +51,12 @@ export default class FhirSettings extends React.Component<any, IState> {
 
         this.state = {
             visibility: false,
-            loggedIn: false,
+            loggedIn: true,
             loginInProgress: false,
             pollCount: 0,
             errorText: "",
             contactAdded: false,
+            contacts: [],
         };
     }
 
@@ -61,19 +65,37 @@ export default class FhirSettings extends React.Component<any, IState> {
         // check if owner is already logged in
         const fhirContext = this.context;
         const loggedIn = await fhirContext.isOwnerLoggedIn();
-        let isContactAdded;
+        let isContactAdded = false;
+        let visibility = false;
+        let contacts = [];
         if (loggedIn) {
-            isContactAdded = await fhirContext.getContact();
+            // check if there is a contact with the mxid of this session
+            contacts = await fhirContext.getContact();
+
+            const ownMxid = this.getOwnMxidUri();
+            const endpointIndex = contacts.findIndex((endpoint: Endpoint) => endpoint.address === ownMxid);
+            if (endpointIndex != -1) {
+                isContactAdded = true;
+                if (contacts[endpointIndex].status === "active") {
+                    visibility = true;
+                }
+            }
         } else {
             isContactAdded = false;
         }
 
-        this.setState({ loggedIn: loggedIn, contactAdded: isContactAdded });
+        this.setState({ loggedIn: loggedIn, contacts: contacts, contactAdded: isContactAdded, visibility: visibility });
     }
 
     public componentWillUnmount(): void {
         this.unmounted = true;
     }
+
+    private getOwnMxidUri = (): string => {
+        const userId = MatrixClientPeg.get()?.getUserId();
+        const ownMxid = "matrix:u/" + userId!.split("@")[1];
+        return ownMxid;
+    };
 
     private onLogin = async (): Promise<void> => {
         const fhirContext = this.context;
@@ -118,15 +140,20 @@ export default class FhirSettings extends React.Component<any, IState> {
             this.stopPolling();
 
             // check if mxid is already added to the VZD
-            const isContactAdded = await fhirContext.getContact();
-            let isActive = false;
-            console.log(isContactAdded);
-            if (isContactAdded && isContactAdded["status"] === "active") {
-                isActive = true;
-                console.log("set visibility to true");
+            const contacts = await fhirContext.getContact();
+            let isContactAdded = false;
+            let visibility = false;
+
+            const ownMxid = this.getOwnMxidUri();
+            const endpointIndex = contacts.findIndex((endpoint: Endpoint) => endpoint.address === ownMxid);
+            if (endpointIndex != -1) {
+                isContactAdded = true;
+                if (contacts[endpointIndex].status === "active") {
+                    visibility = true;
+                }
             }
 
-            this.setState({ loggedIn: true, contactAdded: isContactAdded, visibility: isActive });
+            this.setState({ loggedIn: true, contacts: contacts, contactAdded: isContactAdded, visibility: visibility });
         }
 
         // on errors or timeout stop polling
@@ -164,6 +191,16 @@ export default class FhirSettings extends React.Component<any, IState> {
                 <WhitelistPanel />
             </div>
         );
+
+        const ownMxid = this.getOwnMxidUri();
+        const otherEndpoints = this.state.contacts.map((endpoint) => {
+            if (endpoint.address == ownMxid) return;
+            return (
+                <li>
+                    {endpoint.name}: {endpoint.address}
+                </li>
+            );
+        });
 
         const fhirVzdContent = [];
         if (!this.state.loggedIn) {
@@ -207,7 +244,7 @@ export default class FhirSettings extends React.Component<any, IState> {
         } else {
             fhirVzdContent.push(
                 <>
-                    <SettingsSubsectionText>{_t("Settings for the directory")}</SettingsSubsectionText>
+                    <SettingsSubsectionText>{_t("Settings for the directory for this session")}</SettingsSubsectionText>
                     <LabelledToggleSwitch
                         value={this.state.contactAdded}
                         label={_t("Add own contact")}
@@ -222,6 +259,10 @@ export default class FhirSettings extends React.Component<any, IState> {
                         onChange={this.onVisibilityChange}
                         disabled={!this.state.contactAdded}
                     />
+                    <div>
+                        {_t("Other entries for your HBA")}
+                        <ul>{otherEndpoints}</ul>
+                    </div>
                 </>,
             );
         }
