@@ -142,7 +142,7 @@ export async function loadTheme(): Promise<void> {
 }
 
 export async function loadApp(fragParams: {}): Promise<void> {
-    window.addEventListener("unload", async (event) => {
+    window.addEventListener("beforeunload", async (event) => {
         // Cancel the event as stated by the standard.
         event.preventDefault();
 
@@ -151,6 +151,9 @@ export async function loadApp(fragParams: {}): Promise<void> {
         logout();
         // give the session time to destroy itself
         await new Promise((r) => setTimeout(r, 1000));
+
+        // Chrome requires returnValue to be set.
+        event.returnValue = "";
     });
 
     // load app.js async so that its code is not executed immediately and we can catch any exceptions
