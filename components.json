@@ -26,6 +26,7 @@
     "src/components/structures/ViewSource.tsx": "src/components/structures/ViewSource.tsx",
     "src/components/views/dialogs/UserTab.ts": "src/components/views/dialogs/UserTab.ts",
     "src/createRoom.ts": "src/createRoom.ts",
+    "src/Lifecycle.ts": "src/Lifecycle.ts",
     "src/Modal.tsx": "src/Modal.tsx",
     "src/Presence.ts": "src/Presence.ts",
     "src/settings/Settings.tsx": "src/settings/Settings.tsx",

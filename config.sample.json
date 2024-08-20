@@ -41,9 +41,14 @@
     "room_directory": {
         "servers": ["tim.amp.chat"]
     },
+    "logout_redirect_url": "https://auth.ti-messenger.chat/auth/realms/REALM/protocol/openid-connect/logout",
     "setting_defaults": {
         "fhir_vzd_base_url": "https://fhir-directory-ref.vzd.ti-dienste.de",
         "messenger_proxy_base_url": "https://test1.ti-messenger.chat/proxy",
+        "sso_realms": [
+            ["https://test1.ti-messenger.chat/", "MessengerService1"],
+            ["https://test2.ti-messenger.chat/", "MessengerService2"]
+        ],
         "breadcrumbs": true,
         "UIFeature.urlPreviews": false,
         "UIFeature.feedback": false,
