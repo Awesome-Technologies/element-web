@@ -865,7 +865,7 @@ export const SETTINGS: { [setting: string]: ISetting } = {
     },
     "deviceNotificationsEnabled": {
         supportedLevels: [SettingLevel.DEVICE],
-        default: true,
+        default: false,
     },
     "notificationSound": {
         supportedLevels: LEVELS_ROOM_OR_ACCOUNT,
@@ -873,12 +873,12 @@ export const SETTINGS: { [setting: string]: ISetting } = {
     },
     "notificationBodyEnabled": {
         supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS,
-        default: true,
+        default: false,
         controller: new NotificationBodyEnabledController(),
     },
     "audioNotificationsEnabled": {
         supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS,
-        default: true,
+        default: false,
     },
     "enableWidgetScreenshots": {
         supportedLevels: LEVELS_ACCOUNT_SETTINGS,
