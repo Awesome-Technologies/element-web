@@ -244,7 +244,11 @@ export default class FhirSettings extends React.Component<any, IState> {
         } else {
             fhirVzdContent.push(
                 <>
-                    <SettingsSubsectionText>{_t("Settings for the directory for this session")}</SettingsSubsectionText>
+                    <SettingsSubsectionText>
+                        {_t("Settings for the directory for this session")}
+                        <br />
+                        {`(Mxid: ${ownMxid})`}
+                    </SettingsSubsectionText>
                     <LabelledToggleSwitch
                         value={this.state.contactAdded}
                         label={_t("Add own contact")}
