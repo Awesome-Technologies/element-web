@@ -116,5 +116,6 @@
     "Starting time": "Startzeitpunkt",
     "Ending time": "Endzeitpunkt",
     "Send presence status": "Sende Anwesenheitsstatus",
-    "Your contact data as QR code": "Ihre Kontaktdaten als QR-Code"
+    "Your contact data as QR code": "Ihre Kontaktdaten als QR-Code",
+    "Warning: Public rooms are usually unencrypted": "Achtung: Öffentliche Räume sind standardmäßig nicht verschlüsselt"
 }

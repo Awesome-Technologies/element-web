@@ -135,5 +135,6 @@
     "Starting time": "Starting time",
     "Ending time": "Ending time",
     "Send presence status": "Send presence status",
-    "Your contact data as QR code": "Your contact data as QR code"
+    "Your contact data as QR code": "Your contact data as QR code",
+    "Warning: Public rooms are usually unencrypted": "Warning: Public rooms are usually unencrypted"
 }

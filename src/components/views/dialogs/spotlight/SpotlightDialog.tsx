@@ -1267,6 +1267,18 @@ const SpotlightDialog: React.FC<IProps> = ({ initialText = "", initialFilter = n
                     aria-activedescendant={activeDescendant}
                     aria-describedby="mx_SpotlightDialog_keyboardPrompt"
                 >
+                    {filter === Filter.PublicRooms && (
+                        <div style={{ marginBottom: "10px" }}>
+                            <span
+                                className="mx_E2EIcon_warning"
+                                style={{ position: "fixed", width: "24px", height: "24px" }}
+                            />
+                            <span style={{ marginLeft: "25px" }}>
+                                {_t("Warning: Public rooms are usually unencrypted")}
+                            </span>
+                            <br />
+                        </div>
+                    )}
                     {content}
                 </div>
             </BaseDialog>

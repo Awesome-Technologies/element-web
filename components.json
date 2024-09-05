@@ -14,6 +14,7 @@
     "src/components/views/messages/DownloadActionButton.tsx": "src/components/views/messages/DownloadActionButton.tsx",
     "src/components/views/messages/MFileBody.tsx": "src/components/views/messages/MFileBody.tsx",
     "src/components/views/rooms/NewRoomIntro.tsx": "src/components/views/rooms/NewRoomIntro.tsx",
+    "src/components/views/rooms/LegacyRoomHeader.tsx": "src/components/views/rooms/LegacyRoomHeader.tsx",
     "src/components/views/rooms/RoomList.tsx": "src/components/views/rooms/RoomList.tsx",
     "src/components/views/room_settings/RoomProfileSettings.tsx": "src/components/views/room_settings/RoomProfileSettings.tsx",
     "src/components/views/settings/ProfileSettings.tsx": "src/components/views/settings/ProfileSettings.tsx",
