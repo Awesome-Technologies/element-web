@@ -837,7 +837,7 @@ export const SETTINGS: { [setting: string]: ISetting } = {
             "default": _td("Never send encrypted messages to unverified sessions from this session"),
             "room-device": _td("Never send encrypted messages to unverified sessions in this room from this session"),
         },
-        default: true,
+        default: false,
         controller: new UIFeatureController(UIFeature.AdvancedEncryption),
     },
     "urlPreviewsEnabled": {
