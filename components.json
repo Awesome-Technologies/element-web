@@ -35,5 +35,6 @@
     "src/utils/EventUtils.ts": "src/utils/EventUtils.ts",
     "src/hooks/room/useTopic.ts": "src/hooks/room/useTopic.ts",
     "src/components/structures/RoomSearch.tsx": "src/components/structures/RoomSearch.tsx",
-    "src/components/structures/TabbedView.tsx": "src/components/structures/TabbedView.tsx"
+    "src/components/structures/TabbedView.tsx": "src/components/structures/TabbedView.tsx",
+    "src/components/structures/TimelinePanel.tsx": "src/components/structures/TimelinePanel.tsx"
 }
