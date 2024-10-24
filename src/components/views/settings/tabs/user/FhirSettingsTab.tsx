@@ -99,7 +99,7 @@ export default class FhirSettingsTab extends React.Component<any, IState> {
 
     private onLogin = async (): Promise<void> => {
         const fhirContext = this.context;
-        this.setState({ loginInProgress: true });
+        this.setState({ loginInProgress: true, pollCount: 0 });
         try {
             await fhirContext.ownerLogin();
             // start polling
