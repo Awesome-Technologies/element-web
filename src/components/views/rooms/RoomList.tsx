@@ -536,11 +536,14 @@ export default class RoomList extends React.PureComponent<IProps, IState> {
         const inactiveRooms = [];
         for (const tag in newLists) {
             for (const room of newLists[tag]) {
+                // ignore rooms that are not joined yet
+                if (room.selfMembership === "invite") {
+                    continue;
+                }
                 const difference = room.getLastActiveTimestamp() - inactivityThreshold;
                 if (difference < 0) inactiveRooms.push(room.roomId);
             }
         }
-        console.log(inactiveRooms);
         // Show toast for inactive rooms to be deleted
         if (inactiveRooms.length > 0) showRoomDeletionToast(inactiveRooms);
 
