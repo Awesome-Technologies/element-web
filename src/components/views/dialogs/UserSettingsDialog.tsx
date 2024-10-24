@@ -1,29 +1,38 @@
 /*
+Copyright 2023, 2024 Awesome Technologies Innovationslabor GmbH
+Copyright 2024 New Vector Ltd.
+Copyright 2019-2024 The Matrix.org Foundation C.I.C.
 Copyright 2019 New Vector Ltd
-Copyright 2019 The Matrix.org Foundation C.I.C.
-Copyright 2023 Awesome Technologies Innovationslabor GmbH
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
+// ORIGINAL CODE
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/components/views/dialogs/UserSettingsDialog.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/components/views/dialogs/
 
-import React from "react";
-import TabbedView, { Tab } from "matrix-react-sdk/src/components/structures/TabbedView";
+import React, { ReactElement, useState } from "react";
+import UserProfileIcon from "@vector-im/compound-design-tokens/assets/web/icons/user-profile";
+import DevicesIcon from "@vector-im/compound-design-tokens/assets/web/icons/devices";
+import VisibilityOnIcon from "@vector-im/compound-design-tokens/assets/web/icons/visibility-on";
+import NotificationsIcon from "@vector-im/compound-design-tokens/assets/web/icons/notifications";
+import PreferencesIcon from "@vector-im/compound-design-tokens/assets/web/icons/preferences";
+import KeyboardIcon from "@vector-im/compound-design-tokens/assets/web/icons/keyboard";
+import MicOnIcon from "@vector-im/compound-design-tokens/assets/web/icons/mic-on";
+import LockIcon from "@vector-im/compound-design-tokens/assets/web/icons/lock";
+import LabsIcon from "@vector-im/compound-design-tokens/assets/web/icons/labs";
+import BlockIcon from "@vector-im/compound-design-tokens/assets/web/icons/block";
+import HelpIcon from "@vector-im/compound-design-tokens/assets/web/icons/help";
+import TabbedView, { Tab, useActiveTabWithDefault } from "matrix-react-sdk/src/components/structures/TabbedView";
 import { _t, _td } from "matrix-react-sdk/src/languageHandler";
-import GeneralUserSettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/user/GeneralUserSettingsTab";
-import SettingsStore, { CallbackFn } from "matrix-react-sdk/src/settings/SettingsStore";
+import AccountUserSettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/user/AccountUserSettingsTab";
+import SettingsStore from "matrix-react-sdk/src/settings/SettingsStore";
+import LabsUserSettingsTab, {
+    showLabsFlags,
+} from "matrix-react-sdk/src/components/views/settings/tabs/user/LabsUserSettingsTab";
+import AppearanceUserSettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/user/AppearanceUserSettingsTab";
 import SecurityUserSettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/user/SecurityUserSettingsTab";
 import NotificationUserSettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/user/NotificationUserSettingsTab";
 import PreferencesUserSettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/user/PreferencesUserSettingsTab";
@@ -35,70 +44,103 @@ import BaseDialog from "matrix-react-sdk/src/components/views/dialogs/BaseDialog
 import KeyboardUserSettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/user/KeyboardUserSettingsTab";
 import SessionManagerTab from "matrix-react-sdk/src/components/views/settings/tabs/user/SessionManagerTab";
 import { NonEmptyArray } from "matrix-react-sdk/src/@types/common";
+import { SDKContext, SdkContextClass } from "matrix-react-sdk/src/contexts/SDKContext";
+import { useSettingValue } from "matrix-react-sdk/src/hooks/useSettings";
+import { ToastContext, useActiveToast } from "matrix-react-sdk/src/contexts/ToastContext";
 
 import { UserTab } from "./UserTab";
-import FhirSettings from "../settings/FhirSettings";
+import FhirSettingsTab from "../settings/tabs/user/FhirSettingsTab";
 import { FHIRContextProvider } from "../../context/FHIRContext";
 
 interface IProps {
     initialTabId?: UserTab;
+    showMsc4108QrCode?: boolean;
+    sdkContext: SdkContextClass;
     onFinished(): void;
 }
 
-interface IState {
-    mjolnirEnabled: boolean;
+function titleForTabID(tabId: UserTab): React.ReactNode {
+    const subs = {
+        strong: (sub: string): ReactElement => <span className="mx_UserSettingsDialog_title_strong">{sub}</span>,
+    };
+    switch (tabId) {
+        case UserTab.Account:
+            return _t("settings|account|dialog_title", undefined, subs);
+        case UserTab.SessionManager:
+            return _t("settings|sessions|dialog_title", undefined, subs);
+        case UserTab.Appearance:
+            return _t("settings|appearance|dialog_title", undefined, subs);
+        case UserTab.Notifications:
+            return _t("settings|notifications|dialog_title", undefined, subs);
+        case UserTab.Preferences:
+            return _t("settings|preferences|dialog_title", undefined, subs);
+        case UserTab.Keyboard:
+            return _t("settings|keyboard|dialog_title", undefined, subs);
+        case UserTab.Sidebar:
+            return _t("settings|sidebar|dialog_title", undefined, subs);
+        case UserTab.Voice:
+            return _t("settings|voip|dialog_title", undefined, subs);
+        case UserTab.Security:
+            return _t("settings|security|dialog_title", undefined, subs);
+        case UserTab.Labs:
+            return _t("settings|labs|dialog_title", undefined, subs);
+        case UserTab.Mjolnir:
+            return _t("settings|labs_mjolnir|dialog_title", undefined, subs);
+        case UserTab.Help:
+            return _t("setting|help_about|dialog_title", undefined, subs);
+    }
 }
 
-export default class UserSettingsDialog extends React.Component<IProps, IState> {
-    private settingsWatchers: string[] = [];
+export default function UserSettingsDialog(props: IProps): JSX.Element {
+    const voipEnabled = useSettingValue<boolean>(UIFeature.Voip);
+    const mjolnirEnabled = useSettingValue<boolean>("feature_mjolnir");
+    // store this prop in state as changing tabs back and forth should clear it
+    const [showMsc4108QrCode, setShowMsc4108QrCode] = useState(props.showMsc4108QrCode);
 
-    public constructor(props: IProps) {
-        super(props);
-
-        this.state = {
-            mjolnirEnabled: SettingsStore.getValue("feature_mjolnir"),
-        };
-    }
-
-    public componentDidMount(): void {
-        this.settingsWatchers = [SettingsStore.watchSetting("feature_mjolnir", null, this.mjolnirChanged)];
-    }
-
-    public componentWillUnmount(): void {
-        this.settingsWatchers.forEach((watcherRef) => SettingsStore.unwatchSetting(watcherRef));
-    }
-
-    private mjolnirChanged: CallbackFn = (settingName, roomId, atLevel, newValue) => {
-        // We can cheat because we know what levels a feature is tracked at, and how it is tracked
-        this.setState({ mjolnirEnabled: newValue });
-    };
-
-    private getTabs(): NonEmptyArray<Tab<UserTab>> {
+    const getTabs = (): NonEmptyArray<Tab<UserTab>> => {
         const tabs: Tab<UserTab>[] = [];
 
         tabs.push(
             new Tab(
-                UserTab.General,
-                _td("General"),
-                "mx_UserSettingsDialog_settingsIcon",
-                <GeneralUserSettingsTab closeSettingsFn={this.props.onFinished} />,
+                UserTab.Account,
+                _td("settings|account|title"),
+                <UserProfileIcon />,
+                <AccountUserSettingsTab closeSettingsFn={props.onFinished} />,
                 "UserSettingsGeneral",
             ),
         );
         tabs.push(
             new Tab(
                 UserTab.FHIRTab,
-                _td("Directory"),
+                _td("tim|settings|directory"),
                 "mx_UserSettingsDialog_FhirIcon",
-                <FhirSettings />,
+                <FhirSettingsTab />,
+                "UserSettingsAppearance",
+            ),
+        );
+        tabs.push(
+            new Tab(
+                UserTab.SessionManager,
+                _td("settings|sessions|title"),
+                <DevicesIcon />,
+                <SessionManagerTab showMsc4108QrCode={showMsc4108QrCode} />,
+                undefined,
+            ),
+        );
+        tabs.push(
+            new Tab(
+                UserTab.Appearance,
+                _td("common|appearance"),
+                <VisibilityOnIcon />,
+                <AppearanceUserSettingsTab />,
                 "UserSettingsAppearance",
             ),
         );
         tabs.push(
             new Tab(
                 UserTab.Notifications,
-                _td("Notifications"),
-                "mx_UserSettingsDialog_bellIcon",
+                _td("notifications|enable_prompt_toast_title"),
+                <NotificationsIcon />,
                 <NotificationUserSettingsTab />,
                 "UserSettingsNotifications",
             ),
@@ -106,17 +148,17 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
         tabs.push(
             new Tab(
                 UserTab.Preferences,
-                _td("Preferences"),
-                "mx_UserSettingsDialog_preferencesIcon",
-                <PreferencesUserSettingsTab closeSettingsFn={this.props.onFinished} />,
+                _td("common|preferences"),
+                <PreferencesIcon />,
+                <PreferencesUserSettingsTab closeSettingsFn={props.onFinished} />,
                 "UserSettingsPreferences",
             ),
         );
         tabs.push(
             new Tab(
                 UserTab.Keyboard,
-                _td("Keyboard"),
-                "mx_UserSettingsDialog_keyboardIcon",
+                _td("settings|keyboard|title"),
+                <KeyboardIcon />,
                 <KeyboardUserSettingsTab />,
                 "UserSettingsKeyboard",
             ),
@@ -124,19 +166,19 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
         // tabs.push(
         //     new Tab(
         //         UserTab.Sidebar,
-        //         _td("Sidebar"),
-        //         "mx_UserSettingsDialog_sidebarIcon",
+        //         _td("settings|sidebar|title"),
+        //         <SidebarIcon />,
         //         <SidebarUserSettingsTab />,
         //         "UserSettingsSidebar",
         //     ),
         // );
 
-        if (SettingsStore.getValue(UIFeature.Voip)) {
+        if (voipEnabled) {
             tabs.push(
                 new Tab(
                     UserTab.Voice,
-                    _td("Voice & Video"),
-                    "mx_UserSettingsDialog_voiceIcon",
+                    _td("settings|voip|title"),
+                    <MicOnIcon />,
                     <VoiceUserSettingsTab />,
                     "UserSettingsVoiceVideo",
                 ),
@@ -146,43 +188,24 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
         tabs.push(
             new Tab(
                 UserTab.Security,
-                _td("Security & Privacy"),
-                "mx_UserSettingsDialog_securityIcon",
-                <SecurityUserSettingsTab closeSettingsFn={this.props.onFinished} />,
+                _td("room_settings|security|title"),
+                <LockIcon />,
+                <SecurityUserSettingsTab closeSettingsFn={props.onFinished} />,
                 "UserSettingsSecurityPrivacy",
             ),
         );
-        tabs.push(
-            new Tab(
-                UserTab.SessionManager,
-                _td("Sessions"),
-                "mx_UserSettingsDialog_sessionsIcon",
-                <SessionManagerTab />,
-                // don't track with posthog while under construction
-                undefined,
-            ),
-        );
-        // Show the Labs tab if enabled or if there are any active betas
-        // if (
-        //     SdkConfig.get("show_labs_settings") ||
-        //     SettingsStore.getFeatureSettingNames().some((k) => SettingsStore.getBetaInfo(k))
-        // ) {
-        //     tabs.push(
-        //         new Tab(
-        //             UserTab.Labs,
-        //             _td("Labs"),
-        //             "mx_UserSettingsDialog_labsIcon",
-        //             <LabsUserSettingsTab />,
-        //             "UserSettingsLabs",
-        //         ),
-        //     );
-        // }
-        if (this.state.mjolnirEnabled) {
+
+        if (showLabsFlags() && SettingsStore.getFeatureSettingNames().some((k) => SettingsStore.getBetaInfo(k))) {
+            tabs.push(
+                new Tab(UserTab.Labs, _td("common|labs"), <LabsIcon />, <LabsUserSettingsTab />, "UserSettingsLabs"),
+            );
+        }
+        if (mjolnirEnabled) {
             tabs.push(
                 new Tab(
                     UserTab.Mjolnir,
-                    _td("Ignored users"),
-                    "mx_UserSettingsDialog_mjolnirIcon",
+                    _td("labs_mjolnir|title"),
+                    <BlockIcon />,
                     <MjolnirUserSettingsTab />,
                     "UserSettingMjolnir",
                 ),
@@ -191,34 +214,51 @@ export default class UserSettingsDialog extends React.Component<IProps, IState> 
         tabs.push(
             new Tab(
                 UserTab.Help,
-                _td("Help & About"),
-                "mx_UserSettingsDialog_helpIcon",
-                <HelpUserSettingsTab closeSettingsFn={(): void => this.props.onFinished()} />,
+                _td("setting|help_about|title"),
+                <HelpIcon />,
+                <HelpUserSettingsTab />,
                 "UserSettingsHelpAbout",
             ),
         );
 
         return tabs as NonEmptyArray<Tab<UserTab>>;
-    }
+    };
 
-    public render(): React.ReactNode {
-        return (
-            <BaseDialog
-                className="mx_UserSettingsDialog"
-                hasCancel={true}
-                onFinished={this.props.onFinished}
-                title={_t("Settings")}
-            >
-                <div className="mx_SettingsDialog_content">
-                    <FHIRContextProvider>
-                        <TabbedView
-                            tabs={this.getTabs()}
-                            initialTabId={this.props.initialTabId}
-                            screenName="UserSettings"
-                        />
-                    </FHIRContextProvider>
-                </div>
-            </BaseDialog>
-        );
-    }
+    const [activeTabId, _setActiveTabId] = useActiveTabWithDefault(getTabs(), UserTab.Account, props.initialTabId);
+    const setActiveTabId = (tabId: UserTab): void => {
+        _setActiveTabId(tabId);
+        // Clear this so switching away from the tab and back to it will not show the QR code again
+        setShowMsc4108QrCode(false);
+    };
+
+    const [toastRack] = useActiveToast();
+
+    return (
+        // XXX: SDKContext is provided within the LoggedInView subtree.
+        // Modals function outside the MatrixChat React tree, so sdkContext is reprovided here to simulate that.
+        // The longer term solution is to move our ModalManager into the React tree to inherit contexts properly.
+        <SDKContext.Provider value={props.sdkContext}>
+            <ToastContext.Provider value={toastRack}>
+                <BaseDialog
+                    className="mx_UserSettingsDialog"
+                    hasCancel={true}
+                    onFinished={props.onFinished}
+                    title={titleForTabID(activeTabId)}
+                    titleClass="mx_UserSettingsDialog_title"
+                >
+                    <div className="mx_SettingsDialog_content">
+                        <FHIRContextProvider>
+                            <TabbedView
+                                tabs={getTabs()}
+                                activeTabId={activeTabId}
+                                screenName="UserSettings"
+                                onChange={setActiveTabId}
+                                responsive={true}
+                            />
+                        </FHIRContextProvider>
+                    </div>
+                </BaseDialog>
+            </ToastContext.Provider>
+        </SDKContext.Provider>
+    );
 }

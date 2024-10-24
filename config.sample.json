@@ -9,6 +9,7 @@
     "disable_guests": true,
     "disable_login_language_selector": false,
     "disable_3pid_login": true,
+    "force_verification": false,
     "brand": "AMP.tim",
     "branding": {
         "welcome_background_url": "./tim-icons/background.jpg",
@@ -41,6 +42,7 @@
     "room_directory": {
         "servers": ["tim.amp.chat"]
     },
+    "help_url": "https://tim.amp.chat/faq",
     "logout_redirect_url": "https://auth.ti-messenger.chat/auth/realms/REALM/protocol/openid-connect/logout",
     "setting_defaults": {
         "fhir_vzd_base_url": "https://fhir-directory-ref.vzd.ti-dienste.de",

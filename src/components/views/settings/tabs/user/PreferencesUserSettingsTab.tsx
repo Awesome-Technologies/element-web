@@ -1,31 +1,25 @@
 /*
+Copyright 2024 Awesome Technologies Innovationslabor GmbH
+Copyright 2024 New Vector Ltd.
 Copyright 2019-2023 The Matrix.org Foundation C.I.C.
 Copyright 2019 Michael Telatynski <7t3chguy@gmail.com>
-Copyright 2024 Awesome Technologies Innovationslabor GmbH
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
 // ORIGINAL CODE
-// https://github.com/matrix-org/matrix-react-sdk/blob/v3.79.0/src/components/views/settings/tabs/user/PreferencesUserSettingsTab.tsx
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/components/views/settings/tabs/user/PreferencesUserSettingsTab.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/components/views/settings/tabs/user/
 
-import React from "react";
-import { _t } from "matrix-react-sdk/src/languageHandler";
+import React, { ReactElement, useCallback, useEffect, useState } from "react";
+import { NonEmptyArray } from "matrix-react-sdk/src/@types/common";
+import { _t, getCurrentLanguage } from "matrix-react-sdk/src/languageHandler";
 import { UseCase } from "matrix-react-sdk/src/settings/enums/UseCase";
 import SettingsStore from "matrix-react-sdk/src/settings/SettingsStore";
 import Field from "matrix-react-sdk/src/components/views/elements/Field";
+import Dropdown from "matrix-react-sdk/src/components/views/elements/Dropdown";
 import { SettingLevel } from "matrix-react-sdk/src/settings/SettingLevel";
 import SettingsFlag from "matrix-react-sdk/src/components/views/elements/SettingsFlag";
 import AccessibleButton from "matrix-react-sdk/src/components/views/elements/AccessibleButton";
@@ -38,6 +32,12 @@ import { showUserOnboardingPage } from "matrix-react-sdk/src/components/views/us
 import SettingsSubsection from "matrix-react-sdk/src/components/views/settings/shared/SettingsSubsection";
 import SettingsTab from "matrix-react-sdk/src/components/views/settings/tabs/SettingsTab";
 import { SettingsSection } from "matrix-react-sdk/src/components/views/settings/shared/SettingsSection";
+import LanguageDropdown from "matrix-react-sdk/src/components/views/elements/LanguageDropdown";
+import PlatformPeg from "matrix-react-sdk/src/PlatformPeg";
+import { IS_MAC } from "matrix-react-sdk/src/Keyboard";
+import SpellCheckSettings from "matrix-react-sdk/src/components/views/settings/SpellCheckSettings";
+import LabelledToggleSwitch from "matrix-react-sdk/src/components/views/elements/LabelledToggleSwitch";
+import * as TimezoneHandler from "matrix-react-sdk/src/TimezoneHandler";
 import { MatrixClientPeg } from "matrix-react-sdk/src/MatrixClientPeg";
 import { SetPresence } from "matrix-js-sdk/src/sync";
 
@@ -46,10 +46,82 @@ interface IProps {
 }
 
 interface IState {
+    timezone: string | undefined;
+    timezones: string[];
+    timezoneSearch: string | undefined;
     autocompleteDelay: string;
     readMarkerInViewThresholdMs: string;
     readMarkerOutOfViewThresholdMs: string;
 }
+
+const LanguageSection: React.FC = () => {
+    const [language, setLanguage] = useState(getCurrentLanguage());
+
+    const onLanguageChange = useCallback(
+        (newLanguage: string) => {
+            if (language === newLanguage) return;
+
+            SettingsStore.setValue("language", null, SettingLevel.DEVICE, newLanguage);
+            setLanguage(newLanguage);
+            const platform = PlatformPeg.get();
+            if (platform) {
+                platform.setLanguage([newLanguage]);
+                platform.reload();
+            }
+        },
+        [language],
+    );
+
+    return (
+        <div className="mx_SettingsSubsection_dropdown">
+            {_t("settings|general|application_language")}
+            <LanguageDropdown onOptionChange={onLanguageChange} value={language} />
+            <div className="mx_PreferencesUserSettingsTab_section_hint">
+                {_t("settings|general|application_language_reload_hint")}
+            </div>
+        </div>
+    );
+};
+
+const SpellCheckSection: React.FC = () => {
+    const [spellCheckEnabled, setSpellCheckEnabled] = useState<boolean | undefined>();
+    const [spellCheckLanguages, setSpellCheckLanguages] = useState<string[] | undefined>();
+
+    useEffect(() => {
+        (async (): Promise<void> => {
+            const plaf = PlatformPeg.get();
+            const [enabled, langs] = await Promise.all([plaf?.getSpellCheckEnabled(), plaf?.getSpellCheckLanguages()]);
+
+            setSpellCheckEnabled(enabled);
+            setSpellCheckLanguages(langs || undefined);
+        })();
+    }, []);
+
+    const onSpellCheckEnabledChange = useCallback((enabled: boolean) => {
+        setSpellCheckEnabled(enabled);
+        PlatformPeg.get()?.setSpellCheckEnabled(enabled);
+    }, []);
+
+    const onSpellCheckLanguagesChange = useCallback((languages: string[]): void => {
+        setSpellCheckLanguages(languages);
+        PlatformPeg.get()?.setSpellCheckLanguages(languages);
+    }, []);
+
+    if (!PlatformPeg.get()?.supportsSpellCheckSettings()) return null;
+
+    return (
+        <>
+            <LabelledToggleSwitch
+                label={_t("settings|general|allow_spellcheck")}
+                value={Boolean(spellCheckEnabled)}
+                onChange={onSpellCheckEnabledChange}
+            />
+            {spellCheckEnabled && spellCheckLanguages !== undefined && !IS_MAC && (
+                <SpellCheckSettings languages={spellCheckLanguages} onLanguagesChange={onSpellCheckLanguagesChange} />
+            )}
+        </>
+    );
+};
 
 export default class PreferencesUserSettingsTab extends React.Component<IProps, IState> {
     private static ROOM_LIST_SETTINGS = ["breadcrumbs", "FTUE.userOnboardingButton"];
@@ -106,6 +178,9 @@ export default class PreferencesUserSettingsTab extends React.Component<IProps, 
         super(props);
 
         this.state = {
+            timezone: TimezoneHandler.getUserTimezone(),
+            timezones: TimezoneHandler.getAllTimezones(),
+            timezoneSearch: undefined,
             autocompleteDelay: SettingsStore.getValueAt(SettingLevel.DEVICE, "autocompleteDelay").toString(10),
             readMarkerInViewThresholdMs: SettingsStore.getValueAt(
                 SettingLevel.DEVICE,
@@ -117,6 +192,25 @@ export default class PreferencesUserSettingsTab extends React.Component<IProps, 
             ).toString(10),
         };
     }
+
+    private onTimezoneChange = (tz: string): void => {
+        this.setState({ timezone: tz });
+        TimezoneHandler.setUserTimezone(tz);
+    };
+
+    /**
+     * If present filter the time zones matching the search term
+     */
+    private onTimezoneSearchChange = (search: string): void => {
+        const timezoneSearch = search.toLowerCase();
+        const timezones = timezoneSearch
+            ? TimezoneHandler.getAllTimezones().filter((tz) => {
+                  return tz.toLowerCase().includes(timezoneSearch);
+              })
+            : TimezoneHandler.getAllTimezones();
+
+        this.setState({ timezones, timezoneSearch });
+    };
 
     private onAutocompleteDelayChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         this.setState({ autocompleteDelay: e.target.value });
@@ -171,23 +265,39 @@ export default class PreferencesUserSettingsTab extends React.Component<IProps, 
             // Only show the user onboarding setting if the user should see the user onboarding page
             .filter((it) => it !== "FTUE.userOnboardingButton" || showUserOnboardingPage(useCase));
 
+        const browserTimezoneLabel: string = _t("settings|preferences|default_timezone", {
+            timezone: TimezoneHandler.shortBrowserTimezone(),
+        });
+
+        // Always Preprend the default option
+        const timezones = this.state.timezones.map((tz) => {
+            return <div key={tz}>{tz}</div>;
+        });
+        timezones.unshift(<div key="">{browserTimezoneLabel}</div>);
+
         return (
             <SettingsTab data-testid="mx_PreferencesUserSettingsTab">
-                <SettingsSection heading={_t("Preferences")}>
+                <SettingsSection>
+                    {/* The heading string is still 'general' from where it was moved, but this section should become 'general' */}
+                    <SettingsSubsection heading={_t("settings|general|language_section")}>
+                        <LanguageSection />
+                        <SpellCheckSection />
+                    </SettingsSubsection>
+
                     {roomListSettings.length > 0 && (
-                        <SettingsSubsection heading={_t("Room list")}>
+                        <SettingsSubsection heading={_t("settings|preferences|room_list_heading")}>
                             {this.renderGroup(roomListSettings)}
                         </SettingsSubsection>
                     )}
 
-                    <SettingsSubsection heading={_t("Spaces")}>
+                    <SettingsSubsection heading={_t("common|spaces")}>
                         {this.renderGroup(PreferencesUserSettingsTab.SPACES_SETTINGS, SettingLevel.ACCOUNT)}
                     </SettingsSubsection>
 
                     <SettingsSubsection
-                        heading={_t("Keyboard shortcuts")}
+                        heading={_t("settings|preferences|keyboard_heading")}
                         description={_t(
-                            "To view all keyboard shortcuts, <a>click here</a>.",
+                            "settings|preferences|keyboard_view_shortcuts_button",
                             {},
                             {
                                 a: (sub) => (
@@ -201,38 +311,56 @@ export default class PreferencesUserSettingsTab extends React.Component<IProps, 
                         {this.renderGroup(PreferencesUserSettingsTab.KEYBINDINGS_SETTINGS)}
                     </SettingsSubsection>
 
-                    <SettingsSubsection heading={_t("Displaying time")}>
+                    <SettingsSubsection heading={_t("settings|preferences|time_heading")}>
+                        <div className="mx_SettingsSubsection_dropdown">
+                            {_t("settings|preferences|user_timezone")}
+                            <Dropdown
+                                id="mx_dropdownUserTimezone"
+                                className="mx_dropdownUserTimezone"
+                                data-testid="mx_dropdownUserTimezone"
+                                searchEnabled={true}
+                                value={this.state.timezone}
+                                label={_t("settings|preferences|user_timezone")}
+                                placeholder={browserTimezoneLabel}
+                                onOptionChange={this.onTimezoneChange}
+                                onSearchChange={this.onTimezoneSearchChange}
+                            >
+                                {timezones as NonEmptyArray<ReactElement & { key: string }>}
+                            </Dropdown>
+                        </div>
+
                         {this.renderGroup(PreferencesUserSettingsTab.TIME_SETTINGS)}
+                        <SettingsFlag name="userTimezonePublish" level={SettingLevel.DEVICE} />
                     </SettingsSubsection>
 
                     <SettingsSubsection
-                        heading={_t("Presence")}
-                        description={_t("Share your activity and status with others.")}
+                        heading={_t("common|presence")}
+                        description={_t("settings|preferences|presence_description")}
                     >
                         {this.renderGroup(PreferencesUserSettingsTab.PRESENCE_SETTINGS)}
                     </SettingsSubsection>
 
-                    <SettingsSubsection heading={_t("Composer")}>
+                    <SettingsSubsection heading={_t("settings|preferences|composer_heading")}>
                         {this.renderGroup(PreferencesUserSettingsTab.COMPOSER_SETTINGS)}
                     </SettingsSubsection>
 
-                    <SettingsSubsection heading={_t("Code blocks")}>
+                    <SettingsSubsection heading={_t("settings|preferences|code_blocks_heading")}>
                         {this.renderGroup(PreferencesUserSettingsTab.CODE_BLOCKS_SETTINGS)}
                     </SettingsSubsection>
 
-                    <SettingsSubsection heading={_t("Images, GIFs and videos")}>
+                    <SettingsSubsection heading={_t("settings|preferences|media_heading")}>
                         {this.renderGroup(PreferencesUserSettingsTab.IMAGES_AND_VIDEOS_SETTINGS)}
                     </SettingsSubsection>
 
-                    <SettingsSubsection heading={_t("Timeline")}>
+                    <SettingsSubsection heading={_t("common|timeline")}>
                         {this.renderGroup(PreferencesUserSettingsTab.TIMELINE_SETTINGS)}
                     </SettingsSubsection>
 
-                    <SettingsSubsection heading={_t("Room directory")}>
+                    <SettingsSubsection heading={_t("settings|preferences|room_directory_heading")}>
                         {this.renderGroup(PreferencesUserSettingsTab.ROOM_DIRECTORY_SETTINGS)}
                     </SettingsSubsection>
 
-                    <SettingsSubsection heading={_t("General")} stretchContent>
+                    <SettingsSubsection heading={_t("common|general")} stretchContent>
                         {this.renderGroup(PreferencesUserSettingsTab.GENERAL_SETTINGS)}
 
                         <SettingsFlag name="Electron.showTrayIcon" level={SettingLevel.PLATFORM} hideIfCannotSet />
@@ -240,7 +368,7 @@ export default class PreferencesUserSettingsTab extends React.Component<IProps, 
                             name="Electron.enableHardwareAcceleration"
                             level={SettingLevel.PLATFORM}
                             hideIfCannotSet
-                            label={_t("Enable hardware acceleration (restart %(appName)s to take effect)", {
+                            label={_t("settings|preferences|Electron.enableHardwareAcceleration", {
                                 appName: SdkConfig.get().brand,
                             })}
                         />
@@ -249,19 +377,19 @@ export default class PreferencesUserSettingsTab extends React.Component<IProps, 
                         <SettingsFlag name="Electron.warnBeforeExit" level={SettingLevel.PLATFORM} hideIfCannotSet />
 
                         <Field
-                            label={_t("Autocomplete delay (ms)")}
+                            label={_t("settings|preferences|autocomplete_delay")}
                             type="number"
                             value={this.state.autocompleteDelay}
                             onChange={this.onAutocompleteDelayChange}
                         />
                         <Field
-                            label={_t("Read Marker lifetime (ms)")}
+                            label={_t("settings|preferences|rm_lifetime")}
                             type="number"
                             value={this.state.readMarkerInViewThresholdMs}
                             onChange={this.onReadMarkerInViewThresholdMs}
                         />
                         <Field
-                            label={_t("Read Marker off-screen lifetime (ms)")}
+                            label={_t("settings|preferences|rm_lifetime_offscreen")}
                             type="number"
                             value={this.state.readMarkerOutOfViewThresholdMs}
                             onChange={this.onReadMarkerOutOfViewThresholdMs}

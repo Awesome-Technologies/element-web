@@ -1,21 +1,14 @@
 /*
-Copyright 2020-2021 The Matrix.org Foundation C.I.C.
+Copyright 2024 New Vector Ltd.
+Copyright 2020, 2021 The Matrix.org Foundation C.I.C.
+Copyright 2024 Awesome Technologies Innovationslabor GmbH
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
 // ORIGINAL CODE
-// https://github.com/matrix-org/matrix-react-sdk/blob/v3.79.0/src/components/views/dialogs/ServerPickerDialog.tsx
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/components/views/dialogs/ServerPickerDialog.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/components/views/dialogs/
 
@@ -87,9 +80,6 @@ export default class ServerPickerDialog extends React.PureComponent<IProps, ISta
         this.setState({ otherHomeserver: ev.target.value });
     };
 
-    // TODO: Do we want to support .well-known lookups here?
-    // If for some reason someone enters "matrix.org" for a URL, we could do a lookup to
-    // find their homeserver without demanding they use "https://matrix.org"
     private validate = withValidation<this, { error?: string }>({
         deriveData: async ({ value }): Promise<{ error?: string }> => {
             let hsUrl = (value ?? "").trim(); // trim to account for random whitespace
@@ -110,14 +100,12 @@ export default class ServerPickerDialog extends React.PureComponent<IProps, ISta
                 });
                 const federationResult = await federationRequestResult.text();
                 if (federationResult !== "true") {
-                    const error = _t(
-                        "Messenger-Service is not part of the federation. Please contact your administrator.",
-                    );
+                    const error = _t("tim|security|not_in_federation");
                     return { error };
                 }
             } catch (e) {
                 logger.error(`Failed to check federation status for ` + serverName);
-                const error = _t("Failed to check federation status.");
+                const error = _t("tim|security|check_failed");
                 return { error };
             }
 
@@ -125,7 +113,10 @@ export default class ServerPickerDialog extends React.PureComponent<IProps, ISta
             if (!hsUrl.includes("://")) {
                 try {
                     const discoveryResult = await AutoDiscovery.findClientConfig(hsUrl);
-                    this.validatedConf = AutoDiscoveryUtils.buildValidatedConfigFromDiscovery(hsUrl, discoveryResult);
+                    this.validatedConf = await AutoDiscoveryUtils.buildValidatedConfigFromDiscovery(
+                        hsUrl,
+                        discoveryResult,
+                    );
                     return {}; // we have a validated config, we don't need to try the other paths
                 } catch (e) {
                     logger.error(`Attempted ${hsUrl} as a server_name but it failed`, e);
@@ -146,7 +137,7 @@ export default class ServerPickerDialog extends React.PureComponent<IProps, ISta
 
                 const stateForError = AutoDiscoveryUtils.authComponentStateForError(e);
                 if (stateForError.serverErrorIsFatal) {
-                    let error = _t("Unable to validate homeserver");
+                    let error = _t("auth|server_picker_failed_validate_homeserver");
                     if (e instanceof UserFriendlyError && e.translatedMessage) {
                         error = e.translatedMessage;
                     }
@@ -163,7 +154,7 @@ export default class ServerPickerDialog extends React.PureComponent<IProps, ISta
                     return {};
                 } catch (e) {
                     logger.error(e);
-                    return { error: _t("Invalid URL") };
+                    return { error: _t("auth|server_picker_invalid_url") };
                 }
             }
         },
@@ -171,7 +162,7 @@ export default class ServerPickerDialog extends React.PureComponent<IProps, ISta
             {
                 key: "required",
                 test: ({ value, allowEmpty }): boolean => allowEmpty || !!value,
-                invalid: (): string => _t("Specify a homeserver"),
+                invalid: (): string => _t("auth|server_picker_required"),
             },
             {
                 key: "valid",
@@ -210,13 +201,13 @@ export default class ServerPickerDialog extends React.PureComponent<IProps, ISta
     public render(): React.ReactNode {
         let text: string | undefined;
         if (this.defaultServer.hsName === "matrix.org") {
-            text = _t("Matrix.org is the biggest public homeserver in the world, so it's a good place for many.");
+            text = _t("auth|server_picker_matrix.org");
         }
 
         let defaultServerName: React.ReactNode = this.defaultServer.hsName;
         if (this.defaultServer.hsNameIsDifferent) {
             defaultServerName = (
-                <TextWithTooltip class="mx_Login_underlinedServerName" tooltip={this.defaultServer.hsUrl}>
+                <TextWithTooltip className="mx_Login_underlinedServerName" tooltip={this.defaultServer.hsUrl}>
                     {this.defaultServer.hsName}
                 </TextWithTooltip>
             );
@@ -224,7 +215,7 @@ export default class ServerPickerDialog extends React.PureComponent<IProps, ISta
 
         return (
             <BaseDialog
-                title={this.props.title || _t("Sign into your homeserver")}
+                title={this.props.title || _t("auth|server_picker_title")}
                 className="mx_ServerPickerDialog"
                 contentId="mx_ServerPickerDialog"
                 onFinished={this.props.onFinished}
@@ -233,7 +224,7 @@ export default class ServerPickerDialog extends React.PureComponent<IProps, ISta
             >
                 <form className="mx_Dialog_content" id="mx_ServerPickerDialog" onSubmit={this.onSubmit}>
                     <p>
-                        {_t("We call the places where you can host your account 'homeservers'.")} {text}
+                        {_t("auth|server_picker_intro")} {text}
                     </p>
 
                     <StyledRadioButton
@@ -253,12 +244,12 @@ export default class ServerPickerDialog extends React.PureComponent<IProps, ISta
                         checked={!this.state.defaultChosen}
                         onChange={this.onOtherChosen}
                         childrenInLabel={false}
-                        aria-label={_t("Other homeserver")}
+                        aria-label={_t("auth|server_picker_custom")}
                     >
                         <Field
                             type="text"
                             className="mx_ServerPickerDialog_otherHomeserver"
-                            label={_t("Other homeserver")}
+                            label={_t("auth|server_picker_custom")}
                             onChange={this.onHomeserverChange}
                             onFocus={this.onOtherChosen}
                             ref={this.fieldRef}
@@ -270,19 +261,19 @@ export default class ServerPickerDialog extends React.PureComponent<IProps, ISta
                             id="mx_homeserverInput"
                         />
                     </StyledRadioButton>
-                    <p>{_t("Use your preferred Matrix homeserver if you have one, or host your own.")}</p>
+                    <p>{_t("auth|server_picker_explainer")}</p>
 
                     <AccessibleButton className="mx_ServerPickerDialog_continue" kind="primary" onClick={this.onSubmit}>
-                        {_t("Continue")}
+                        {_t("action|continue")}
                     </AccessibleButton>
 
-                    <h2>{_t("Learn more")}</h2>
+                    <h2>{_t("action|learn_more")}</h2>
                     <ExternalLink
                         href="https://matrix.org/docs/matrix-concepts/elements-of-matrix/#homeserver"
                         target="_blank"
                         rel="noreferrer noopener"
                     >
-                        {_t("About homeservers")}
+                        {_t("auth|server_picker_learn_more")}
                     </ExternalLink>
                 </form>
             </BaseDialog>

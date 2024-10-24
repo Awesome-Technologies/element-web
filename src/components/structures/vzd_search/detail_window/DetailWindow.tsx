@@ -40,7 +40,6 @@ export default class ErrorDialog extends React.Component<IProps, IState> {
     private onClick = async (mxid: string): Promise<void> => {
         // convert to matrixid
         const inviteMxid = "@" + mxid.split("matrix:u/")[1];
-        console.log("invite user " + mxid);
 
         // start chat
         const cli = MatrixClientPeg.safeGet();
@@ -60,7 +59,7 @@ export default class ErrorDialog extends React.Component<IProps, IState> {
                     5,
                 )}`;
                 const end = `${element.availableEndTime.substring(0, 2)}:${element.availableEndTime.substring(3, 5)}`;
-                const time = element.allDay ? _t("All day") : `${start} - ${end}`;
+                const time = element.allDay ? _t("tim|vzd|all_day") : `${start} - ${end}`;
                 times.push(<span>{_t(day) + " " + time}</span>);
             });
         });
@@ -80,7 +79,7 @@ export default class ErrorDialog extends React.Component<IProps, IState> {
 
     public render(): React.ReactNode {
         let contactTypeComponent;
-        let connectButtonText = _t("Start chat");
+        let connectButtonText = _t("tim|vzd|start_chat");
         let name: string | null = null;
         let hcsName: string | null = null;
         let namePrefix: string | null = null;
@@ -109,18 +108,20 @@ export default class ErrorDialog extends React.Component<IProps, IState> {
                                 icon="avatarPerson"
                             />
                         </span>
-                        <span className="aw_detailWindow__contentContainer__contactType person">{_t("Person")}</span>
+                        <span className="aw_detailWindow__contentContainer__contactType person">
+                            {_t("tim|vzd|person")}
+                        </span>
                     </div>
                 );
                 qualification = data.qualification[0]?.code?.coding[0]?.display;
-                availableTimeTitle = _t("Availability");
+                availableTimeTitle = _t("tim|vzd|availability");
                 availableTimes = this.mapAvailableTimes(data.availableTime);
                 break;
             case "group":
                 contactTypeComponent = (
-                    <span className="aw_detailWindow__contentContainer__contactType group">{_t("Group")}</span>
+                    <span className="aw_detailWindow__contentContainer__contactType group">{_t("tim|vzd|group")}</span>
                 );
-                connectButtonText = _t("Enter group");
+                connectButtonText = _t("tim|vzd|enter_group");
                 break;
             case "organization":
                 name = data.name || "name error";
@@ -137,7 +138,7 @@ export default class ErrorDialog extends React.Component<IProps, IState> {
                             />
                         </span>
                         <span className="aw_detailWindow__contentContainer__contactType organisation">
-                            {_t("Organization")}
+                            {_t("tim|vzd|organization")}
                         </span>
                     </div>
                 );
@@ -145,12 +146,12 @@ export default class ErrorDialog extends React.Component<IProps, IState> {
                     data.qualification[0]?.coding[0]?.system,
                     data.qualification[0]?.coding[0]?.code,
                 );
-                availableTimeTitle = _t("Available times");
+                availableTimeTitle = _t("tim|vzd|available_times");
                 availableTimes = this.mapAvailableTimes(data.availableTime);
                 break;
             default:
                 contactTypeComponent = (
-                    <span className="aw_detailWindow__contentContainer__contactType person">{_t("Error")}</span>
+                    <span className="aw_detailWindow__contentContainer__contactType person">{_t("tim|vzd|error")}</span>
                 );
         }
 
@@ -166,12 +167,12 @@ export default class ErrorDialog extends React.Component<IProps, IState> {
                         {hcsName && <span className="aw_detailWindow__contentContainer__hcsName">{hcsName}</span>}
 
                         <span className="aw_detailWindow__contentContainer__qualification">{qualification}</span>
-                        <span className="aw_detailWindow__contentContainer__title">{_t("Phone")}</span>
+                        <span className="aw_detailWindow__contentContainer__title">{_t("tim|vzd|phone")}</span>
                         <span className="aw_detailWindow__contentContainer__value">
                             {data.telecom && data.telecom[0]?.system == "phone" ? `${data.telecom[0]?.value}` : "-"}
                             <br />
                         </span>
-                        <span className="aw_detailWindow__contentContainer__title">{_t("Location")}</span>
+                        <span className="aw_detailWindow__contentContainer__title">{_t("tim|vzd|location")}</span>
                         <span className="aw_detailWindow__contentContainer__value">
                             {data.location && (
                                 <>

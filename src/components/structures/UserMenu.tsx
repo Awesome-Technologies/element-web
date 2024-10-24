@@ -1,27 +1,21 @@
 /*
-Copyright 2020, 2021 The Matrix.org Foundation C.I.C.
 Copyright 2024 Awesome Technologies Innovationslabor GmbH
+Copyright 2024 New Vector Ltd.
+Copyright 2020, 2021 The Matrix.org Foundation C.I.C.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
 // ORIGINAL CODE
-// https://github.com/matrix-org/matrix-react-sdk/blob/v3.79.0/src/components/structures/UserMenu.tsx
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/components/structures/UserMenu.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/components/structures/
 
+import "./UserMenu.css";
+
 import React, { createRef, ReactNode } from "react";
-import { Room } from "matrix-js-sdk/src/matrix";
+import { discoverAndValidateOIDCIssuerWellKnown, Room } from "matrix-js-sdk/src/matrix";
 import { MatrixClientPeg } from "matrix-react-sdk/src/MatrixClientPeg";
 import defaultDispatcher from "matrix-react-sdk/src/dispatcher/dispatcher";
 import { ActionPayload } from "matrix-react-sdk/src/dispatcher/payloads";
@@ -32,10 +26,10 @@ import { UserTab } from "matrix-react-sdk/src/components/views/dialogs/UserTab";
 import { OpenToTabPayload } from "matrix-react-sdk/src/dispatcher/payloads/OpenToTabPayload";
 import FeedbackDialog from "matrix-react-sdk/src/components/views/dialogs/FeedbackDialog";
 import Modal from "matrix-react-sdk/src/Modal";
-import LogoutDialog from "matrix-react-sdk/src/components/views/dialogs/LogoutDialog";
+import LogoutDialog, { shouldShowLogoutDialog } from "matrix-react-sdk/src/components/views/dialogs/LogoutDialog";
 import SettingsStore from "matrix-react-sdk/src/settings/SettingsStore";
 import { findHighContrastTheme, getCustomTheme, isHighContrastTheme } from "matrix-react-sdk/src/theme";
-import { RovingAccessibleTooltipButton } from "matrix-react-sdk/src/accessibility/RovingTabIndex";
+import { RovingAccessibleButton } from "matrix-react-sdk/src/accessibility/RovingTabIndex";
 import AccessibleButton, { ButtonEvent } from "matrix-react-sdk/src/components/views/elements/AccessibleButton";
 import SdkConfig from "matrix-react-sdk/src/SdkConfig";
 import { getHomePageUrl } from "matrix-react-sdk/src/utils/pages";
@@ -57,8 +51,8 @@ import { Icon as LiveIcon } from "matrix-react-sdk/res/img/compound/live-8px.svg
 import { VoiceBroadcastRecording, VoiceBroadcastRecordingsStoreEvent } from "matrix-react-sdk/src/voice-broadcast";
 import { SDKContext } from "matrix-react-sdk/src/contexts/SDKContext";
 import { shouldShowFeedback } from "matrix-react-sdk/src/utils/Feedback";
-
-import "./UserMenu.css";
+import { shouldShowQr } from "matrix-react-sdk/src/components/views/settings/devices/LoginWithQRSection";
+import { Features } from "matrix-react-sdk/src/settings/Settings";
 
 interface IProps {
     isPanelCollapsed: boolean;
@@ -73,6 +67,8 @@ interface IState {
     isHighContrast: boolean;
     selectedSpace?: Room | null;
     showLiveAvatarAddon: boolean;
+    showQrLogin: boolean;
+    supportsQrLogin: boolean;
 }
 
 const toRightOf = (rect: PartialDOMRect): MenuProps => {
@@ -93,7 +89,7 @@ const below = (rect: PartialDOMRect): MenuProps => {
 
 export default class UserMenu extends React.Component<IProps, IState> {
     public static contextType = SDKContext;
-    public context!: React.ContextType<typeof SDKContext>;
+    public declare context: React.ContextType<typeof SDKContext>;
 
     private dispatcherRef?: string;
     private themeWatcherRef?: string;
@@ -103,13 +99,14 @@ export default class UserMenu extends React.Component<IProps, IState> {
     public constructor(props: IProps, context: React.ContextType<typeof SDKContext>) {
         super(props, context);
 
-        this.context = context;
         this.state = {
             contextMenuPosition: null,
             isDarkTheme: this.isUserOnDarkTheme(),
             isHighContrast: this.isUserOnHighContrastTheme(),
             selectedSpace: SpaceStore.instance.activeSpaceRoom,
             showLiveAvatarAddon: this.context.voiceBroadcastRecordingsStore.hasCurrent(),
+            showQrLogin: false,
+            supportsQrLogin: false,
         };
 
         OwnProfileStore.instance.on(UPDATE_EVENT, this.onProfileUpdate);
@@ -133,6 +130,7 @@ export default class UserMenu extends React.Component<IProps, IState> {
         );
         this.dispatcherRef = defaultDispatcher.register(this.onAction);
         this.themeWatcherRef = SettingsStore.watchSetting("theme", null, this.onThemeChanged);
+        this.checkQrLoginSupport();
     }
 
     public componentWillUnmount(): void {
@@ -146,6 +144,29 @@ export default class UserMenu extends React.Component<IProps, IState> {
             this.onCurrentVoiceBroadcastRecordingChanged,
         );
     }
+
+    private checkQrLoginSupport = async (): Promise<void> => {
+        if (!this.context.client || !SettingsStore.getValue(Features.OidcNativeFlow)) return;
+
+        const { issuer } = await this.context.client.getAuthIssuer().catch(() => ({ issuer: undefined }));
+        if (issuer) {
+            const [oidcClientConfig, versions, wellKnown, isCrossSigningReady] = await Promise.all([
+                discoverAndValidateOIDCIssuerWellKnown(issuer),
+                this.context.client.getVersions(),
+                this.context.client.waitForClientWellKnown(),
+                this.context.client.getCrypto()?.isCrossSigningReady(),
+            ]);
+
+            const supportsQrLogin = shouldShowQr(
+                this.context.client,
+                !!isCrossSigningReady,
+                oidcClientConfig,
+                versions,
+                wellKnown,
+            );
+            this.setState({ supportsQrLogin, showQrLogin: true });
+        }
+    };
 
     private isUserOnDarkTheme(): boolean {
         if (SettingsStore.getValue("use_system_theme")) {
@@ -244,11 +265,11 @@ export default class UserMenu extends React.Component<IProps, IState> {
         SettingsStore.setValue("theme", null, SettingLevel.DEVICE, newTheme); // set at same level as Appearance tab
     };
 
-    private onSettingsOpen = (ev: ButtonEvent, tabId?: string): void => {
+    private onSettingsOpen = (ev: ButtonEvent, tabId?: string, props?: Record<string, any>): void => {
         ev.preventDefault();
         ev.stopPropagation();
 
-        const payload: OpenToTabPayload = { action: Action.ViewUserSettings, initialTabId: tabId };
+        const payload: OpenToTabPayload = { action: Action.ViewUserSettings, initialTabId: tabId, props };
         defaultDispatcher.dispatch(payload);
         this.setState({ contextMenuPosition: null }); // also close the menu
     };
@@ -265,12 +286,10 @@ export default class UserMenu extends React.Component<IProps, IState> {
         ev.preventDefault();
         ev.stopPropagation();
 
-        const cli = MatrixClientPeg.get();
-        if (!cli || !cli.isCryptoEnabled() || !(await cli.exportRoomKeys())?.length) {
-            // log out without user prompt if they have no local megolm sessions
-            defaultDispatcher.dispatch({ action: "logout" });
-        } else {
+        if (await shouldShowLogoutDialog(MatrixClientPeg.safeGet())) {
             Modal.createDialog(LogoutDialog);
+        } else {
+            defaultDispatcher.dispatch({ action: "logout" });
         }
 
         this.setState({ contextMenuPosition: null }); // also close the menu
@@ -314,7 +333,7 @@ export default class UserMenu extends React.Component<IProps, IState> {
             topSection = (
                 <div className="mx_UserMenu_contextMenu_header mx_UserMenu_contextMenu_guestPrompts">
                     {_t(
-                        "Got an account? <a>Sign in</a>",
+                        "auth|sign_in_prompt",
                         {},
                         {
                             a: (sub) => (
@@ -326,7 +345,7 @@ export default class UserMenu extends React.Component<IProps, IState> {
                     )}
                     {SettingsStore.getValue(UIFeature.Registration)
                         ? _t(
-                              "New here? <a>Create an account</a>",
+                              "auth|create_account_prompt",
                               {},
                               {
                                   a: (sub) => (
@@ -346,7 +365,7 @@ export default class UserMenu extends React.Component<IProps, IState> {
             homeButton = (
                 <IconizedContextMenuOption
                     iconClassName="mx_UserMenu_iconHome"
-                    label={_t("Home")}
+                    label={_t("common|home")}
                     onClick={this.onHomeClick}
                 />
             );
@@ -357,8 +376,31 @@ export default class UserMenu extends React.Component<IProps, IState> {
             feedbackButton = (
                 <IconizedContextMenuOption
                     iconClassName="mx_UserMenu_iconMessage"
-                    label={_t("Feedback")}
+                    label={_t("common|feedback")}
                     onClick={this.onProvideFeedback}
+                />
+            );
+        }
+
+        let linkNewDeviceButton: JSX.Element | undefined;
+        if (this.state.showQrLogin) {
+            const extraProps: Omit<
+                React.ComponentProps<typeof IconizedContextMenuOption>,
+                "iconClassname" | "label" | "onClick"
+            > = {};
+            if (!this.state.supportsQrLogin) {
+                extraProps.disabled = true;
+                extraProps.title = _t("user_menu|link_new_device_not_supported");
+                extraProps.caption = _t("user_menu|link_new_device_not_supported_caption");
+                extraProps.placement = "right";
+            }
+
+            linkNewDeviceButton = (
+                <IconizedContextMenuOption
+                    {...extraProps}
+                    iconClassName="mx_UserMenu_iconQr"
+                    label={_t("user_menu|link_new_device")}
+                    onClick={(e) => this.onSettingsOpen(e, UserTab.SessionManager, { showMsc4108QrCode: true })}
                 />
             );
         }
@@ -366,31 +408,32 @@ export default class UserMenu extends React.Component<IProps, IState> {
         let primaryOptionList = (
             <IconizedContextMenuOptionList>
                 {homeButton}
+                {linkNewDeviceButton}
                 <IconizedContextMenuOption
                     iconClassName="mx_UserMenu_iconBell"
-                    label={_t("Notifications")}
-                    onClick={(e): void => this.onSettingsOpen(e, UserTab.Notifications)}
+                    label={_t("notifications|enable_prompt_toast_title")}
+                    onClick={(e) => this.onSettingsOpen(e, UserTab.Notifications)}
                 />
                 <IconizedContextMenuOption
                     iconClassName="mx_UserMenu_iconLock"
-                    label={_t("Security & Privacy")}
-                    onClick={(e): void => this.onSettingsOpen(e, UserTab.Security)}
+                    label={_t("room_settings|security|title")}
+                    onClick={(e) => this.onSettingsOpen(e, UserTab.Security)}
                 />
                 <IconizedContextMenuOption
                     iconClassName="mx_UserMenu_iconSettings"
-                    label={_t("All settings")}
-                    onClick={(e): void => this.onSettingsOpen(e)}
+                    label={_t("user_menu|settings")}
+                    onClick={(e) => this.onSettingsOpen(e)}
                 />
                 {feedbackButton}
                 <IconizedContextMenuOption
                     iconClassName="tim_UserMenu_iconPrivacy"
-                    label={_t("Privacy")}
+                    label={_t("tim|settings|privacy")}
                     onClick={(e): void => this.onPrivacyOpen(e)}
                 />
                 <IconizedContextMenuOption
                     className="mx_IconizedContextMenu_option_red"
                     iconClassName="mx_UserMenu_iconSignOut"
-                    label={_t("Sign out")}
+                    label={_t("action|sign_out")}
                     onClick={this.onSignOutClick}
                 />
             </IconizedContextMenuOptionList>
@@ -402,7 +445,7 @@ export default class UserMenu extends React.Component<IProps, IState> {
                     {homeButton}
                     <IconizedContextMenuOption
                         iconClassName="mx_UserMenu_iconSettings"
-                        label={_t("Settings")}
+                        label={_t("common|settings")}
                         onClick={(e): void => this.onSettingsOpen(e)}
                     />
                     {feedbackButton}
@@ -431,17 +474,25 @@ export default class UserMenu extends React.Component<IProps, IState> {
                         </span>
                     </div>
 
-                    <RovingAccessibleTooltipButton
+                    <RovingAccessibleButton
                         className="mx_UserMenu_contextMenu_themeButton"
                         onClick={this.onSwitchThemeClick}
-                        title={this.state.isDarkTheme ? _t("Switch to light mode") : _t("Switch to dark mode")}
+                        title={
+                            this.state.isDarkTheme
+                                ? _t("user_menu|switch_theme_light")
+                                : _t("user_menu|switch_theme_dark")
+                        }
                     >
                         <img
-                            src={require("matrix-react-sdk/res/img/element-icons/roomlist/dark-light-mode.svg").default} // eslint-disable-line @typescript-eslint/no-var-requires
-                            alt={_t("Switch theme")}
+                            src={
+                                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                                require("matrix-react-sdk/res/img/element-icons/roomlist/dark-light-mode.svg").default
+                            }
+                            role="presentation"
+                            alt=""
                             width={16}
                         />
-                    </RovingAccessibleTooltipButton>
+                    </RovingAccessibleButton>
                 </div>
                 {topSection}
                 {primaryOptionList}
@@ -472,8 +523,8 @@ export default class UserMenu extends React.Component<IProps, IState> {
                 <ContextMenuButton
                     className="mx_UserMenu_contextMenuButton"
                     onClick={this.onOpenMenuClick}
-                    inputRef={this.buttonRef}
-                    label={_t("User menu")}
+                    ref={this.buttonRef}
+                    label={_t("a11y|user_menu")}
                     isExpanded={!!this.state.contextMenuPosition}
                     onContextMenu={this.onContextMenu}
                 >
@@ -482,9 +533,7 @@ export default class UserMenu extends React.Component<IProps, IState> {
                             idName={userId}
                             name={displayName}
                             url={avatarUrl}
-                            width={avatarSize}
-                            height={avatarSize}
-                            resizeMethod="crop"
+                            size={avatarSize + "px"}
                             className="mx_UserMenu_userAvatar_BaseAvatar"
                         />
                         {liveAvatarAddon}

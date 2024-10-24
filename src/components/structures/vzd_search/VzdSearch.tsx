@@ -18,8 +18,8 @@ import SearchBar from "./search_bar/SearchBar";
 import { typeOptions } from "./searchDropdownOptions";
 import Dropdown from "./search_bar/dropdown/Dropdown";
 
-const CLOSE_BUTTON_STRING = _t("Close Window");
-const EDIT_PROFILE_LINK_STRING = _t("Edit my entry");
+const CLOSE_BUTTON_STRING = _t("tim|vzd|close_window");
+const EDIT_PROFILE_LINK_STRING = _t("tim|vzd|edit_entry");
 const DEBOUNCE_TIME = 300;
 
 interface IProps {
@@ -150,7 +150,7 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
             }
         }, DEBOUNCE_TIME);
 
-        return () => clearTimeout(delayTimer);
+        return (): void => clearTimeout(delayTimer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchQueryName, searchQueryHCSName, searchQueryLocation, searchQueryQualification, option]);
 
@@ -188,21 +188,21 @@ const VzdSearchCore: React.FC<IProps> = ({ onFinished }) => {
                     onChange={(e): void => setSearchQueryName(e.target.value)}
                     value={searchQueryName}
                     type="name"
-                    placeholder={option === "people" ? _t("Search name..") : _t("Search Organization name..")}
+                    placeholder={option === "people" ? _t("tim|vzd|search_name") : _t("tim|vzd|search_org_name")}
                 />
                 {option === "organisations" && (
                     <SearchBar
                         onChange={(e): void => setSearchQueryHCSName(e.target.value)}
                         value={searchQueryHCSName}
                         type="hcsname"
-                        placeholder={_t("Search HealthcareService name..")}
+                        placeholder={_t("tim|vzd|search_hcs_name")}
                     />
                 )}
                 <SearchBar
                     onChange={(e): void => setSearchQueryLocation(e.target.value)}
                     value={searchQueryLocation}
                     type="location"
-                    placeholder={_t("Search location..")}
+                    placeholder={_t("tim|vzd|search_location")}
                 />
 
                 <div className="button-container">

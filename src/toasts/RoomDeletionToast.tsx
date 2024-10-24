@@ -28,8 +28,8 @@ export const showToast = async (inactiveRooms: Array<string>): Promise<void> => 
     const cli = MatrixClientPeg.safeGet();
 
     const onAccept = (): void => {
-        // Leave inaktive rooms
-        for (const roomId in inactiveRooms) {
+        // Leave inactive rooms
+        for (const roomId of inactiveRooms) {
             cli.leave(roomId);
         }
     };
@@ -47,15 +47,16 @@ export const showToast = async (inactiveRooms: Array<string>): Promise<void> => 
 
     ToastStore.sharedInstance().addOrReplaceToast({
         key: "inactive_rooms",
-        title: _t("You have inactive rooms. Do you want to delete them?"),
+        title: _t("tim|settings|inactive_rooms"),
         icon: "verification_warning",
         props: {
-            description: _t("Rooms"),
+            description: _t("tim|settings|rooms"),
             detail: <RoomNameList names={inactiveRoomsNames} />,
-            acceptLabel: _t("Delete"),
-            onAccept,
-            rejectLabel: _t("Later"),
-            onReject,
+            primaryLabel: _t("tim|settings|later"),
+            onPrimaryClick: onReject,
+            secondaryLabel: _t("tim|settings|delete"),
+            onSecondaryClick: onAccept,
+            destructive: "secondary",
         },
         component: GenericToast,
         priority: 80,

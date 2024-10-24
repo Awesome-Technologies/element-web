@@ -1,22 +1,14 @@
 /*
+Copyright 2024 New Vector Ltd.
 Copyright 2021 The Matrix.org Foundation C.I.C.
 Copyright 2024 Awesome Technologies Innovationslabor GmbH
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
 // ORIGINAL CODE
-// https://github.com/matrix-org/matrix-react-sdk/blob/v3.79.0/src/components/views/messages/DownloadActionButton.tsx
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/components/views/messages/DownloadActionButton.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/components/views/messages/
 
@@ -25,11 +17,12 @@ import React from "react";
 import classNames from "classnames";
 import { Icon as DownloadIcon } from "matrix-react-sdk/res/img/download.svg";
 import { MediaEventHelper } from "matrix-react-sdk/src/utils/MediaEventHelper";
-import { RovingAccessibleTooltipButton } from "matrix-react-sdk/src/accessibility/RovingTabIndex";
+import { RovingAccessibleButton } from "matrix-react-sdk/src/accessibility/RovingTabIndex";
 import Spinner from "matrix-react-sdk/src/components/views/elements/Spinner";
-import { _t, _td } from "matrix-react-sdk/src/languageHandler";
+import { _t, _td, TranslationKey } from "matrix-react-sdk/src/languageHandler";
 import { FileDownloader } from "matrix-react-sdk/src/utils/FileDownloader";
 import Modal from "matrix-react-sdk/src/Modal";
+import ErrorDialog from "matrix-react-sdk/src/components/views/dialogs/ErrorDialog";
 import QuestionDialog from "matrix-react-sdk/src/components/views/dialogs/QuestionDialog";
 
 interface IProps {
@@ -44,7 +37,7 @@ interface IProps {
 interface IState {
     loading: boolean;
     blob?: Blob;
-    tooltip: string;
+    tooltip: TranslationKey;
 }
 
 export default class DownloadActionButton extends React.PureComponent<IProps, IState> {
@@ -55,20 +48,14 @@ export default class DownloadActionButton extends React.PureComponent<IProps, IS
 
         this.state = {
             loading: false,
-            tooltip: _td("Downloading"),
+            tooltip: _td("timeline|download_action_downloading"),
         };
     }
 
     private onClick = (): void => {
         Modal.createDialog(QuestionDialog, {
-            title: _t("Warning"),
-            description: (
-                <p>
-                    {_t(
-                        "By exporting data it will leave the secure space of the TI-Messenger. You are responsible for securing the data from now on.",
-                    )}
-                </p>
-            ),
+            title: _t("tim|security|warning"),
+            description: <p>{_t("tim|security|export_data")}</p>,
             danger: true,
             hasCancelButton: true,
             onFinished: this.onDownloadClick,
@@ -78,26 +65,43 @@ export default class DownloadActionButton extends React.PureComponent<IProps, IS
     private onDownloadClick = async (consent: boolean): Promise<void> => {
         if (!consent) return;
 
+        try {
+            await this.doDownload();
+        } catch (e) {
+            Modal.createDialog(ErrorDialog, {
+                title: _t("timeline|download_failed"),
+                description: (
+                    <>
+                        <div>{_t("timeline|download_failed_description")}</div>
+                        <div>{e instanceof Error ? e.toString() : ""}</div>
+                    </>
+                ),
+            });
+            this.setState({ loading: false });
+        }
+    };
+
+    private async doDownload(): Promise<void> {
         const mediaEventHelper = this.props.mediaEventHelperGet();
         if (this.state.loading || !mediaEventHelper) return;
 
         if (mediaEventHelper.media.isEncrypted) {
-            this.setState({ tooltip: _td("Decrypting") });
+            this.setState({ tooltip: _td("timeline|download_action_decrypting") });
         }
 
         this.setState({ loading: true });
 
         if (this.state.blob) {
             // Cheat and trigger a download, again.
-            return this.doDownload(this.state.blob);
+            return this.downloadBlob(this.state.blob);
         }
 
         const blob = await mediaEventHelper.sourceBlob.value;
         this.setState({ blob });
-        await this.doDownload(blob);
-    };
+        await this.downloadBlob(blob);
+    }
 
-    private async doDownload(blob: Blob): Promise<void> {
+    private async downloadBlob(blob: Blob): Promise<void> {
         await this.downloader.download({
             blob,
             name: this.props.mediaEventHelperGet()!.fileName,
@@ -118,15 +122,16 @@ export default class DownloadActionButton extends React.PureComponent<IProps, IS
         });
 
         return (
-            <RovingAccessibleTooltipButton
+            <RovingAccessibleButton
                 className={classes}
-                title={spinner ? _t(this.state.tooltip) : _t("Download")}
+                title={spinner ? _t(this.state.tooltip) : _t("action|download")}
                 onClick={this.onClick}
                 disabled={!!spinner}
+                placement="left"
             >
                 <DownloadIcon />
                 {spinner}
-            </RovingAccessibleTooltipButton>
+            </RovingAccessibleButton>
         );
     }
 }

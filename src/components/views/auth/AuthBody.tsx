@@ -23,11 +23,7 @@ export default class AuthBody extends React.PureComponent {
             <div className="mx_AuthBody">
                 {this.props.children}
                 <br />
-                <span>
-                    {_t(
-                        "Please do not use the TI-Messenger on publicly accessible devices or devices without security monitoring. Use on such devices increases the risk of your access or the content in TI Messenger being compromised.",
-                    )}
-                </span>
+                <span>{_t("tim|security|public_use_warning")}</span>
             </div>
         );
     }

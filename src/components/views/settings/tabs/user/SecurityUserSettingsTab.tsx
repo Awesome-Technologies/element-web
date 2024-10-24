@@ -1,28 +1,21 @@
 /*
-Copyright 2019 - 2023 The Matrix.org Foundation C.I.C.
 Copyright 2024 Awesome Technologies Innovationslabor GmbH
+Copyright 2024 New Vector Ltd.
+Copyright 2019-2023 The Matrix.org Foundation C.I.C.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
 // ORIGINAL CODE
-// https://github.com/matrix-org/matrix-react-sdk/blob/v3.79.0/src/components/views/settings/tabs/user/SecurityUserSettingsTab.tsx
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/components/views/settings/tabs/user/SecurityUserSettingsTab.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/components/views/settings/tabs/user
 
 import React, { ReactNode } from "react";
 import { sleep } from "matrix-js-sdk/src/utils";
 import { Room, RoomEvent } from "matrix-js-sdk/src/matrix";
+import { KnownMembership, Membership } from "matrix-js-sdk/src/types";
 import { logger } from "matrix-js-sdk/src/logger";
 import { _t } from "matrix-react-sdk/src/languageHandler";
 import { MatrixClientPeg } from "matrix-react-sdk/src/MatrixClientPeg";
@@ -33,9 +26,6 @@ import SecureBackupPanel from "matrix-react-sdk/src/components/views/settings/Se
 import SettingsStore from "matrix-react-sdk/src/settings/SettingsStore";
 import Field from "matrix-react-sdk/src/components/views/elements/Field";
 import { UIFeature } from "matrix-react-sdk/src/settings/UIFeature";
-import E2eAdvancedPanel, {
-    isE2eAdvancedPanelPossible,
-} from "matrix-react-sdk/src/components/views/settings/E2eAdvancedPanel";
 import { ActionPayload } from "matrix-react-sdk/src/dispatcher/payloads";
 import CryptographyPanel from "matrix-react-sdk/src/components/views/settings/CryptographyPanel";
 import SettingsFlag from "matrix-react-sdk/src/components/views/elements/SettingsFlag";
@@ -50,6 +40,9 @@ import { SettingsSection } from "matrix-react-sdk/src/components/views/settings/
 import SettingsSubsection, {
     SettingsSubsectionText,
 } from "matrix-react-sdk/src/components/views/settings/shared/SettingsSubsection";
+import { useOwnDevices } from "matrix-react-sdk/src/components/views/settings/devices/useOwnDevices";
+import DiscoverySettings from "matrix-react-sdk/src/components/views/settings/discovery/DiscoverySettings";
+import SetIntegrationManager from "matrix-react-sdk/src/components/views/settings/SetIntegrationManager";
 import Presence from "matrix-react-sdk/src/Presence";
 
 import type { IServerVersions } from "matrix-js-sdk/src/matrix";
@@ -59,6 +52,23 @@ interface IIgnoredUserProps {
     onUnignored: (userId: string) => void;
     inProgress: boolean;
 }
+
+const DehydratedDeviceStatus: React.FC = () => {
+    const { dehydratedDeviceId } = useOwnDevices();
+
+    if (dehydratedDeviceId) {
+        return (
+            <div className="mx_SettingsSubsection_content">
+                <div className="mx_SettingsFlag_label">{_t("settings|security|dehydrated_device_enabled")}</div>
+                <div className="mx_SettingsSubsection_text">
+                    {_t("settings|security|dehydrated_device_description")}
+                </div>
+            </div>
+        );
+    } else {
+        return null;
+    }
+};
 
 export class IgnoredUser extends React.Component<IIgnoredUserProps> {
     private onUnignoreClicked = (): void => {
@@ -75,7 +85,7 @@ export class IgnoredUser extends React.Component<IIgnoredUserProps> {
                     aria-describedby={id}
                     disabled={this.props.inProgress}
                 >
-                    {_t("Unignore")}
+                    {_t("action|unignore")}
                 </AccessibleButton>
                 <span id={id}>{this.props.userId}</span>
             </div>
@@ -94,6 +104,7 @@ interface IState {
     invitedRoomIds: Set<string>;
     versions?: IServerVersions;
     inactivityTimeOnLock: string;
+    roomInactivityTimespan: string;
 }
 
 export default class SecurityUserSettingsTab extends React.Component<IProps, IState> {
@@ -106,6 +117,7 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
         const invitedRoomIds = new Set(this.getInvitedRooms().map((room) => room.roomId));
 
         const inactivityTimeOnLock = SettingsStore.getValue("inactivityTimeOnLock");
+        const roomInactivityTimespan = SettingsStore.getValue("roomInactivityTimespan");
 
         this.state = {
             ignoredUserIds: MatrixClientPeg.safeGet().getIgnoredUsers(),
@@ -113,6 +125,7 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
             managingInvites: false,
             invitedRoomIds,
             inactivityTimeOnLock: inactivityTimeOnLock,
+            roomInactivityTimespan: roomInactivityTimespan,
         };
     }
 
@@ -137,12 +150,12 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
         MatrixClientPeg.safeGet().removeListener(RoomEvent.MyMembership, this.onMyMembership);
     }
 
-    private onMyMembership = (room: Room, membership: string): void => {
+    private onMyMembership = (room: Room, membership: Membership): void => {
         if (room.isSpaceRoom()) {
             return;
         }
 
-        if (membership === "invite") {
+        if (membership === KnownMembership.Invite) {
             this.addInvitedRoom(room);
         } else if (this.state.invitedRoomIds.has(room.roomId)) {
             // The user isn't invited anymore
@@ -183,7 +196,7 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
         return MatrixClientPeg.safeGet()
             .getRooms()
             .filter((r) => {
-                return r.hasMembershipState(MatrixClientPeg.safeGet().getUserId()!, "invite");
+                return r.hasMembershipState(MatrixClientPeg.safeGet().getUserId()!, KnownMembership.Invite);
             });
     };
 
@@ -249,11 +262,17 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
         }
     };
 
+    // save time of inactivity until user is logged out
+    private onAutoDeletionTimespanChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+        this.setState({ roomInactivityTimespan: e.target.value });
+        SettingsStore.setValue("roomInactivityTimespan", null, SettingLevel.DEVICE, e.target.value);
+    };
+
     private renderIgnoredUsers(): JSX.Element {
         const { waitingUnignored, ignoredUserIds } = this.state;
 
         const userIds = !ignoredUserIds?.length
-            ? _t("You have no ignored users.")
+            ? _t("settings|security|ignore_users_empty")
             : ignoredUserIds.map((u) => {
                   return (
                       <IgnoredUser
@@ -266,7 +285,7 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
               });
 
         return (
-            <SettingsSubsection heading={_t("Ignored users")}>
+            <SettingsSubsection heading={_t("settings|security|ignore_users_section")}>
                 <SettingsSubsectionText>{userIds}</SettingsSubsectionText>
             </SettingsSubsection>
         );
@@ -280,21 +299,21 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
         }
 
         return (
-            <SettingsSubsection heading={_t("Bulk options")}>
+            <SettingsSubsection heading={_t("settings|security|bulk_options_section")}>
                 <div className="mx_SecurityUserSettingsTab_bulkOptions">
                     <AccessibleButton
                         onClick={this.onAcceptAllInvitesClicked}
-                        kind="primary"
+                        kind="primary_outline"
                         disabled={this.state.managingInvites}
                     >
-                        {_t("Accept all %(invitedRooms)s invites", { invitedRooms: invitedRoomIds.size })}
+                        {_t("settings|security|bulk_options_accept_all_invites", { invitedRooms: invitedRoomIds.size })}
                     </AccessibleButton>
                     <AccessibleButton
                         onClick={this.onRejectAllInvitesClicked}
-                        kind="danger"
+                        kind="danger_outline"
                         disabled={this.state.managingInvites}
                     >
-                        {_t("Reject all %(invitedRooms)s invites", { invitedRooms: invitedRoomIds.size })}
+                        {_t("settings|security|bulk_options_reject_all_invites", { invitedRooms: invitedRoomIds.size })}
                     </AccessibleButton>
                     {this.state.managingInvites ? <InlineSpinner /> : <div />}
                 </div>
@@ -304,13 +323,14 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
 
     public render(): React.ReactNode {
         const secureBackup = (
-            <SettingsSubsection heading={_t("Secure Backup")}>
+            <SettingsSubsection heading={_t("common|secure_backup")}>
                 <SecureBackupPanel />
+                <DehydratedDeviceStatus />
             </SettingsSubsection>
         );
 
         const eventIndex = (
-            <SettingsSubsection heading={_t("Message search")}>
+            <SettingsSubsection heading={_t("settings|security|message_search_section")}>
                 <EventIndexPanel />
             </SettingsSubsection>
         );
@@ -320,7 +340,7 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
         // in having advanced details here once all flows are implemented, we
         // can remove this.
         const crossSigning = (
-            <SettingsSubsection heading={_t("Cross-signing")}>
+            <SettingsSubsection heading={_t("common|cross_signing")}>
                 <CrossSigningPanel />
             </SettingsSubsection>
         );
@@ -329,10 +349,7 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
         if (!privateShouldBeEncrypted(MatrixClientPeg.safeGet())) {
             warning = (
                 <div className="mx_SecurityUserSettingsTab_warning">
-                    {_t(
-                        "Your server admin has disabled end-to-end encryption by default " +
-                            "in private rooms & Direct Messages.",
-                    )}
+                    {_t("settings|security|e2ee_default_disabled_warning")}
                 </div>
             );
         }
@@ -341,26 +358,25 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
         if (PosthogAnalytics.instance.isEnabled()) {
             const onClickAnalyticsLearnMore = (): void => {
                 showAnalyticsLearnMoreDialog({
-                    primaryButton: _t("OK"),
+                    primaryButton: _t("action|ok"),
                     hasCancel: false,
                 });
             };
             privacySection = (
-                <SettingsSection heading={_t("Privacy")}>
+                <SettingsSection heading={_t("common|privacy")}>
+                    <DiscoverySettings />
                     <SettingsSubsection
-                        heading={_t("Analytics")}
-                        description={_t(
-                            "Share anonymous data to help us identify issues. Nothing personal. No third parties.",
-                        )}
+                        heading={_t("common|analytics")}
+                        description={_t("settings|security|analytics_description")}
                     >
                         <AccessibleButton kind="link" onClick={onClickAnalyticsLearnMore}>
-                            {_t("Learn more")}
+                            {_t("action|learn_more")}
                         </AccessibleButton>
                         {PosthogAnalytics.instance.isEnabled() && (
                             <SettingsFlag name="pseudonymousAnalyticsOptIn" level={SettingLevel.ACCOUNT} />
                         )}
                     </SettingsSubsection>
-                    <SettingsSubsection heading={_t("Sessions")}>
+                    <SettingsSubsection heading={_t("settings|sessions|title")}>
                         <SettingsFlag name="deviceClientInformationOptIn" level={SettingLevel.ACCOUNT} />
                     </SettingsSubsection>
                 </SettingsSection>
@@ -371,14 +387,12 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
         if (SettingsStore.getValue(UIFeature.AdvancedSettings)) {
             const ignoreUsersPanel = this.renderIgnoredUsers();
             const invitesPanel = this.renderManageInvites();
-            const e2ePanel = isE2eAdvancedPanelPossible() ? <E2eAdvancedPanel /> : null;
             // only show the section if there's something to show
-            if (ignoreUsersPanel || invitesPanel || e2ePanel) {
+            if (ignoreUsersPanel || invitesPanel) {
                 advancedSection = (
-                    <SettingsSection heading={_t("Advanced")}>
+                    <SettingsSection heading={_t("common|advanced")}>
                         {ignoreUsersPanel}
                         {invitesPanel}
-                        {e2ePanel}
                     </SettingsSection>
                 );
             }
@@ -387,15 +401,28 @@ export default class SecurityUserSettingsTab extends React.Component<IProps, ISt
         return (
             <SettingsTab>
                 {warning}
-                <SettingsSection heading={_t("Auto logout")}>
+                <SetIntegrationManager />
+                <SettingsSection heading={_t("tim|settings|auto_logout")}>
                     <Field
-                        label={_t("Time of inactivity until user is logged out (min)")}
+                        label={_t("tim|settings|inactivity_time")}
                         type="number"
                         value={this.state.inactivityTimeOnLock}
                         onChange={this.onInactivityTimeOnLockChange}
                     />
                 </SettingsSection>
-                <SettingsSection heading={_t("Encryption")}>
+                <SettingsSubsection
+                    heading={_t("tim|settings|auto_deletion")}
+                    description={_t("tim|settings|auto_deletion_time")}
+                    stretchContent
+                >
+                    <Field
+                        label={_t("tim|settings|auto_deletion_time_field")}
+                        type="number"
+                        value={this.state.roomInactivityTimespan}
+                        onChange={this.onAutoDeletionTimespanChange}
+                    />
+                </SettingsSubsection>
+                <SettingsSection heading={_t("settings|security|encryption_section")}>
                     {secureBackup}
                     {eventIndex}
                     {crossSigning}

@@ -1,32 +1,26 @@
 /*
+Copyright 2023, 2024 Awesome Technologies Innovationslabor GmbH
+Copyright 2024 New Vector Ltd.
 Copyright 2020, 2021 The Matrix.org Foundation C.I.C.
-Copyright 2023 Awesome Technologies Innovationslabor GmbH
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
+// ORIGINAL CODE
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/components/structures/RoomSearch.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/components/structures/
 
 import classNames from "classnames";
 import * as React from "react";
-import { ALTERNATE_KEY_NAME } from "matrix-react-sdk/src/components/structures/../../accessibility/KeyboardShortcuts";
-import defaultDispatcher from "matrix-react-sdk/src/components/structures/../../dispatcher/dispatcher";
-import { ActionPayload } from "matrix-react-sdk/src/components/structures/../../dispatcher/payloads";
-import { IS_MAC, Key } from "matrix-react-sdk/src/components/structures/../../Keyboard";
-import { _t } from "matrix-react-sdk/src/components/structures/../../languageHandler";
-import Modal from "matrix-react-sdk/src/components/structures/../../Modal";
-import AccessibleButton from "matrix-react-sdk/src/components/structures/../views/elements/AccessibleButton";
+import { ALTERNATE_KEY_NAME } from "matrix-react-sdk/src//accessibility/KeyboardShortcuts";
+import defaultDispatcher from "matrix-react-sdk/src//dispatcher/dispatcher";
+import { ActionPayload } from "matrix-react-sdk/src//dispatcher/payloads";
+import { IS_MAC, Key } from "matrix-react-sdk/src//Keyboard";
+import { _t } from "matrix-react-sdk/src//languageHandler";
+import AccessibleButton from "matrix-react-sdk/src/components/views/elements/AccessibleButton";
+import Modal from "matrix-react-sdk/src/Modal";
 
 import VzdSearch from "./vzd_search/VzdSearch";
 
@@ -48,6 +42,7 @@ export default class RoomSearch extends React.PureComponent<IProps> {
     }
 
     private openSpotlight(): void {
+        //defaultDispatcher.fire(Action.OpenSpotlight);
         Modal.createDialog(VzdSearch, {}, "mx_VzdSearch_wrapper", false, true);
     }
 
@@ -75,9 +70,11 @@ export default class RoomSearch extends React.PureComponent<IProps> {
         );
 
         return (
-            <AccessibleButton onClick={this.openSpotlight} className={classes}>
+            <AccessibleButton onClick={this.openSpotlight} className={classes} aria-label={_t("action|search")}>
                 {icon}
-                {!this.props.isMinimized && <div className="mx_RoomSearch_spotlightTriggerText">{_t("Search")}</div>}
+                {!this.props.isMinimized && (
+                    <div className="mx_RoomSearch_spotlightTriggerText">{_t("action|search")}</div>
+                )}
                 {shortcutPrompt}
             </AccessibleButton>
         );

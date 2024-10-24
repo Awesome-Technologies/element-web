@@ -1,33 +1,26 @@
 /*
-Copyright 2015 - 2021 The Matrix.org Foundation C.I.C.
+Copyright 2024 New Vector Ltd.
+Copyright 2015-2021 The Matrix.org Foundation C.I.C.
+Copyright 2024 Awesome Technologies Innovationslabor GmbH
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
 // ORIGINAL CODE
-// https://github.com/matrix-org/matrix-react-sdk/blob/v3.79.0/src/components/views/messages/MFileBody.tsx
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/components/views/messages/MFileBody.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/components/views/messages/
 
 import React, { AllHTMLAttributes, createRef } from "react";
 import { logger } from "matrix-js-sdk/src/logger";
+import { MediaEventContent } from "matrix-js-sdk/src/types";
 import { _t } from "matrix-react-sdk/src/languageHandler";
 import Modal from "matrix-react-sdk/src/Modal";
 import AccessibleButton from "matrix-react-sdk/src/components/views/elements/AccessibleButton";
 import { mediaFromContent } from "matrix-react-sdk/src/customisations/Media";
 import ErrorDialog from "matrix-react-sdk/src/components/views/dialogs/ErrorDialog";
 import { fileSize, presentableTextForFile } from "matrix-react-sdk/src/utils/FileUtils";
-import { IMediaEventContent } from "matrix-react-sdk/src/customisations/models/IMediaEventContent";
 import { IBodyProps } from "matrix-react-sdk/src/components/views/messages/IBodyProps";
 import { FileDownloader } from "matrix-react-sdk/src/utils/FileDownloader";
 import TextWithTooltip from "matrix-react-sdk/src/components/views/elements/TextWithTooltip";
@@ -111,7 +104,9 @@ interface IState {
 
 export default class MFileBody extends React.Component<IProps, IState> {
     public static contextType = RoomContext;
-    public context!: React.ContextType<typeof RoomContext>;
+    public declare context: React.ContextType<typeof RoomContext>;
+
+    public state: IState = {};
 
     public static defaultProps = {
         showGenericPlaceholder: true,
@@ -122,23 +117,17 @@ export default class MFileBody extends React.Component<IProps, IState> {
     private userDidClick = false;
     private fileDownloader: FileDownloader = new FileDownloader(() => this.iframe.current);
 
-    public constructor(props: IProps) {
-        super(props);
-
-        this.state = {};
-    }
-
     private getContentUrl(): string | null {
         if (this.props.forExport) return null;
         const media = mediaFromContent(this.props.mxEvent.getContent());
         return media.srcHttp;
     }
-    private get content(): IMediaEventContent {
-        return this.props.mxEvent.getContent<IMediaEventContent>();
+    private get content(): MediaEventContent {
+        return this.props.mxEvent.getContent<MediaEventContent>();
     }
 
     private get fileName(): string {
-        return this.content.body && this.content.body.length > 0 ? this.content.body : _t("Attachment");
+        return this.content.body && this.content.body.length > 0 ? this.content.body : _t("common|attachment");
     }
 
     private get linkText(): string {
@@ -155,7 +144,7 @@ export default class MFileBody extends React.Component<IProps, IState> {
                 imgSrc: DOWNLOAD_ICON_URL,
                 imgStyle: null,
                 style: computedStyle(this.dummyLink.current),
-                textContent: _t("Download %(text)s", { text }),
+                textContent: _t("timeline|m.file|download_label", { text }),
             },
         });
     }
@@ -178,22 +167,16 @@ export default class MFileBody extends React.Component<IProps, IState> {
         } catch (err) {
             logger.warn("Unable to decrypt attachment: ", err);
             Modal.createDialog(ErrorDialog, {
-                title: _t("Error"),
-                description: _t("Error decrypting attachment"),
+                title: _t("common|error"),
+                description: _t("timeline|m.file|error_decrypting"),
             });
         }
     };
 
     private onClick = (): void => {
         Modal.createDialog(QuestionDialog, {
-            title: _t("Warning"),
-            description: (
-                <p>
-                    {_t(
-                        "By exporting data it will leave the secure space of the TI-Messenger. You are responsible for securing the data from now on.",
-                    )}
-                </p>
-            ),
+            title: _t("tim|security|warning"),
+            description: <p>{_t("tim|security|export_data")}</p>,
             danger: true,
             hasCancelButton: true,
             onFinished: this.onPlaceholderClick,
@@ -228,9 +211,9 @@ export default class MFileBody extends React.Component<IProps, IState> {
             placeholder = (
                 <AccessibleButton className="mx_MediaBody mx_MFileBody_info" onClick={this.onClick}>
                     <span className="mx_MFileBody_info_icon" />
-                    <TextWithTooltip tooltip={presentableTextForFile(this.content, _t("Attachment"), true)}>
+                    <TextWithTooltip tooltip={presentableTextForFile(this.content, _t("common|attachment"), true)}>
                         <span className="mx_MFileBody_info_filename">
-                            {presentableTextForFile(this.content, _t("Attachment"), true, true)}
+                            {presentableTextForFile(this.content, _t("common|attachment"), true, true)}
                         </span>
                     </TextWithTooltip>
                 </AccessibleButton>
@@ -271,7 +254,7 @@ export default class MFileBody extends React.Component<IProps, IState> {
                         {showDownloadLink && (
                             <div className="mx_MFileBody_download">
                                 <AccessibleButton onClick={this.decryptFile}>
-                                    {_t("Decrypt %(text)s", { text: this.linkText })}
+                                    {_t("timeline|m.file|decrypt_label", { text: this.linkText })}
                                 </AccessibleButton>
                             </div>
                         )}
@@ -307,11 +290,11 @@ export default class MFileBody extends React.Component<IProps, IState> {
                          */}
                             <iframe
                                 aria-hidden
-                                title={presentableTextForFile(this.content, _t("Attachment"), true, true)}
+                                title={presentableTextForFile(this.content, _t("common|attachment"), true, true)}
                                 src={url}
                                 onLoad={(): void => this.downloadFile(this.fileName, this.linkText)}
                                 ref={this.iframe}
-                                sandbox="allow-scripts allow-downloads allow-downloads-without-user-activation"
+                                sandbox="allow-scripts allow-downloads"
                             />
                         </div>
                     )}
@@ -369,7 +352,7 @@ export default class MFileBody extends React.Component<IProps, IState> {
                         <div className="mx_MFileBody_download">
                             <a {...downloadProps}>
                                 <span className="mx_MFileBody_download_icon" />
-                                {_t("Download %(text)s", { text: this.linkText })}
+                                {_t("timeline|m.file|download_label", { text: this.linkText })}
                             </a>
                             {this.context.timelineRenderingType === TimelineRenderingType.File && (
                                 <div className="mx_MImageBody_size">
@@ -385,7 +368,7 @@ export default class MFileBody extends React.Component<IProps, IState> {
             return (
                 <span className="mx_MFileBody">
                     {placeholder}
-                    {_t("Invalid file%(extra)s", { extra: extra })}
+                    {_t("timeline|m.file|error_invalid", { extra: extra })}
                 </span>
             );
         }

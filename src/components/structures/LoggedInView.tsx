@@ -1,31 +1,30 @@
 /*
-Copyright 2015 - 2022 The Matrix.org Foundation C.I.C.
+Copyright 2024 Awesome Technologies Innovationslabor GmbH
+Copyright 2024 New Vector Ltd.
+Copyright 2015-2022 The Matrix.org Foundation C.I.C.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
+// ORIGINAL CODE
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/components/structures/LoggedInView.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/components/structures/
 
 import React, { ClipboardEvent } from "react";
-import { ClientEvent, MatrixClient } from "matrix-js-sdk/src/client";
-import { MatrixEvent } from "matrix-js-sdk/src/models/event";
+import {
+    ClientEvent,
+    MatrixClient,
+    MatrixEvent,
+    RoomStateEvent,
+    MatrixError,
+    IUsageLimit,
+    SyncStateData,
+    SyncState,
+} from "matrix-js-sdk/src/matrix";
 import { MatrixCall } from "matrix-js-sdk/src/webrtc/call";
 import classNames from "classnames";
-import { ISyncStateData, SyncState } from "matrix-js-sdk/src/sync";
-import { IUsageLimit } from "matrix-js-sdk/src/@types/partials";
-import { RoomStateEvent } from "matrix-js-sdk/src/models/room-state";
-import { MatrixError } from "matrix-js-sdk/src/matrix";
 import { isOnlyCtrlOrCmdKeyEvent, Key } from "matrix-react-sdk/src/Keyboard";
 import PageTypes from "matrix-react-sdk/src/PageTypes";
 import MediaDeviceHandler from "matrix-react-sdk/src/MediaDeviceHandler";
@@ -36,7 +35,6 @@ import SettingsStore from "matrix-react-sdk/src/settings/SettingsStore";
 import { SettingLevel } from "matrix-react-sdk/src/settings/SettingLevel";
 import ResizeHandle from "matrix-react-sdk/src/components/views/elements/ResizeHandle";
 import { CollapseDistributor, Resizer } from "matrix-react-sdk/src/resizer";
-import MatrixClientContext from "matrix-react-sdk/src/contexts/MatrixClientContext";
 import ResizeNotifier from "matrix-react-sdk/src/utils/ResizeNotifier";
 import PlatformPeg from "matrix-react-sdk/src/PlatformPeg";
 import { DefaultTagID } from "matrix-react-sdk/src/stores/room-list/models";
@@ -74,6 +72,8 @@ import { UserOnboardingPage } from "matrix-react-sdk/src/components/views/user-o
 import { PipContainer } from "matrix-react-sdk/src/components/structures/PipContainer";
 import { monitorSyncedPushRules } from "matrix-react-sdk/src/utils/pushRules/monitorSyncedPushRules";
 import { ConfigOptions } from "matrix-react-sdk/src/SdkConfig";
+import { MatrixClientContextProvider } from "matrix-react-sdk/src/components/structures/MatrixClientContextProvider";
+import { Landmark, LandmarkNavigation } from "matrix-react-sdk/src/accessibility/LandmarkNavigation";
 
 import type { RoomView as RoomViewType } from "matrix-react-sdk/src/components/structures/RoomView";
 
@@ -111,7 +111,7 @@ interface IProps {
 }
 
 interface IState {
-    syncErrorData?: ISyncStateData;
+    syncErrorData?: SyncStateData;
     usageLimitDismissed: boolean;
     usageLimitEventContent?: IUsageLimit;
     usageLimitEventTs?: number;
@@ -139,6 +139,7 @@ class LoggedInView extends React.Component<IProps, IState> {
     protected layoutWatcherRef?: string;
     protected compactLayoutWatcherRef?: string;
     protected backgroundImageWatcherRef?: string;
+    protected timezoneProfileUpdateRef?: string[];
     protected resizer?: Resizer<ICollapseConfig, CollapseItem>;
 
     public constructor(props: IProps) {
@@ -190,6 +191,11 @@ class LoggedInView extends React.Component<IProps, IState> {
             this.refreshBackgroundImage,
         );
 
+        this.timezoneProfileUpdateRef = [
+            SettingsStore.watchSetting("userTimezonePublish", null, this.onTimezoneUpdate),
+            SettingsStore.watchSetting("userTimezone", null, this.onTimezoneUpdate),
+        ];
+
         this.resizer = this.createResizer();
         this.resizer.attach();
 
@@ -197,6 +203,31 @@ class LoggedInView extends React.Component<IProps, IState> {
         this.loadResizerPreferences();
         this.refreshBackgroundImage();
     }
+
+    private onTimezoneUpdate = async (): Promise<void> => {
+        if (!SettingsStore.getValue("userTimezonePublish")) {
+            // Ensure it's deleted
+            try {
+                await this._matrixClient.deleteExtendedProfileProperty("us.cloke.msc4175.tz");
+            } catch (ex) {
+                console.warn("Failed to delete timezone from user profile", ex);
+            }
+            return;
+        }
+        const currentTimezone =
+            SettingsStore.getValue("userTimezone") ||
+            // If the timezone is empty, then use the browser timezone.
+            // eslint-disable-next-line new-cap
+            Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (!currentTimezone || typeof currentTimezone !== "string") {
+            return;
+        }
+        try {
+            await this._matrixClient.setExtendedProfileProperty("us.cloke.msc4175.tz", currentTimezone);
+        } catch (ex) {
+            console.warn("Failed to update user profile with current timezone", ex);
+        }
+    };
 
     public componentWillUnmount(): void {
         document.removeEventListener("keydown", this.onNativeKeyDown, false);
@@ -208,6 +239,7 @@ class LoggedInView extends React.Component<IProps, IState> {
         if (this.layoutWatcherRef) SettingsStore.unwatchSetting(this.layoutWatcherRef);
         if (this.compactLayoutWatcherRef) SettingsStore.unwatchSetting(this.compactLayoutWatcherRef);
         if (this.backgroundImageWatcherRef) SettingsStore.unwatchSetting(this.backgroundImageWatcherRef);
+        this.timezoneProfileUpdateRef?.forEach((s) => SettingsStore.unwatchSetting(s));
         this.resizer?.detach();
     }
 
@@ -296,7 +328,7 @@ class LoggedInView extends React.Component<IProps, IState> {
         });
     };
 
-    private onSync = (syncState: SyncState | null, oldSyncState: SyncState | null, data?: ISyncStateData): void => {
+    private onSync = (syncState: SyncState | null, oldSyncState: SyncState | null, data?: SyncStateData): void => {
         const oldErrCode = (this.state.syncErrorData?.error as MatrixError)?.errcode;
         const newErrCode = (data?.error as MatrixError)?.errcode;
         if (syncState === oldSyncState && oldErrCode === newErrCode) return;
@@ -459,9 +491,7 @@ class LoggedInView extends React.Component<IProps, IState> {
                 handled = true;
                 break;
             case KeyBindingAction.SearchInRoom:
-                dis.dispatch({
-                    action: "focus_search",
-                });
+                dis.fire(Action.FocusMessageSearch);
                 handled = true;
                 break;
         }
@@ -473,6 +503,14 @@ class LoggedInView extends React.Component<IProps, IState> {
 
         const navAction = getKeyBindingsManager().getNavigationAction(ev);
         switch (navAction) {
+            case KeyBindingAction.NextLandmark:
+            case KeyBindingAction.PreviousLandmark:
+                LandmarkNavigation.findAndFocusNextLandmark(
+                    Landmark.MESSAGE_COMPOSER_OR_HOME,
+                    navAction === KeyBindingAction.PreviousLandmark,
+                );
+                handled = true;
+                break;
             case KeyBindingAction.FilterRooms:
                 dis.dispatch({
                     action: "focus_room_filter",
@@ -491,11 +529,15 @@ class LoggedInView extends React.Component<IProps, IState> {
                 handled = true;
                 break;
             case KeyBindingAction.GoToHome:
+                // even if we cancel because there are modals open, we still
+                // handled it: nothing else should happen.
+                handled = true;
+                if (Modal.hasDialogs()) {
+                    return;
+                }
                 dis.dispatch({
                     action: Action.ViewHomePage,
                 });
-                Modal.closeCurrentModal("homeKeyboardShortcut");
-                handled = true;
                 break;
             case KeyBindingAction.ToggleSpacePanel:
                 dis.fire(Action.ToggleSpacePanel);
@@ -651,7 +693,8 @@ class LoggedInView extends React.Component<IProps, IState> {
                 break;
 
             case PageTypes.UserView:
-                if (this.props.currentUserId) {
+                // eslint-disable-next-line no-extra-boolean-cast
+                if (!!this.props.currentUserId) {
                     pageElement = (
                         <UserView userId={this.props.currentUserId} resizeNotifier={this.props.resizeNotifier} />
                     );
@@ -673,7 +716,7 @@ class LoggedInView extends React.Component<IProps, IState> {
         });
 
         return (
-            <MatrixClientContext.Provider value={this._matrixClient}>
+            <MatrixClientContextProvider client={this._matrixClient}>
                 <div
                     onPaste={this.onPaste}
                     onKeyDown={this.onReactKeyDown}
@@ -684,7 +727,7 @@ class LoggedInView extends React.Component<IProps, IState> {
                     <div className={bodyClasses}>
                         <div className="mx_LeftPanel_outerWrapper">
                             <LeftPanelLiveShareWarning isMinimized={this.props.collapseLhs || false} />
-                            <nav className="mx_LeftPanel_wrapper">
+                            <div className="mx_LeftPanel_wrapper">
                                 <BackdropPanel blurMultiplier={0.5} backgroundImage={this.state.backgroundImage} />
                                 {/* <SpacePanel /> */}
                                 <BackdropPanel backgroundImage={this.state.backgroundImage} />
@@ -699,7 +742,7 @@ class LoggedInView extends React.Component<IProps, IState> {
                                         resizeNotifier={this.props.resizeNotifier}
                                     />
                                 </div>
-                            </nav>
+                            </div>
                         </div>
                         <ResizeHandle passRef={this.resizeHandler} id="lp-resizer" />
                         <div className="mx_RoomView_wrapper">{pageElement}</div>
@@ -708,7 +751,7 @@ class LoggedInView extends React.Component<IProps, IState> {
                 <PipContainer />
                 <NonUrgentToastContainer />
                 {audioFeedArraysForCalls}
-            </MatrixClientContext.Provider>
+            </MatrixClientContextProvider>
         );
     }
 }

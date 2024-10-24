@@ -1,33 +1,27 @@
 /*
-Copyright 2015, 2016 OpenMarket Ltd
-Copyright 2018 New Vector Ltd
-Copyright 2019 The Matrix.org Foundation C.I.C.
 Copyright 2024 Awesome Technologies Innovationslabor GmbH
+Copyright 2024 New Vector Ltd.
+Copyright 2019 The Matrix.org Foundation C.I.C.
+Copyright 2018 New Vector Ltd
+Copyright 2015, 2016 OpenMarket Ltd
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
+// ORIGINAL CODE
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/Presence.ts
 // ORIGINAL PATH
 // matrix-react-sdk/src/
 
 import { logger } from "matrix-js-sdk/src/logger";
+import { SetPresence } from "matrix-js-sdk/src/matrix";
 import { MatrixClientPeg } from "matrix-react-sdk/src/MatrixClientPeg";
 import dis from "matrix-react-sdk/src/dispatcher/dispatcher";
 import Timer from "matrix-react-sdk/src/utils/Timer";
 import { ActionPayload } from "matrix-react-sdk/src/dispatcher/payloads";
 import { logout } from "matrix-react-sdk/src/Lifecycle";
 import SettingsStore from "matrix-react-sdk/src/settings/SettingsStore";
-import { SetPresence } from "matrix-js-sdk/src/sync";
 
 // Time in ms after that a user is considered as unavailable/away
 const UNAVAILABLE_TIME_MS = 3 * 60 * 1000; // 3 mins

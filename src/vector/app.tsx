@@ -1,21 +1,13 @@
 /*
-Copyright 2015, 2016 OpenMarket Ltd
-Copyright 2017 Vector Creations Ltd
-Copyright 2018, 2019 New Vector Ltd
-Copyright 2019 Michael Telatynski <7t3chguy@gmail.com>
+Copyright 2024 New Vector Ltd.
 Copyright 2020 The Matrix.org Foundation C.I.C.
+Copyright 2019 Michael Telatynski <7t3chguy@gmail.com>
+Copyright 2018, 2019 New Vector Ltd
+Copyright 2017 Vector Creations Ltd
+Copyright 2015, 2016 OpenMarket Ltd
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
 // To ensure we load the browser-matrix version first
@@ -23,7 +15,6 @@ import "matrix-js-sdk/src/browser-index";
 
 import React, { ReactElement } from "react";
 import PlatformPeg from "matrix-react-sdk/src/PlatformPeg";
-import { UserFriendlyError } from "matrix-react-sdk/src/languageHandler";
 import AutoDiscoveryUtils from "matrix-react-sdk/src/utils/AutoDiscoveryUtils";
 import { AutoDiscovery, ClientConfig } from "matrix-js-sdk/src/autodiscovery";
 import * as Lifecycle from "matrix-react-sdk/src/Lifecycle";
@@ -34,10 +25,13 @@ import { createClient } from "matrix-js-sdk/src/matrix";
 import { SnakedObject } from "matrix-react-sdk/src/utils/SnakedObject";
 import MatrixChat from "matrix-react-sdk/src/components/structures/MatrixChat";
 import { ValidatedServerConfig } from "matrix-react-sdk/src/utils/ValidatedServerConfig";
+import { WrapperLifecycle, WrapperOpts } from "@matrix-org/react-sdk-module-api/lib/lifecycles/WrapperLifecycle";
+import { ModuleRunner } from "matrix-react-sdk/src/modules/ModuleRunner";
 
 import { parseQs } from "./url_utils";
 import VectorBasePlatform from "./platform/VectorBasePlatform";
 import { getInitialScreenAfterLogin, getScreenFromLocation, init as initRouting, onNewScreen } from "./routing";
+import { UserFriendlyError } from "../languageHandler";
 
 // add React and ReactPerf to the global namespace, to make them easier to access via the console
 // this incidentally means we can forget our React imports in JSX files without penalty.
@@ -63,7 +57,7 @@ function onTokenLoginCompleted(): void {
     window.history.replaceState(null, "", url.href);
 }
 
-export async function loadApp(fragParams: {}): Promise<ReactElement> {
+export async function loadApp(fragParams: {}, matrixChatRef: React.Ref<MatrixChat>): Promise<ReactElement> {
     initRouting();
     const platform = PlatformPeg.get();
 
@@ -87,7 +81,12 @@ export async function loadApp(fragParams: {}): Promise<ReactElement> {
     // XXX: This path matching is a bit brittle, but better to do it early instead of in the app code.
     const isWelcomeOrLanding =
         window.location.hash === "#/welcome" || window.location.hash === "#" || window.location.hash === "";
+    const isLoginPage = window.location.hash === "#/login";
+
     if (!autoRedirect && ssoRedirects.on_welcome_page && isWelcomeOrLanding) {
+        autoRedirect = true;
+    }
+    if (!autoRedirect && ssoRedirects.on_login_page && isLoginPage) {
         autoRedirect = true;
     }
     if (!hasPossibleToken && !isReturningFromSso && autoRedirect) {
@@ -109,17 +108,23 @@ export async function loadApp(fragParams: {}): Promise<ReactElement> {
 
     const initialScreenAfterLogin = getInitialScreenAfterLogin(window.location);
 
+    const wrapperOpts: WrapperOpts = { Wrapper: React.Fragment };
+    ModuleRunner.instance.invoke(WrapperLifecycle.Wrapper, wrapperOpts);
+
     return (
-        <MatrixChat
-            onNewScreen={onNewScreen}
-            config={config}
-            realQueryParams={params}
-            startingFragmentQueryParams={fragParams}
-            enableGuest={!config.disable_guests}
-            onTokenLoginCompleted={onTokenLoginCompleted}
-            initialScreenAfterLogin={initialScreenAfterLogin}
-            defaultDeviceDisplayName={defaultDeviceName}
-        />
+        <wrapperOpts.Wrapper>
+            <MatrixChat
+                ref={matrixChatRef}
+                onNewScreen={onNewScreen}
+                config={config}
+                realQueryParams={params}
+                startingFragmentQueryParams={fragParams}
+                enableGuest={!config.disable_guests}
+                onTokenLoginCompleted={onTokenLoginCompleted}
+                initialScreenAfterLogin={initialScreenAfterLogin}
+                defaultDeviceDisplayName={defaultDeviceName}
+            />
+        </wrapperOpts.Wrapper>
     );
 }
 
@@ -146,14 +151,11 @@ async function verifyServerConfig(): Promise<IConfigOptions> {
         const incompatibleOptions = [wkConfig, serverName, hsUrl].filter((i) => !!i);
         if (hsUrl && (wkConfig || serverName)) {
             // noinspection ExceptionCaughtLocallyJS
-            throw new UserFriendlyError(
-                "Invalid configuration: a default_hs_url can't be specified along with default_server_name " +
-                    "or default_server_config",
-            );
+            throw new UserFriendlyError("error|invalid_configuration_mixed_server");
         }
         if (incompatibleOptions.length < 1) {
             // noinspection ExceptionCaughtLocallyJS
-            throw new UserFriendlyError("Invalid configuration: no default server specified.");
+            throw new UserFriendlyError("error|invalid_configuration_no_server");
         }
 
         if (hsUrl) {
@@ -194,7 +196,7 @@ async function verifyServerConfig(): Promise<IConfigOptions> {
             }
         }
 
-        validatedConfig = AutoDiscoveryUtils.buildValidatedConfigFromDiscovery(serverName, discoveryResult, true);
+        validatedConfig = await AutoDiscoveryUtils.buildValidatedConfigFromDiscovery(serverName, discoveryResult, true);
     } catch (e) {
         const { hsUrl, isUrl, userId } = await Lifecycle.getStoredSessionVars();
         if (hsUrl && userId) {

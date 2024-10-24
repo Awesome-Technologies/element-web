@@ -1,27 +1,18 @@
 /*
-Copyright 2019 Michael Telatynski <7t3chguy@gmail.com>
-Copyright 2015, 2016, 2019, 2023 The Matrix.org Foundation C.I.C.
 Copyright 2024 Awesome Technologies Innovationslabor GmbH
+Copyright 2024 New Vector Ltd.
+Copyright 2019 Michael Telatynski <7t3chguy@gmail.com>
+Copyright 2015, 2016 , 2019, 2023 The Matrix.org Foundation C.I.C.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
 // ORIGINAL CODE
-// https://github.com/matrix-org/matrix-react-sdk/blob/v3.79.0/src/components/structures/ViewSource.tsx
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/components/structures/ViewSource.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/components/structures/
-
-import React, { ReactElement } from "react";
+import React from "react";
 import { MatrixEvent } from "matrix-js-sdk/src/matrix";
 import SyntaxHighlight from "matrix-react-sdk/src/components/views/elements/SyntaxHighlight";
 import { _t } from "matrix-react-sdk/src/languageHandler";
@@ -87,19 +78,21 @@ export default class ViewSource extends React.Component<IProps, IState> {
                 <>
                     <details open className="mx_ViewSource_details">
                         <summary>
-                            <span className="mx_ViewSource_heading">{_t("Decrypted event source")}</span>
+                            <span className="mx_ViewSource_heading">
+                                {_t("devtools|view_source_decrypted_event_source")}
+                            </span>
                         </summary>
                         {decryptedEventSource ? (
                             <CopyableText getTextToCopy={copyDecryptedFunc}>
                                 <SyntaxHighlight language="json">{stringify(decryptedEventSource)}</SyntaxHighlight>
                             </CopyableText>
                         ) : (
-                            <div>{_t("Decrypted source unavailable")}</div>
+                            <div>{_t("devtools|view_source_decrypted_event_source_unavailable")}</div>
                         )}
                     </details>
                     <details className="mx_ViewSource_details">
                         <summary>
-                            <span className="mx_ViewSource_heading">{_t("Original event source")}</span>
+                            <span className="mx_ViewSource_heading">{_t("devtools|original_event_source")}</span>
                         </summary>
                         <CopyableText getTextToCopy={copyOriginalFunc}>
                             <SyntaxHighlight language="json">{stringify(originalEventSource)}</SyntaxHighlight>
@@ -110,7 +103,7 @@ export default class ViewSource extends React.Component<IProps, IState> {
         } else {
             return (
                 <>
-                    <div className="mx_ViewSource_heading">{_t("Original event source")}</div>
+                    <div className="mx_ViewSource_heading">{_t("devtools|original_event_source")}</div>
                     <CopyableText getTextToCopy={copyOriginalFunc}>
                         <SyntaxHighlight language="json">{stringify(originalEventSource)}</SyntaxHighlight>
                     </CopyableText>
@@ -170,19 +163,18 @@ export default class ViewSource extends React.Component<IProps, IState> {
         const canEdit = mxEvent.isState()
             ? this.canSendStateEvent(mxEvent)
             : canEditContent(MatrixClientPeg.safeGet(), this.props.mxEvent);
-
         return (
-            <BaseDialog className="mx_ViewSource" onFinished={this.props.onFinished} title={_t("View Source")}>
+            <BaseDialog className="mx_ViewSource" onFinished={this.props.onFinished} title={_t("action|view_source")}>
                 <div className="mx_ViewSource_header">
-                    <CopyableText getTextToCopy={(): string => roomId} border={false}>
-                        {_t("Room ID: %(roomId)s", { roomId })}
+                    <CopyableText getTextToCopy={() => roomId} border={false}>
+                        {_t("devtools|room_id", { roomId })}
                     </CopyableText>
-                    <CopyableText getTextToCopy={(): string => eventId} border={false}>
-                        {_t("Event ID: %(eventId)s", { eventId })}
+                    <CopyableText getTextToCopy={() => eventId} border={false}>
+                        {_t("devtools|event_id", { eventId })}
                     </CopyableText>
                     {mxEvent.threadRootId && (
-                        <CopyableText getTextToCopy={(): string | null => mxEvent.threadRootId!} border={false}>
-                            {_t("Thread root ID: %(threadRootId)s", {
+                        <CopyableText getTextToCopy={() => mxEvent.threadRootId!} border={false}>
+                            {_t("devtools|thread_root_id", {
                                 threadRootId: mxEvent.threadRootId,
                             })}
                         </CopyableText>
@@ -191,7 +183,7 @@ export default class ViewSource extends React.Component<IProps, IState> {
                 {isEditing ? this.editSourceContent() : this.viewSourceContent()}
                 {!isEditing && canEdit && (
                     <div className="mx_Dialog_buttons">
-                        <button onClick={(): void => this.onEdit()}>{_t("Edit")}</button>
+                        <button onClick={() => this.onEdit()}>{_t("action|edit")}</button>
                     </div>
                 )}
             </BaseDialog>

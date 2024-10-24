@@ -80,9 +80,14 @@ const Row: React.FC<IProps> = ({ contact: contact, editContact, deleteContact })
                     </div>
                     {editMode ? (
                         <div className="aw_whitelist_popup">
-                            <Field type="text" label={_t("Change name")} value={contactName} onChange={onChangeName} />
+                            <Field
+                                type="text"
+                                label={_t("tim|whitelist|change_name")}
+                                value={contactName}
+                                onChange={onChangeName}
+                            />
                             <span className="popuptext" id="whitelist_Popup">
-                                {_t("The name field can not be empty")}
+                                {_t("tim|whitelist|name_field_empty")}
                             </span>
                         </div>
                     ) : (
@@ -98,9 +103,14 @@ const Row: React.FC<IProps> = ({ contact: contact, editContact, deleteContact })
             <td>
                 {editMode ? (
                     <div className="aw_whitelist_popup">
-                        <Field type="date" label={_t("Change start")} value={contactStart} onChange={onChangeStart} />
+                        <Field
+                            type="date"
+                            label={_t("tim|whitelist|change_start")}
+                            value={contactStart}
+                            onChange={onChangeStart}
+                        />
                         <span className="popuptext" id="whitelist_Popup">
-                            {_t("The start field can not be empty")}
+                            {_t("tim|whitelist|start_field_empty")}
                         </span>
                     </div>
                 ) : (
@@ -110,9 +120,14 @@ const Row: React.FC<IProps> = ({ contact: contact, editContact, deleteContact })
             <td>
                 {editMode ? (
                     <div className="aw_whitelist_popup">
-                        <Field type="date" label={_t("Change end")} value={contactEnd} onChange={onChangeEnd} />
+                        <Field
+                            type="date"
+                            label={_t("tim|whitelist|change_end")}
+                            value={contactEnd}
+                            onChange={onChangeEnd}
+                        />
                         <span className="popuptext" id="whitelist_Popup">
-                            {_t("The end field can not be empty")}
+                            {_t("tim|whitelist|end_field_empty")}
                         </span>
                     </div>
                 ) : (
@@ -126,7 +141,7 @@ const Row: React.FC<IProps> = ({ contact: contact, editContact, deleteContact })
                             element="div"
                             onClick={saveData}
                             className="aw_WhitelistRow__smallButton"
-                            title={_t("Save changes")}
+                            title={_t("tim|whitelist|save_changes")}
                         >
                             <Icon icon="save" />
                         </AccessibleButton>
@@ -134,7 +149,7 @@ const Row: React.FC<IProps> = ({ contact: contact, editContact, deleteContact })
                             element="div"
                             onClick={cancelEditMode}
                             className="aw_WhitelistRow__smallButton"
-                            title={_t("Cancel")}
+                            title={_t("tim|whitelist|cancel")}
                         >
                             <Icon icon="cancelEditMode" />
                         </AccessibleButton>
@@ -145,7 +160,7 @@ const Row: React.FC<IProps> = ({ contact: contact, editContact, deleteContact })
                             element="div"
                             onClick={onDeleteContact}
                             className="aw_WhitelistRow__smallButton"
-                            title={_t("Delete entry")}
+                            title={_t("tim|whitelist|delete_entry")}
                         >
                             <Icon icon="deleteContact" />
                         </AccessibleButton>
@@ -153,7 +168,7 @@ const Row: React.FC<IProps> = ({ contact: contact, editContact, deleteContact })
                             element="div"
                             onClick={startEditMode}
                             className="aw_WhitelistRow__smallButton"
-                            title={_t("Edit entry")}
+                            title={_t("tim|whitelist|edit_entry")}
                         >
                             <Icon icon="edit" />
                         </AccessibleButton>

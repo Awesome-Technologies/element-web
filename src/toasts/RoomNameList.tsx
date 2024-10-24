@@ -24,7 +24,7 @@ export const RoomNameList: React.FC<Props> = ({ names }) => {
     return (
         <>
             {names?.map((name: string) => (
-                <Fragment>
+                <Fragment key={name}>
                     <span>{name}</span>
                     <br />
                 </Fragment>

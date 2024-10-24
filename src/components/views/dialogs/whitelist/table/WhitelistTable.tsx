@@ -16,27 +16,27 @@ const ColumnHeader = (): JSX.Element => {
         <tr className="aw_whitelist_table__header">
             <th>
                 <div className="aw_whitelist_columnHeader">
-                    <span>{_t("Name")}</span>
+                    <span>{_t("tim|whitelist|name")}</span>
                 </div>
             </th>
             <th>
                 <div className="aw_whitelist_columnHeader">
-                    <span>{_t("MXID")}</span>
+                    <span>{_t("tim|whitelist|mxid")}</span>
                 </div>
             </th>
             <th>
                 <div className="aw_whitelist_columnHeader">
-                    <span>{_t("Starting time")}</span>
+                    <span>{_t("tim|whitelist|start")}</span>
                 </div>
             </th>
             <th>
                 <div className="aw_whitelist_columnHeader">
-                    <span>{_t("Ending time")}</span>
+                    <span>{_t("tim|whitelist|end")}</span>
                 </div>
             </th>
             <th>
                 <div className="aw_whitelist_columnHeader">
-                    <span>{_t("Edit")}</span>
+                    <span>{_t("tim|whitelist|edit")}</span>
                 </div>
             </th>
         </tr>
@@ -78,7 +78,7 @@ const WhitelistTable: React.FC<ITableProps> = ({ rows, isInputEmpty = false, edi
         >
             <input
                 type="text"
-                placeholder={_t("Search contacts")}
+                placeholder={_t("tim|whitelist|search")}
                 onChange={handleFilter}
                 className="aw_WhitelistTable_searchBar"
             />
@@ -88,7 +88,7 @@ const WhitelistTable: React.FC<ITableProps> = ({ rows, isInputEmpty = false, edi
                         <ColumnHeader />
                     </table>
                     <div className="aw_whitelist_table__message">
-                        <span>{_t("No contacts in the whitelist")}</span>
+                        <span>{_t("tim|whitelist|no_contacts")}</span>
                     </div>
                 </div>
             ) : filteredResults.length === 0 ? (
@@ -98,7 +98,7 @@ const WhitelistTable: React.FC<ITableProps> = ({ rows, isInputEmpty = false, edi
                     </table>
                     <div className="aw_whitelist_table__message">
                         <span>
-                            {_t("No matches for: ")}
+                            {_t("tim|whitelist|no_matches")}
                             {search}
                         </span>
                     </div>
@@ -106,9 +106,16 @@ const WhitelistTable: React.FC<ITableProps> = ({ rows, isInputEmpty = false, edi
             ) : (
                 <table className="aw_whitelist_table">
                     <ColumnHeader />
-                    {filteredResults.map((entry, i) => (
-                        <WhitelistRow key={i} contact={entry} editContact={editContact} deleteContact={deleteContact} />
-                    ))}
+                    <tbody>
+                        {filteredResults.map((entry, i) => (
+                            <WhitelistRow
+                                key={i}
+                                contact={entry}
+                                editContact={editContact}
+                                deleteContact={deleteContact}
+                            />
+                        ))}
+                    </tbody>
                 </table>
             )}
         </div>

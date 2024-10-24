@@ -12,10 +12,10 @@ import DropdownItem from "./DropdownItem";
 import Icon from "../../../../Icon";
 import { levenshteinDistance } from "../../../../../tools";
 
-const CHOSEN_STRING = _t("Selected");
-const RESET_BUTTON_STRING = _t("Reset");
-const RESET_SEARCH_BUTTON_STRING = _t("Delete search");
-const SEARCH_PLACEHOLDER_STRING = _t("Search..");
+const CHOSEN_STRING = _t("tim|vzd|selected");
+const RESET_BUTTON_STRING = _t("tim|vzd|reset");
+const RESET_SEARCH_BUTTON_STRING = _t("tim|vzd|delete_search");
+const SEARCH_PLACEHOLDER_STRING = _t("tim|vzd|search");
 
 interface ICategoryProps {
     title: string;

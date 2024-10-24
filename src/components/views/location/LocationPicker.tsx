@@ -1,22 +1,14 @@
 /*
+Copyright 2024 New Vector Ltd.
 Copyright 2021 The Matrix.org Foundation C.I.C.
 Copyright 2024 Awesome Technologies Innovationslabor GmbH
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
 // ORIGINAL CODE
-// https://github.com/matrix-org/matrix-react-sdk/blob/v3.79.0/src/components/views/location/LocationPicker.tsx
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/components/views/location/LocationPicker.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/components/views/location/
 
@@ -57,13 +49,13 @@ const isSharingOwnLocation = (shareType: LocationShareType): boolean =>
 
 class LocationPicker extends React.Component<ILocationPickerProps, IState> {
     public static contextType = MatrixClientContext;
-    public context!: React.ContextType<typeof MatrixClientContext>;
+    public declare context: React.ContextType<typeof MatrixClientContext>;
     private map?: maplibregl.Map;
     private geolocate?: maplibregl.GeolocateControl;
     private marker?: maplibregl.Marker;
 
-    public constructor(props: ILocationPickerProps) {
-        super(props);
+    public constructor(props: ILocationPickerProps, context: React.ContextType<typeof MatrixClientContext>) {
+        super(props, context);
 
         this.state = {
             position: undefined,
@@ -175,7 +167,7 @@ class LocationPicker extends React.Component<ILocationPickerProps, IState> {
         if (isSharingOwnLocation(this.props.shareType)) {
             this.props.onFinished();
             Modal.createDialog(ErrorDialog, {
-                title: _t("Could not fetch location"),
+                title: _t("location_sharing|error_fetch_location"),
                 description: positionFailureMessage(e.code),
             });
         }
@@ -217,7 +209,11 @@ class LocationPicker extends React.Component<ILocationPickerProps, IState> {
 
                 {this.props.shareType === LocationShareType.Pin && (
                     <div className="mx_LocationPicker_pinText">
-                        <span>{this.state.position ? _t("Click to move the pin") : _t("Click to drop a pin")}</span>
+                        <span>
+                            {this.state.position
+                                ? _t("location_sharing|click_move_pin")
+                                : _t("location_sharing|click_drop_pin")}
+                        </span>
                     </div>
                 )}
                 <div className="mx_LocationPicker_footer">
@@ -234,7 +230,7 @@ class LocationPicker extends React.Component<ILocationPickerProps, IState> {
                             disabled={!this.state.position}
                             onClick={this.onOk}
                         >
-                            {_t("Share location")}
+                            {_t("location_sharing|share_button")}
                         </AccessibleButton>
                     </form>
                 </div>

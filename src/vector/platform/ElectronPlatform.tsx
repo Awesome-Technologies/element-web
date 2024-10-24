@@ -1,27 +1,18 @@
 /*
+Copyright 2024 New Vector Ltd.
+Copyright 2022 Šimon Brandner <simon.bra.ag@gmail.com>
+Copyright 2018-2021 New Vector Ltd
+Copyright 2019 Michael Telatynski <7t3chguy@gmail.com>
 Copyright 2016 Aviral Dasgupta
 Copyright 2016 OpenMarket Ltd
-Copyright 2019 Michael Telatynski <7t3chguy@gmail.com>
-Copyright 2018 - 2021 New Vector Ltd
-Copyright 2022 Šimon Brandner <simon.bra.ag@gmail.com>
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
 import { UpdateCheckStatus, UpdateStatus } from "matrix-react-sdk/src/BasePlatform";
 import BaseEventIndexManager from "matrix-react-sdk/src/indexing/BaseEventIndexManager";
 import dis from "matrix-react-sdk/src/dispatcher/dispatcher";
-import { _t } from "matrix-react-sdk/src/languageHandler";
 import SdkConfig from "matrix-react-sdk/src/SdkConfig";
 import { IConfigOptions } from "matrix-react-sdk/src/IConfigOptions";
 import * as rageshake from "matrix-react-sdk/src/rageshake/rageshake";
@@ -44,10 +35,13 @@ import { BreadcrumbsStore } from "matrix-react-sdk/src/stores/BreadcrumbsStore";
 import { UPDATE_EVENT } from "matrix-react-sdk/src/stores/AsyncStore";
 import { avatarUrlForRoom, getInitialLetter } from "matrix-react-sdk/src/Avatar";
 import DesktopCapturerSourcePicker from "matrix-react-sdk/src/components/views/elements/DesktopCapturerSourcePicker";
+import { OidcRegistrationClientMetadata } from "matrix-js-sdk/src/matrix";
+import { MatrixClientPeg } from "matrix-react-sdk/src/MatrixClientPeg";
 
 import VectorBasePlatform from "./VectorBasePlatform";
 import { SeshatIndexManager } from "./SeshatIndexManager";
 import { IPCManager } from "./IPCManager";
+import { _t } from "../../languageHandler";
 
 interface SquirrelUpdate {
     releaseNotes: string;
@@ -55,6 +49,8 @@ interface SquirrelUpdate {
     releaseDate: Date;
     updateURL: string;
 }
+
+const SSO_ID_KEY = "element-desktop-ssoid";
 
 const isMac = navigator.platform.toUpperCase().includes("MAC");
 
@@ -124,6 +120,24 @@ export default class ElectronPlatform extends VectorBasePlatform {
             });
         });
 
+        // `userAccessToken` (IPC) is requested by the main process when appending authentication
+        // to media downloads. A reply is sent over the same channel.
+        window.electron.on("userAccessToken", () => {
+            window.electron!.send("userAccessToken", MatrixClientPeg.get()?.getAccessToken());
+        });
+
+        // `homeserverUrl` (IPC) is requested by the main process. A reply is sent over the same channel.
+        window.electron.on("homeserverUrl", () => {
+            window.electron!.send("homeserverUrl", MatrixClientPeg.get()?.getHomeserverUrl());
+        });
+
+        // `serverSupportedVersions` is requested by the main process when it needs to know if the
+        // server supports a particular version. This is primarily used to detect authenticated media
+        // support. A reply is sent over the same channel.
+        window.electron.on("serverSupportedVersions", async () => {
+            window.electron!.send("serverSupportedVersions", await MatrixClientPeg.get()?.getVersions());
+        });
+
         // try to flush the rageshake logs to indexeddb before quit.
         window.electron.on("before-quit", function () {
             logger.log("element-desktop closing");
@@ -150,12 +164,12 @@ export default class ElectronPlatform extends VectorBasePlatform {
 
             ToastStore.sharedInstance().addOrReplaceToast({
                 key,
-                title: _t("Download Completed"),
+                title: _t("download_completed"),
                 props: {
                     description: name,
-                    acceptLabel: _t("Open"),
-                    onAccept,
-                    dismissLabel: _t("Dismiss"),
+                    primaryLabel: _t("action|open"),
+                    onPrimaryClick: onAccept,
+                    dismissLabel: _t("action|dismiss"),
                     onDismiss,
                     numSeconds: 10,
                 },
@@ -164,15 +178,14 @@ export default class ElectronPlatform extends VectorBasePlatform {
             });
         });
 
-        window.electron.on("openDesktopCapturerSourcePicker", () => {
+        window.electron.on("openDesktopCapturerSourcePicker", async () => {
             const { finished } = Modal.createDialog(DesktopCapturerSourcePicker);
-            finished.then(([source]) => {
-                if (!source) return;
-                this.ipc.call("callDisplayMediaCallback", source);
-            });
+            const [source] = await finished;
+            // getDisplayMedia promise does not return if no dummy is passed here as source
+            await this.ipc.call("callDisplayMediaCallback", source ?? { id: "", name: "", thumbnailURL: "" });
         });
 
-        this.ipc.call("startSSOFlow", this.ssoID);
+        void this.ipc.call("startSSOFlow", this.ssoID);
 
         BreadcrumbsStore.instance.on(UPDATE_EVENT, this.onBreadcrumbsUpdate);
     }
@@ -192,7 +205,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
             ),
             initial: getInitialLetter(r.name),
         }));
-        this.ipc.call("breadcrumbs", rooms);
+        void this.ipc.call("breadcrumbs", rooms);
     };
 
     private onUpdateDownloaded = async (ev: Event, { releaseNotes, releaseName }: SquirrelUpdate): Promise<void> => {
@@ -258,7 +271,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
         const handler = notification.onclick as Function;
         notification.onclick = (): void => {
             handler?.();
-            this.ipc.call("focusWindow");
+            void this.ipc.call("focusWindow");
         };
 
         return notification;
@@ -321,7 +334,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
 
     public getDefaultDeviceDisplayName(): string {
         const brand = SdkConfig.get().brand;
-        return _t("%(brand)s Desktop: %(platformName)s", {
+        return _t("desktop_default_device_name", {
             brand,
             platformName: platformFriendlyName(),
         });
@@ -374,7 +387,7 @@ export default class ElectronPlatform extends VectorBasePlatform {
     }
 
     public supportsJitsiScreensharing(): boolean {
-        // See https://github.com/vector-im/element-web/issues/4880
+        // See https://github.com/element-hq/element-web/issues/4880
         return false;
     }
 
@@ -382,10 +395,10 @@ export default class ElectronPlatform extends VectorBasePlatform {
         return this.ipc.call("getAvailableSpellCheckLanguages");
     }
 
-    public getSSOCallbackUrl(fragmentAfterLogin: string): URL {
+    public getSSOCallbackUrl(fragmentAfterLogin?: string): URL {
         const url = super.getSSOCallbackUrl(fragmentAfterLogin);
         url.protocol = "element";
-        url.searchParams.set("element-desktop-ssoid", this.ssoID);
+        url.searchParams.set(SSO_ID_KEY, this.ssoID);
         return url;
     }
 
@@ -398,13 +411,13 @@ export default class ElectronPlatform extends VectorBasePlatform {
         // this will get intercepted by electron-main will-navigate
         super.startSingleSignOn(mxClient, loginType, fragmentAfterLogin, idpId);
         Modal.createDialog(InfoDialog, {
-            title: _t("Go to your browser to complete Sign In"),
+            title: _t("auth|sso_complete_in_browser_dialog_title"),
             description: <Spinner />,
         });
     }
 
     public navigateForwardBack(back: boolean): void {
-        this.ipc.call(back ? "navigateBack" : "navigateForward");
+        void this.ipc.call(back ? "navigateBack" : "navigateForward");
     }
 
     public overrideBrowserShortcuts(): boolean {
@@ -442,5 +455,42 @@ export default class ElectronPlatform extends VectorBasePlatform {
             await super.clearStorage();
             await this.ipc.call("clearStorage");
         } catch (e) {}
+    }
+
+    public get baseUrl(): string {
+        // This configuration is element-desktop specific so the types here do not know about it
+        return (SdkConfig.get() as unknown as Record<string, string>)["web_base_url"] ?? "https://app.element.io";
+    }
+
+    public get defaultOidcClientUri(): string {
+        // Default to element.io as our scheme `io.element.desktop` is within its scope on default MAS policies
+        return "https://element.io";
+    }
+
+    public async getOidcClientMetadata(): Promise<OidcRegistrationClientMetadata> {
+        const baseMetadata = await super.getOidcClientMetadata();
+        return {
+            ...baseMetadata,
+            applicationType: "native",
+        };
+    }
+
+    public getOidcClientState(): string {
+        return `:${SSO_ID_KEY}:${this.ssoID}`;
+    }
+
+    /**
+     * The URL to return to after a successful OIDC authentication
+     */
+    public getOidcCallbackUrl(): URL {
+        const url = super.getOidcCallbackUrl();
+        url.protocol = "io.element.desktop";
+        // Trim the double slash into a single slash to comply with https://datatracker.ietf.org/doc/html/rfc8252#section-7.1
+        // Chrome seems to have a strange issue where non-standard protocols prevent URL object mutations on pathname
+        // field, so we cannot mutate `pathname` reliably and instead have to rewrite the href manually.
+        if (url.pathname.startsWith("//")) {
+            url.href = url.href.replace(url.pathname, url.pathname.slice(1));
+        }
+        return url;
     }
 }

@@ -1,23 +1,15 @@
 /*
-Copyright 2015, 2016 OpenMarket Ltd
-Copyright 2019, 2020 The Matrix.org Foundation C.I.C.
 Copyright 2024 Awesome Technologies Innovationslabor GmbH
+Copyright 2024 New Vector Ltd.
+Copyright 2019, 2020 The Matrix.org Foundation C.I.C.
+Copyright 2015, 2016 OpenMarket Ltd
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
 // ORIGINAL CODE
-// https://github.com/matrix-org/matrix-react-sdk/blob/v3.79.0/src/createRoom.ts
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/createRoom.ts
 // ORIGINAL PATH
 // matrix-react-sdk/src/
 
@@ -55,6 +47,7 @@ import { shouldForceDisableEncryption } from "matrix-react-sdk/src/utils/crypto/
 import { waitForMember } from "matrix-react-sdk/src/utils/membership";
 import { PreferredRoomVersions } from "matrix-react-sdk/src/utils/PreferredRoomVersions";
 import SettingsStore from "matrix-react-sdk/src/settings/SettingsStore";
+import { MEGOLM_ENCRYPTION_ALGORITHM } from "matrix-react-sdk/src/utils/crypto";
 
 // we define a number of interfaces which take their names from the js-sdk
 /* eslint-disable camelcase */
@@ -124,7 +117,10 @@ export default async function createRoom(client: MatrixClient, opts: IOpts): Pro
     const createOpts: ICreateRoomOpts = opts.createOpts || {};
     createOpts.preset = createOpts.preset || defaultPreset;
     createOpts.visibility = createOpts.visibility || Visibility.Private;
-    if (opts.dmUserId && createOpts.invite === undefined) {
+
+    // We allow UX of DMing ourselves as a form of creating a personal room but the server throws
+    // an error when a user tries to invite themselves so we filter it out
+    if (opts.dmUserId && opts.dmUserId !== client.getUserId() && createOpts.invite === undefined) {
         switch (getAddressType(opts.dmUserId)) {
             case "mx-user-id":
                 createOpts.invite = [opts.dmUserId];
@@ -132,10 +128,7 @@ export default async function createRoom(client: MatrixClient, opts: IOpts): Pro
             case "email": {
                 const isUrl = client.getIdentityServerUrl(true);
                 if (!isUrl) {
-                    throw new UserFriendlyError(
-                        "Cannot invite user by email without an identity server. " +
-                            'You can connect to one under "Settings".',
-                    );
+                    throw new UserFriendlyError("cannot_invite_without_identity_server");
                 }
                 createOpts.invite_3pid = [
                     {
@@ -192,9 +185,9 @@ export default async function createRoom(client: MatrixClient, opts: IOpts): Pro
         createOpts.power_level_content_override = {
             events: {
                 ...DEFAULT_EVENT_POWER_LEVELS,
-                // Element Call should be disabled by default
-                [ElementCall.MEMBER_EVENT_TYPE.name]: 100,
-                // Make sure only admins can enable it
+                // It should always (including non video rooms) be possible to join a group call.
+                [ElementCall.MEMBER_EVENT_TYPE.name]: 0,
+                // Make sure only admins can enable it (DEPRECATED)
                 [ElementCall.CALL_EVENT_TYPE.name]: 100,
             },
         };
@@ -270,7 +263,7 @@ export default async function createRoom(client: MatrixClient, opts: IOpts): Pro
             type: "m.room.encryption",
             state_key: "",
             content: {
-                algorithm: "m.megolm.v1.aes-sha2",
+                algorithm: MEGOLM_ENCRYPTION_ALGORITHM,
             },
         });
     }
@@ -397,15 +390,13 @@ export default async function createRoom(client: MatrixClient, opts: IOpts): Pro
                 await JitsiCall.create(await room);
 
                 // Reset our power level back to admin so that the widget becomes immutable
-                const plEvent = (await room).currentState.getStateEvents(EventType.RoomPowerLevels, "");
-                await client.setPowerLevel(roomId, client.getUserId()!, 100, plEvent);
+                await client.setPowerLevel(roomId, client.getUserId()!, 100);
             } else if (opts.roomType === RoomType.UnstableCall) {
                 // Set up this video room with an Element call
                 await ElementCall.create(await room);
 
                 // Reset our power level back to admin so that the call becomes immutable
-                const plEvent = (await room).currentState.getStateEvents(EventType.RoomPowerLevels, "");
-                await client.setPowerLevel(roomId, client.getUserId()!, 100, plEvent);
+                await client.setPowerLevel(roomId, client.getUserId()!, 100);
             }
         })
         .then(
@@ -441,15 +432,15 @@ export default async function createRoom(client: MatrixClient, opts: IOpts): Pro
                     roomId,
                 });
                 logger.error("Failed to create room " + roomId + " " + err);
-                let description = _t("Server may be unavailable, overloaded, or you hit a bug.");
+                let description = _t("create_room|generic_error");
                 if (err.errcode === "M_UNSUPPORTED_ROOM_VERSION") {
                     // Technically not possible with the UI as of April 2019 because there's no
                     // options for the user to change this. However, it's not a bad thing to report
                     // the error to the user for if/when the UI is available.
-                    description = _t("The server does not support the room version specified.");
+                    description = _t("create_room|unsupported_version");
                 }
                 Modal.createDialog(ErrorDialog, {
-                    title: _t("Failure to create room"),
+                    title: _t("create_room|error_title"),
                     description,
                 });
                 return null;

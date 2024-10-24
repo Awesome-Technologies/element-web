@@ -210,7 +210,7 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
         // Check if the mxid is already in the contacts
         const mxidExists = this.state.contacts.some((contact) => contact.mxid === this.state.mxid);
         if (mxidExists) {
-            this.setState({ error: _t("Contact already added") });
+            this.setState({ error: _t("tim|whitelist|already_added") });
             return;
         }
 
@@ -366,7 +366,7 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
             {
                 key: "required",
                 test: ({ value, allowEmpty }): boolean | Promise<boolean> => allowEmpty || !!value,
-                invalid: (): string | null => _t("Name can't be empty"),
+                invalid: (): string | null => _t("tim|whitelist|name_empty"),
             },
         ],
     });
@@ -382,7 +382,7 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
             {
                 key: "required",
                 test: ({ value, allowEmpty }): boolean | Promise<boolean> => allowEmpty || !!value,
-                invalid: (): string | null => _t("MXID can't be empty"),
+                invalid: (): string | null => _t("tim|whitelist|mxid_empty"),
             },
             {
                 key: "pattern",
@@ -391,7 +391,7 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
                         value!,
                     );
                 },
-                invalid: (): string | null => _t("wrong MXID format"),
+                invalid: (): string | null => _t("tim|whitelist|mxid_format"),
             },
         ],
     });
@@ -498,7 +498,7 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
                     <Field
                         ref={(field): Field | null => (this[FIELD_USERNAME] = field)}
                         type="text"
-                        label={_t("Insert contact name")}
+                        label={_t("tim|whitelist|insert_name")}
                         value={this.state.displayName}
                         onChange={this.onInsertContactName}
                         onValidate={this.onUsernameValidate}
@@ -506,7 +506,7 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
                     <Field
                         ref={(field): Field | null => (this[FIELD_MXID] = field)}
                         type="text"
-                        label={_t("Insert MXID")}
+                        label={_t("tim|whitelist|insert_mxid")}
                         value={this.state.mxid}
                         onChange={this.onInsertMXID}
                         onValidate={this.onMxidValidate}
@@ -516,18 +516,18 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
                         type="date"
                         onInput={this.onInsertStartInvite}
                         value={this.state.startInvite}
-                        label={_t("Starting time")}
+                        label={_t("tim|whitelist|start")}
                     />
                     <Field
                         element="input"
                         type="date"
                         onChange={this.onInsertEndInvite}
                         value={this.state.endInvite}
-                        label={_t("Ending time")}
+                        label={_t("tim|whitelist|end")}
                     />
                     <div className="mx_ProfileSettings_buttons" style={{ marginBottom: "0", marginTop: "8px" }}>
                         <AccessibleButton onClick={this.onSaveContact} kind="primary">
-                            {_t("Add to whitelist")}
+                            {_t("tim|whitelist|add")}
                         </AccessibleButton>
                         {this.state.displayName != "" || this.state.mxid != "" ? (
                             <AccessibleButton
@@ -535,7 +535,7 @@ export default class WhitelistPanel extends React.Component<IProps, IState> {
                                 kind="link"
                                 style={{ marginInlineEnd: 0, marginInlineStart: "10px" }}
                             >
-                                {_t("Clear fields")}
+                                {_t("tim|whitelist|clear")}
                             </AccessibleButton>
                         ) : null}
                     </div>

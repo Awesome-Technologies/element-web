@@ -1,34 +1,28 @@
 /*
-Copyright 2015, 2016 OpenMarket Ltd
+Copyright 2023, 2024 Awesome Technologies Innovationslabor GmbH
+Copyright 2024 New Vector Ltd.
 Copyright 2020 The Matrix.org Foundation C.I.C.
-Copyright 2023 Awesome Technologies Innovationslabor GmbH
+Copyright 2015, 2016 OpenMarket Ltd
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
+// ORIGINAL CODE
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/Modal.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/
-
-import "./ModalCustom.css";
 
 import React from "react";
 import ReactDOM from "react-dom";
 import classNames from "classnames";
-import { defer, sleep } from "matrix-js-sdk/src/utils";
-import { TypedEventEmitter } from "matrix-js-sdk/src/models/typed-event-emitter";
-import dis from "matrix-react-sdk/src/./dispatcher/dispatcher";
+import { IDeferred, defer, sleep } from "matrix-js-sdk/src/utils";
+import { TypedEventEmitter } from "matrix-js-sdk/src/matrix";
+import { Glass } from "@vector-im/compound-web";
+import dis, { defaultDispatcher } from "matrix-react-sdk/src/dispatcher/dispatcher";
 import AsyncWrapper from "matrix-react-sdk/src/AsyncWrapper";
 import { Defaultize } from "matrix-react-sdk/src/@types/common";
+import { ActionPayload } from "matrix-react-sdk/src/dispatcher/payloads";
 
 import { FHIRContextProvider } from "./components/context/FHIRContext";
 
@@ -36,9 +30,11 @@ const DIALOG_CONTAINER_ID = "mx_Dialog_Container";
 const STATIC_DIALOG_CONTAINER_ID = "mx_Dialog_StaticContainer";
 
 // Type which accepts a React Component which looks like a Modal (accepts an onFinished prop)
-export type ComponentType = React.ComponentType<{
-    onFinished(...args: any): void;
-}>;
+export type ComponentType =
+    | React.ComponentType<{
+          onFinished(...args: any): void;
+      }>
+    | React.ComponentType<any>;
 
 // Generic type which returns the props of the Modal component with the onFinished being optional.
 export type ComponentProps<C extends ComponentType> = Defaultize<
@@ -51,11 +47,12 @@ export interface IModal<C extends ComponentType> {
     elem: React.ReactNode;
     className?: string;
     beforeClosePromise?: Promise<boolean>;
-    closeReason?: string;
-    onBeforeClose?(reason?: string): Promise<boolean>;
+    closeReason?: ModalCloseReason;
+    onBeforeClose?(reason?: ModalCloseReason): Promise<boolean>;
     onFinished: ComponentProps<C>["onFinished"];
     close(...args: Parameters<ComponentProps<C>["onFinished"]>): void;
     hidden?: boolean;
+    deferred?: IDeferred<Parameters<ComponentProps<C>["onFinished"]>>;
 }
 
 export interface IHandle<C extends ComponentType> {
@@ -69,11 +66,15 @@ interface IOptions<C extends ComponentType> {
 
 export enum ModalManagerEvent {
     Opened = "opened",
+    Closed = "closed",
 }
 
 type HandlerMap = {
     [ModalManagerEvent.Opened]: () => void;
+    [ModalManagerEvent.Closed]: () => void;
 };
+
+type ModalCloseReason = "backgroundClick";
 
 export class ModalManager extends TypedEventEmitter<ModalManagerEvent, HandlerMap> {
     private counter = 0;
@@ -113,6 +114,21 @@ export class ModalManager extends TypedEventEmitter<ModalManagerEvent, HandlerMa
         return container;
     }
 
+    public constructor() {
+        super();
+
+        // We never unregister this, but the Modal class is a singleton so there would
+        // never be an opportunity to do so anyway, except in the entirely theoretical
+        // scenario of instantiating a non-singleton instance of the Modal class.
+        defaultDispatcher.register(this.onAction);
+    }
+
+    private onAction = (payload: ActionPayload): void => {
+        if (payload.action === "logout") {
+            this.forceCloseAllModals();
+        }
+    };
+
     public toggleCurrentDialogVisibility(): void {
         const modal = this.getCurrentModal();
         if (!modal) return;
@@ -150,10 +166,14 @@ export class ModalManager extends TypedEventEmitter<ModalManagerEvent, HandlerMa
     }
 
     /**
+     * DEPRECATED.
+     * This is used only for tests. They should be using forceCloseAllModals but that
+     * caused a chunk of tests to fail, so for now they continue to use this.
+     *
      * @param reason either "backgroundClick" or undefined
      * @return whether a modal was closed
      */
-    public closeCurrentModal(reason?: string): boolean {
+    public closeCurrentModal(reason?: ModalCloseReason): boolean {
         const modal = this.getCurrentModal();
         if (!modal) {
             return false;
@@ -161,6 +181,22 @@ export class ModalManager extends TypedEventEmitter<ModalManagerEvent, HandlerMa
         modal.closeReason = reason;
         modal.close();
         return true;
+    }
+
+    /**
+     * Forces closes all open modals. The modals onBeforeClose function will not be
+     * run and the modal will not have a chance to prevent closing. Intended for
+     * situations like the user logging out of the app.
+     */
+    public forceCloseAllModals(): void {
+        for (const modal of this.modals) {
+            modal.deferred?.resolve([]);
+            if (modal.onFinished) modal.onFinished.apply(null);
+            this.emitClosed();
+        }
+
+        this.modals = [];
+        this.reRender();
     }
 
     private buildModal<C extends ComponentType>(
@@ -205,7 +241,7 @@ export class ModalManager extends TypedEventEmitter<ModalManagerEvent, HandlerMa
         modal: IModal<C>,
         props?: ComponentProps<C>,
     ): [IHandle<C>["close"], IHandle<C>["finished"]] {
-        const deferred = defer<Parameters<ComponentProps<C>["onFinished"]>>();
+        modal.deferred = defer<Parameters<ComponentProps<C>["onFinished"]>>();
         return [
             async (...args: Parameters<ComponentProps<C>["onFinished"]>): Promise<void> => {
                 if (modal.beforeClosePromise) {
@@ -218,7 +254,7 @@ export class ModalManager extends TypedEventEmitter<ModalManagerEvent, HandlerMa
                         return;
                     }
                 }
-                deferred.resolve(args);
+                modal.deferred?.resolve(args);
                 if (props?.onFinished) props.onFinished.apply(null, args);
                 const i = this.modals.indexOf(modal);
                 if (i >= 0) {
@@ -240,8 +276,9 @@ export class ModalManager extends TypedEventEmitter<ModalManagerEvent, HandlerMa
                 }
 
                 this.reRender();
+                this.emitClosed();
             },
-            deferred.promise,
+            modal.deferred.promise,
         ];
     }
 
@@ -336,6 +373,14 @@ export class ModalManager extends TypedEventEmitter<ModalManagerEvent, HandlerMa
         }
     }
 
+    /**
+     * Emit the closed event
+     * @private
+     */
+    private emitClosed(): void {
+        this.emit(ModalManagerEvent.Closed);
+    }
+
     private onBackgroundClick = (): void => {
         const modal = this.getCurrentModal();
         if (!modal) {
@@ -383,10 +428,12 @@ export class ModalManager extends TypedEventEmitter<ModalManagerEvent, HandlerMa
 
             const staticDialog = (
                 <div className={classes}>
-                    <div className="mx_Dialog">{this.staticModal.elem}</div>
+                    <Glass className="mx_Dialog_border">
+                        <div className="mx_Dialog">{this.staticModal.elem}</div>
+                    </Glass>
                     <div
                         data-testid="dialog-background"
-                        className="mx_Dialog_background mx_Dialog_staticBackground ex_customModalBackground"
+                        className="mx_Dialog_background mx_Dialog_staticBackground"
                         onClick={this.onBackgroundClick}
                     />
                 </div>
@@ -406,16 +453,18 @@ export class ModalManager extends TypedEventEmitter<ModalManagerEvent, HandlerMa
 
             const dialog = (
                 <div className={classes}>
-                    <div className="mx_Dialog">{modal.elem}</div>
+                    <Glass className="mx_Dialog_border">
+                        <div className="mx_Dialog">{modal.elem}</div>
+                    </Glass>
                     <div
                         data-testid="dialog-background"
-                        className="mx_Dialog_background ex_customModalBackground"
+                        className="mx_Dialog_background"
                         onClick={this.onBackgroundClick}
                     />
                 </div>
             );
 
-            setImmediate(() => ReactDOM.render(dialog, ModalManager.getOrCreateContainer()));
+            setTimeout(() => ReactDOM.render(dialog, ModalManager.getOrCreateContainer()), 0);
         } else {
             // This is safe to call repeatedly if we happen to do that
             ReactDOM.unmountComponentAtNode(ModalManager.getOrCreateContainer());

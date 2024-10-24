@@ -56,7 +56,7 @@ const Row: React.FC<IProps> = ({ data }) => {
             resourceTypeComponent = (
                 <span className="aw_result_resourceType person">
                     <Icon icon="searchFilterPeople" />
-                    {_t("Person")}
+                    {_t("tim|vzd|person")}
                 </span>
             );
             data.qualification.forEach((element: any) => {
@@ -73,7 +73,7 @@ const Row: React.FC<IProps> = ({ data }) => {
             resourceTypeComponent = (
                 <span className="aw_result_resourceType organisation">
                     <Icon icon="searchFilterOrganizations" />
-                    {_t("Organization")}
+                    {_t("tim|vzd|organization")}
                 </span>
             );
             data.qualification.forEach((element: any) => {
@@ -84,12 +84,12 @@ const Row: React.FC<IProps> = ({ data }) => {
             resourceTypeComponent = (
                 <span className="aw_result_resourceType group">
                     <Icon icon="searchFilterGroup" />
-                    {_t("Group")}
+                    {_t("tim|vzd|group")}
                 </span>
             );
             break;
         default:
-            resourceTypeComponent = <span className="aw_result_resourceType person">{_t("Error")}</span>;
+            resourceTypeComponent = <span className="aw_result_resourceType person">{_t("tim|vzd|error")}</span>;
     }
 
     typeString = type.length > 0 ? type.join(", ") : EMPTY_FIELD_STRING;

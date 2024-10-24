@@ -1,46 +1,35 @@
 /*
+Copyright 2024 Awesome Technologies Innovationslabor GmbH
+Copyright 2024 New Vector Ltd.
 Copyright 2020 The Matrix.org Foundation C.I.C.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
-// ORIGINAL PATh
+// ORIGINAL CODE
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/components/structures/LeftPanel.tsx
+// ORIGINAL PATH
 // matrix-react-sdk/src/components/structures/
+
+import "./LeftPanel.css";
 
 import * as React from "react";
 import { createRef } from "react";
 import classNames from "classnames";
-import "./LeftPanel.css";
-import defaultDispatcher from "matrix-react-sdk/src/dispatcher/dispatcher";
-import { UserTab } from "matrix-react-sdk/src/components/views/dialogs/UserTab";
-// Might be needed later for VZD Search
-// import RecentlyViewedButton from "matrix-react-sdk/src/components/views/rooms/RecentlyViewedButton";
-// import { ButtonEvent } from "matrix-react-sdk/src/components/views/elements/AccessibleButton";
-// import PosthogTrackers from "matrix-react-sdk/src/PosthogTrackers";
 import dis from "matrix-react-sdk/src/dispatcher/dispatcher";
 import { _t } from "matrix-react-sdk/src/languageHandler";
 import RoomList from "matrix-react-sdk/src/components/views/rooms/RoomList";
 import LegacyCallHandler from "matrix-react-sdk/src/LegacyCallHandler";
 import { HEADER_HEIGHT } from "matrix-react-sdk/src/components/views/rooms/RoomSublist";
 import { Action } from "matrix-react-sdk/src/dispatcher/actions";
-import RoomSearch from "matrix-react-sdk/src/components/structures/RoomSearch";
 import ResizeNotifier from "matrix-react-sdk/src/utils/ResizeNotifier";
-import AccessibleTooltipButton from "matrix-react-sdk/src/components/views/elements/AccessibleTooltipButton";
 import SpaceStore from "matrix-react-sdk/src/stores/spaces/SpaceStore";
 import { MetaSpace, SpaceKey, UPDATE_SELECTED_SPACE } from "matrix-react-sdk/src/stores/spaces";
 import { getKeyBindingsManager } from "matrix-react-sdk/src/KeyBindingsManager";
 import UIStore from "matrix-react-sdk/src/stores/UIStore";
 import { IState as IRovingTabIndexState } from "matrix-react-sdk/src/accessibility/RovingTabIndex";
+import RoomListHeader from "matrix-react-sdk/src/components/views/rooms/RoomListHeader";
 import { BreadcrumbsStore } from "matrix-react-sdk/src/stores/BreadcrumbsStore";
 import RoomListStore, { LISTS_UPDATE_EVENT } from "matrix-react-sdk/src/stores/room-list/RoomListStore";
 import { UPDATE_EVENT } from "matrix-react-sdk/src/stores/AsyncStore";
@@ -49,9 +38,14 @@ import RoomBreadcrumbs from "matrix-react-sdk/src/components/views/rooms/RoomBre
 import { KeyBindingAction } from "matrix-react-sdk/src/accessibility/KeyboardShortcuts";
 import { shouldShowComponent } from "matrix-react-sdk/src/customisations/helpers/UIComponents";
 import { UIComponent } from "matrix-react-sdk/src/settings/UIFeature";
+import AccessibleButton, { ButtonEvent } from "matrix-react-sdk/src/components/views/elements/AccessibleButton";
+import PosthogTrackers from "matrix-react-sdk/src/PosthogTrackers";
 import PageType from "matrix-react-sdk/src/PageTypes";
 import { UserOnboardingButton } from "matrix-react-sdk/src/components/views/user-onboarding/UserOnboardingButton";
+import { Landmark, LandmarkNavigation } from "matrix-react-sdk/src/accessibility/LandmarkNavigation";
 import UserMenu from "matrix-react-sdk/src/components/structures/UserMenu";
+
+import RoomSearch from "./RoomSearch";
 
 interface IProps {
     isMinimized: boolean;
@@ -125,13 +119,10 @@ export default class LeftPanel extends React.Component<IProps, IState> {
         dis.fire(Action.OpenDialPad);
     };
 
-    //
-    // Might be needed later for VZD Search
-    //
-    // private onExplore = (ev: ButtonEvent): void => {
-    //     dis.fire(Action.ViewRoomDirectory);
-    //     PosthogTrackers.trackInteraction("WebLeftPanelExploreRoomsButton", ev);
-    // };
+    private onExplore = (ev: ButtonEvent): void => {
+        dis.fire(Action.ViewRoomDirectory);
+        PosthogTrackers.trackInteraction("WebLeftPanelExploreRoomsButton", ev);
+    };
 
     private refreshStickyHeaders = (): void => {
         if (!this.listContainerRef.current) return; // ignore: no headers to sticky
@@ -319,12 +310,24 @@ export default class LeftPanel extends React.Component<IProps, IState> {
                 }
                 break;
         }
+
+        const navAction = getKeyBindingsManager().getNavigationAction(ev);
+        if (navAction === KeyBindingAction.PreviousLandmark || navAction === KeyBindingAction.NextLandmark) {
+            ev.stopPropagation();
+            ev.preventDefault();
+            LandmarkNavigation.findAndFocusNextLandmark(
+                Landmark.ROOM_SEARCH,
+                navAction === KeyBindingAction.PreviousLandmark,
+            );
+        }
     };
 
     private renderBreadcrumbs(): React.ReactNode {
         if (this.state.showBreadcrumbs === BreadcrumbsMode.Legacy && !this.props.isMinimized) {
             return (
                 <IndicatorScrollbar
+                    role="navigation"
+                    aria-label={_t("a11y|recent_rooms")}
                     className="mx_LeftPanel_breadcrumbsContainer mx_AutoHideScrollbar"
                     verticalScrollsHorizontally={true}
                 >
@@ -341,50 +344,21 @@ export default class LeftPanel extends React.Component<IProps, IState> {
         // to start a new call
         if (LegacyCallHandler.instance.getSupportsPstnProtocol()) {
             dialPadButton = (
-                <AccessibleTooltipButton
+                <AccessibleButton
                     className={classNames("mx_LeftPanel_dialPadButton", {})}
                     onClick={this.onDialPad}
-                    title={_t("Open dial pad")}
+                    title={_t("left_panel|open_dial_pad")}
                 />
             );
         }
 
-        //
-        // Might be needed later for VZD Search
-        //
-        // let rightButton: JSX.Element | undefined;
-        // if (this.state.showBreadcrumbs === BreadcrumbsMode.Labs) {
-        //     rightButton = <RecentlyViewedButton />;
-        // } else if (this.state.activeSpace === MetaSpace.Home && shouldShowComponent(UIComponent.ExploreRooms)) {
-        //     rightButton = (
-        //         <AccessibleTooltipButton
-        //             className="mx_LeftPanel_exploreButton"
-        //             onClick={this.onExplore}
-        //             title={_t("Explore rooms")}
-        //         />
-        //     );
-        // }
-
-        let helpButton: JSX.Element | undefined;
+        let rightButton: JSX.Element | undefined;
         if (this.state.activeSpace === MetaSpace.Home && shouldShowComponent(UIComponent.ExploreRooms)) {
-            helpButton = (
-                <AccessibleTooltipButton
-                    className="mx_LeftPanel_exploreButton mx_LeftPanel_helpButton"
-                    onClick={(): void =>
-                        defaultDispatcher.dispatch({ action: Action.ViewUserSettings, initialTabId: UserTab.Help })
-                    }
-                    title={_t("Help")}
-                />
-            );
-        }
-
-        let settingsButton: JSX.Element | undefined;
-        if (this.state.activeSpace === MetaSpace.Home && shouldShowComponent(UIComponent.ExploreRooms)) {
-            settingsButton = (
-                <AccessibleTooltipButton
-                    className="mx_LeftPanel_exploreButton mx_LeftPanel_settingsButton"
-                    onClick={(): void => defaultDispatcher.dispatch({ action: Action.ViewUserSettings })}
-                    title={_t("Settings")}
+            rightButton = (
+                <AccessibleButton
+                    className="mx_LeftPanel_exploreButton"
+                    onClick={this.onExplore}
+                    title={_t("action|explore_rooms")}
                 />
             );
         }
@@ -395,6 +369,7 @@ export default class LeftPanel extends React.Component<IProps, IState> {
                 onFocus={this.onFocus}
                 onBlur={this.onBlur}
                 onKeyDown={this.onKeyDown}
+                role="search"
             >
                 <UserMenu isPanelCollapsed={true} />
 
@@ -403,8 +378,7 @@ export default class LeftPanel extends React.Component<IProps, IState> {
                 <RoomSearch isMinimized={this.props.isMinimized} />
 
                 {dialPadButton}
-                {helpButton}
-                {settingsButton}
+                {rightButton}
             </div>
         );
     }
@@ -436,11 +410,12 @@ export default class LeftPanel extends React.Component<IProps, IState> {
                 <div className="mx_LeftPanel_roomListContainer">
                     {shouldShowComponent(UIComponent.FilterContainer) && this.renderSearchDialExplore()}
                     {this.renderBreadcrumbs()}
+                    {!this.props.isMinimized && <RoomListHeader onVisibilityChange={this.refreshStickyHeaders} />}
                     <UserOnboardingButton
                         selected={this.props.pageType === PageType.HomePage}
                         minimized={this.props.isMinimized}
                     />
-                    <div className="mx_LeftPanel_roomListWrapper">
+                    <nav className="mx_LeftPanel_roomListWrapper" aria-label={_t("common|rooms")}>
                         <div
                             className={roomListClasses}
                             ref={this.listContainerRef}
@@ -450,7 +425,7 @@ export default class LeftPanel extends React.Component<IProps, IState> {
                         >
                             {roomList}
                         </div>
-                    </div>
+                    </nav>
                 </div>
             </div>
         );

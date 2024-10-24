@@ -1,31 +1,24 @@
 /*
-Copyright 2020, 2021 The Matrix.org Foundation C.I.C.
 Copyright 2024 Awesome Technologies Innovationslabor GmbH
+Copyright 2024 New Vector Ltd.
+Copyright 2020, 2021 The Matrix.org Foundation C.I.C.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
 // ORIGINAL CODE
-// https://github.com/matrix-org/matrix-react-sdk/blob/v3.79.0/src/components/views/rooms/NewRoomIntro.tsx
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/components/views/rooms/NewRoomIntro.tsx
 // ORIGINAL PATH
 // matrix-react-sdk/src/components/views/rooms/
 
 import React, { useContext } from "react";
 import { EventType, Room, User, MatrixClient, ISendEventResponse } from "matrix-js-sdk/src/matrix";
+import { KnownMembership } from "matrix-js-sdk/src/types";
 import MatrixClientContext from "matrix-react-sdk/src/contexts/MatrixClientContext";
 import RoomContext from "matrix-react-sdk/src/contexts/RoomContext";
 import DMRoomMap from "matrix-react-sdk/src/utils/DMRoomMap";
-import { _t, _td } from "matrix-react-sdk/src/languageHandler";
+import { _t, _td, TranslationKey } from "matrix-react-sdk/src/languageHandler";
 import AccessibleButton, { ButtonEvent } from "matrix-react-sdk/src/components/views/elements/AccessibleButton";
 import MiniAvatarUploader, { AVATAR_SIZE } from "matrix-react-sdk/src/components/views/elements/MiniAvatarUploader";
 import RoomAvatar from "matrix-react-sdk/src/components/views/avatars/RoomAvatar";
@@ -45,19 +38,20 @@ import { shouldEncryptRoomWithSingle3rdPartyInvite } from "matrix-react-sdk/src/
 
 function hasExpectedEncryptionSettings(matrixClient: MatrixClient, room: Room): boolean {
     const isEncrypted: boolean = matrixClient.isRoomEncrypted(room.roomId);
+    // chats should always be encrypted
     return !privateShouldBeEncrypted(matrixClient) || isEncrypted;
 }
 
-const determineIntroMessage = (room: Room, encryptedSingle3rdPartyInvite: boolean): string => {
+const determineIntroMessage = (room: Room, encryptedSingle3rdPartyInvite: boolean): TranslationKey => {
     if (room instanceof LocalRoom) {
-        return _td("Send your first message to invite <displayName/> to chat");
+        return _td("room|intro|send_message_start_dm");
     }
 
     if (encryptedSingle3rdPartyInvite) {
-        return _td("Once everyone has joined, you’ll be able to chat");
+        return _td("room|intro|encrypted_3pid_dm_pending_join");
     }
 
-    return _td("This is the beginning of your direct message history with <displayName/>.");
+    return _td("room|intro|start_of_dm_history");
 };
 
 const NewRoomIntro: React.FC = () => {
@@ -82,7 +76,7 @@ const NewRoomIntro: React.FC = () => {
             !encryptedSingle3rdPartyInvite &&
             room.getJoinedMemberCount() + room.getInvitedMemberCount() === 2
         ) {
-            caption = _t("Only the two of you are in this conversation, unless either of you invites anyone to join.");
+            caption = _t("room|intro|dm_caption");
         }
 
         const member = room?.getMember(dmPartner);
@@ -91,9 +85,8 @@ const NewRoomIntro: React.FC = () => {
             <React.Fragment>
                 <RoomAvatar
                     room={room}
-                    width={AVATAR_SIZE}
-                    height={AVATAR_SIZE}
-                    onClick={(): void => {
+                    size={AVATAR_SIZE}
+                    onClick={() => {
                         defaultDispatcher.dispatch<ViewUserPayload>({
                             action: Action.ViewUser,
                             // XXX: We should be using a real member object and not assuming what the receiver wants.
@@ -109,7 +102,7 @@ const NewRoomIntro: React.FC = () => {
                         introMessage,
                         {},
                         {
-                            displayName: () => <b>{displayName}</b>,
+                            displayName: () => <strong>{displayName}</strong>,
                         },
                     )}
                 </p>
@@ -117,7 +110,7 @@ const NewRoomIntro: React.FC = () => {
             </React.Fragment>
         );
     } else {
-        const inRoom = room && room.getMyMembership() === "join";
+        const inRoom = room && room.getMyMembership() === KnownMembership.Join;
         const topic = room.currentState.getStateEvents(EventType.RoomTopic, "")?.getContent()?.topic;
         const canAddTopic = inRoom && room.currentState.maySendStateEvent(EventType.RoomTopic, cli.getSafeUserId());
 
@@ -130,7 +123,7 @@ const NewRoomIntro: React.FC = () => {
                 true,
             );
             // focus the topic field to help the user find it as it'll gain an outline
-            setImmediate(() => {
+            setTimeout(() => {
                 window.document.getElementById("profileTopic")?.focus();
             });
         };
@@ -138,7 +131,7 @@ const NewRoomIntro: React.FC = () => {
         let topicText;
         if (canAddTopic && topic) {
             topicText = _t(
-                "Topic: %(topic)s (<a>edit</a>)",
+                "room|intro|topic_edit",
                 { topic },
                 {
                     a: (sub) => (
@@ -149,10 +142,10 @@ const NewRoomIntro: React.FC = () => {
                 },
             );
         } else if (topic) {
-            topicText = _t("Topic: %(topic)s ", { topic });
+            topicText = _t("room|intro|topic", { topic });
         } else if (canAddTopic) {
             topicText = _t(
-                "<a>Add a topic</a> to help people know what it is about.",
+                "room|intro|no_topic",
                 {},
                 {
                     a: (sub) => (
@@ -169,9 +162,9 @@ const NewRoomIntro: React.FC = () => {
 
         let createdText: string;
         if (creator === cli.getUserId()) {
-            createdText = _t("You created this room.");
+            createdText = _t("room|intro|you_created");
         } else {
-            createdText = _t("%(displayName)s created this room.", {
+            createdText = _t("room|intro|user_created", {
                 displayName: creatorName,
             });
         }
@@ -195,7 +188,7 @@ const NewRoomIntro: React.FC = () => {
                             showSpaceInvite(parentSpace!);
                         }}
                     >
-                        {_t("Invite to %(spaceName)s", { spaceName: parentSpace.name })}
+                        {_t("invite|to_space", { spaceName: parentSpace.name })}
                     </AccessibleButton>
                     {room.canInvite(cli.getSafeUserId()) && (
                         <AccessibleButton
@@ -205,7 +198,7 @@ const NewRoomIntro: React.FC = () => {
                                 defaultDispatcher.dispatch({ action: "view_invite", roomId });
                             }}
                         >
-                            {_t("Invite to just this room")}
+                            {_t("room|intro|room_invite")}
                         </AccessibleButton>
                     )}
                 </div>
@@ -220,22 +213,20 @@ const NewRoomIntro: React.FC = () => {
                             defaultDispatcher.dispatch({ action: "view_invite", roomId });
                         }}
                     >
-                        {_t("Invite to this room")}
+                        {_t("room|invite_this_room")}
                     </AccessibleButton>
                 </div>
             );
         }
 
         const avatarUrl = room.currentState.getStateEvents(EventType.RoomAvatar, "")?.getContent()?.url;
-        let avatar = (
-            <RoomAvatar room={room} width={AVATAR_SIZE} height={AVATAR_SIZE} viewAvatarOnClick={!!avatarUrl} />
-        );
+        let avatar = <RoomAvatar room={room} size={AVATAR_SIZE} viewAvatarOnClick={!!avatarUrl} />;
 
         if (!avatarUrl) {
             avatar = (
                 <MiniAvatarUploader
                     hasAvatar={false}
-                    noAvatarLabel={_t("Add a photo, so people can easily spot your room.")}
+                    noAvatarLabel={_t("room|intro|no_avatar_label")}
                     setAvatarUrl={(url): Promise<ISendEventResponse> =>
                         cli.sendStateEvent(roomId, EventType.RoomAvatar, { url }, "")
                     }
@@ -254,10 +245,10 @@ const NewRoomIntro: React.FC = () => {
                 <p>
                     {createdText}{" "}
                     {_t(
-                        "This is the start of <roomName/>.",
+                        "room|intro|start_of_room",
                         {},
                         {
-                            roomName: () => <b>{room.name}</b>,
+                            roomName: () => <strong>{room.name}</strong>,
                         },
                     )}
                 </p>
@@ -275,11 +266,7 @@ const NewRoomIntro: React.FC = () => {
         });
     }
 
-    const subText = _t(
-        "Your private messages are normally encrypted, but this room isn't. " +
-            "Usually this is due to an unsupported device or method being used, " +
-            "like email invites.",
-    );
+    const subText = _t("room|intro|private_unencrypted_warning");
 
     let subButton: JSX.Element | undefined;
     if (
@@ -288,7 +275,7 @@ const NewRoomIntro: React.FC = () => {
     ) {
         subButton = (
             <AccessibleButton kind="link_inline" onClick={openRoomSettings}>
-                {_t("Enable encryption in settings.")}
+                {_t("room|intro|enable_encryption_prompt")}
             </AccessibleButton>
         );
     }
@@ -305,7 +292,7 @@ const NewRoomIntro: React.FC = () => {
             {!hasExpectedEncryptionSettings(cli, room) && (
                 <EventTileBubble
                     className="mx_cryptoEvent mx_cryptoEvent_icon_warning"
-                    title={_t("End-to-end encryption isn't enabled")}
+                    title={_t("room|intro|unencrypted_warning")}
                     subtitle={subtitle}
                 />
             )}

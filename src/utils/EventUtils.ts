@@ -1,22 +1,14 @@
 /*
-Copyright 2019 - 2022 The Matrix.org Foundation C.I.C.
 Copyright 2024 Awesome Technologies Innovationslabor GmbH
+Copyright 2024 New Vector Ltd.
+Copyright 2019-2022 The Matrix.org Foundation C.I.C.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only
+Please see LICENSE files in the repository root for full details.
 */
 
 // ORIGINAL CODE
-// https://github.com/matrix-org/matrix-react-sdk/blob/v3.79.0/src/utils/EventUtils.ts
+// https://github.com/element-hq/matrix-react-sdk/blob/v3.113.0/src/utils/EventUtils.ts
 // ORIGINAL PATH
 // matrix-react-sdk/src/utils/
 
@@ -27,11 +19,12 @@ import {
     EVENT_VISIBILITY_CHANGE_TYPE,
     MatrixClient,
     THREAD_RELATION_TYPE,
+    M_POLL_END,
+    M_POLL_START,
+    M_LOCATION,
+    M_BEACON_INFO,
 } from "matrix-js-sdk/src/matrix";
 import { logger } from "matrix-js-sdk/src/logger";
-import { M_POLL_END, M_POLL_START } from "matrix-js-sdk/src/@types/polls";
-import { M_LOCATION } from "matrix-js-sdk/src/@types/location";
-import { M_BEACON_INFO } from "matrix-js-sdk/src/@types/beacon";
 import shouldHideEvent from "matrix-react-sdk/src/shouldHideEvent";
 import { GetRelationsForEvent } from "matrix-react-sdk/src/components/views/rooms/EventTile";
 import SettingsStore from "matrix-react-sdk/src/settings/SettingsStore";
@@ -293,10 +286,6 @@ export const isLocationEvent = (event: MatrixEvent): boolean => {
 
 export function hasThreadSummary(event: MatrixEvent): boolean {
     return event.isThreadRoot && !!event.getThread()?.length && !!event.getThread()!.replyToEvent;
-}
-
-export function canPinEvent(event: MatrixEvent): boolean {
-    return !M_BEACON_INFO.matches(event.getType());
 }
 
 export const highlightEvent = (roomId: string, eventId: string): void => {

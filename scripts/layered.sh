@@ -17,7 +17,7 @@ set -ex
 yarn install --frozen-lockfile
 
 # Pass appropriate repo to fetchdep.sh
-export PR_ORG=vector-im
+export PR_ORG=element-hq
 export PR_REPO=element-web
 
 # Set up the js-sdk first
@@ -40,7 +40,7 @@ if [ -d matrix-analytics-events ]; then
 fi
 
 # Now set up the react-sdk
-node_modules/matrix-react-sdk/scripts/fetchdep.sh matrix-org matrix-react-sdk develop
+node_modules/matrix-react-sdk/scripts/fetchdep.sh element-hq matrix-react-sdk develop
 pushd matrix-react-sdk
 yarn link
 yarn link matrix-js-sdk

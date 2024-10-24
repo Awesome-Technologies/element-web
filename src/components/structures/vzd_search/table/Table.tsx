@@ -63,17 +63,17 @@ const Table: React.FC<ITableProps> = ({ rows, columnStructure, isLoading = false
             {isLoading ? (
                 <div className="aw_table__message spinner">
                     <Icon icon="spinnerBig" />
-                    <span>{_t("Search..")}</span>
+                    <span>{_t("tim|vzd|search")}</span>
                 </div>
             ) : isInputEmpty ? (
                 <div className="aw_table__message">
                     <Icon icon="magnifyingGlassBig" />
-                    <span>{_t("Enter search query to display results")}</span>
+                    <span>{_t("tim|vzd|search_query")}</span>
                 </div>
             ) : isEmpty ? (
                 <div className="aw_table__message">
                     <Icon icon="errorBig" />
-                    <span>{_t("No results")}</span>
+                    <span>{_t("tim|vzd|no_results")}</span>
                 </div>
             ) : (
                 <table className="aw_table">
