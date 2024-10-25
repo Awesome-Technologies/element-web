@@ -423,6 +423,11 @@ export default async function createRoom(client: MatrixClient, opts: IOpts): Pro
                 return roomId;
             },
             function (err) {
+                let description = _t(err.data.error);
+                Modal.createDialog(ErrorDialog, {
+                    title: _t("create_room|error_title"),
+                    description,
+                });
                 // Raise the error if the caller requested that we do so.
                 if (opts.inlineErrors) throw err;
 
@@ -432,7 +437,8 @@ export default async function createRoom(client: MatrixClient, opts: IOpts): Pro
                     roomId,
                 });
                 logger.error("Failed to create room " + roomId + " " + err);
-                let description = _t("create_room|generic_error");
+
+                description = _t("create_room|generic_error");
                 if (err.errcode === "M_UNSUPPORTED_ROOM_VERSION") {
                     // Technically not possible with the UI as of April 2019 because there's no
                     // options for the user to change this. However, it's not a bad thing to report

@@ -148,6 +148,9 @@
     "welcome_to_element": "Willkommen bei Element",
 
     "Explore rooms": "Explore groups",
-    "Rooms": "Gruppen"
+    "Rooms": "Gruppen",
+    "Domain not in federation": "Domäne ist nicht Teil der Föderation",
+    "Die Gegenpartei konnte nicht kontaktiert werden": "Die Gegenpartei konnte nicht kontaktiert werden",
+    "Teilnehmer ist nicht Teil der Föderation.": "Teilnehmer ist nicht Teil der Föderation.",
+    "Beim Starten der Kommunikation ist ein Fehler aufgetreten. Bitte wenden Sie sich an Ihren Administrator.": "Beim Starten der Kommunikation ist ein Fehler aufgetreten. Bitte wenden Sie sich an Ihren Administrator."
 }
-   

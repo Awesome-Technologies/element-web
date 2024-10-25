@@ -159,7 +159,10 @@
     "web_default_device_name": "%(appName)s: %(browserName)s on %(osName)s",
     "welcome_to_element": "Welcome to Element",
 
- 
     "Explore rooms": "Explore groups",
-    "Rooms": "Groups"
+    "Rooms": "Groups",
+    "Domain not in federation": "Domain not in federation",
+    "Die Gegenpartei konnte nicht kontaktiert werden": "Die Gegenpartei konnte nicht kontaktiert werden",
+    "Teilnehmer ist nicht Teil der Föderation.": "Teilnehmer ist nicht Teil der Föderation.",
+    "Beim Starten der Kommunikation ist ein Fehler aufgetreten. Bitte wenden Sie sich an Ihren Administrator.": "Beim Starten der Kommunikation ist ein Fehler aufgetreten. Bitte wenden Sie sich an Ihren Administrator."
 }
