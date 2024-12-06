@@ -1,6 +1,6 @@
 {
     "name": "AMP.tim",
-    "version": "1.0.0-3",
+    "version": "1.0.0-4",
     "basedOnVersion": "1.11.81",
     "productTypeVersion": "1.1.2-0",
     "description": "A webclient for the TI-Messenger",
