@@ -32,6 +32,7 @@
     "src/components/views/settings/tabs/user/SecurityUserSettingsTab.tsx": "src/components/views/settings/tabs/user/SecurityUserSettingsTab.tsx",
     "src/hooks/room/useTopic.ts": "src/hooks/room/useTopic.ts",
     "src/settings/Settings.tsx": "src/settings/Settings.tsx",
+    "src/utils/AutoDiscoveryUtils.tsx": "src/utils/AutoDiscoveryUtils.tsx",
     "src/utils/EventUtils.ts": "src/utils/EventUtils.ts",
     "src/createRoom.ts": "src/createRoom.ts",
     "src/Lifecycle.ts": "src/Lifecycle.ts",
